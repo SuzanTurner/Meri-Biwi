@@ -58,7 +58,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 62, 113, 93),
+      backgroundColor: const Color(0xFFFEF54A).withOpacity(0.15),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -560,7 +560,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),                        
                       ),
-                      side: BorderSide(color: Colors.white, width: 2), // sets inactive border color
+                      side: BorderSide(color: Color(0xFF2E3C59), width: 2), // sets inactive border color
                       onChanged: (value) {
                         setState(() {
                           termsAccepted = value ?? false;
@@ -573,7 +573,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
                     child: Text(
                       "I agree to the Terms & Conditions and Privacy Policy",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFF2E3C59),
                         fontSize: 14,
                       ),
                     ),

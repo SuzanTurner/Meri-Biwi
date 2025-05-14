@@ -148,7 +148,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 62, 113, 93),
+      backgroundColor: const Color(0xFFFEF54A).withOpacity(0.15),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
@@ -161,7 +161,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.tune, color: Color.fromARGB(255, 62, 113, 93)),
+            icon: const Icon(Icons.tune, color: Color(0xFF2E3C59)),
             onPressed: _showPreferencesDialog,
             tooltip: 'Chef Preferences',
           ),
@@ -173,7 +173,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
           if (_genderPreference != 'any' || _timePreference != 'any' || _communityPreference != 'any')
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Colors.white,
+              color: const Color(0xFFFEF54A).withOpacity(0.06),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -312,7 +312,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
         color: color ?? const Color(0xFFEDF7ED),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color != null ? color.withOpacity(0.3) : const Color.fromARGB(255, 62, 113, 93).withOpacity(0.3),
+          color: color != null ? color.withOpacity(0.3) : const Color(0xFF2E3C59).withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -321,13 +321,13 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
           Icon(
             icon,
             size: 16,
-            color: color ?? const Color.fromARGB(255, 62, 113, 93),
+            color: color ?? const Color(0xFF2E3C59),
           ),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: color ?? const Color.fromARGB(255, 62, 113, 93),
+              color: color ?? const Color(0xFF2E3C59),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -498,8 +498,8 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color.fromARGB(255, 62, 113, 93),
-                                  const Color.fromARGB(255, 62, 113, 93).withOpacity(0.7),
+                                  Color(0xFFFEF54A),
+                                  const Color(0xFFFEF54A),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -711,7 +711,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                                       const Icon(
                                         Icons.calendar_today,
                                         size: 16,
-                                        color: Color.fromARGB(255, 62, 113, 93),
+                                        color: Color(0xFF2E3C59),
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
@@ -728,7 +728,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                                       const Icon(
                                         Icons.access_time,
                                         size: 16,
-                                        color: Color.fromARGB(255, 62, 113, 93),
+                                        color: Color(0xFF2E3C59),
                                       ),
                                       const SizedBox(width: 8),
                                       const Text(
@@ -794,8 +794,8 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
     );
   },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 62, 113, 93),
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFFEF54A),
+                      foregroundColor: Color(0xFF2E3C59),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

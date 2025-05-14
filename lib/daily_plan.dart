@@ -77,7 +77,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
       price: '49',
       duration: 'per day',
       color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFFFFAA5),
+      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
       features: [
         'Two meals per day for weekdays',
         'Semi-custom menu',
@@ -104,7 +104,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
       price: '79',
       duration: 'per day',
       color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFE0F0E9),
+      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
       features: [
         'Three meals daily all week',
         'Fully customizable',

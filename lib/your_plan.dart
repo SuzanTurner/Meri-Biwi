@@ -47,7 +47,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
       price: '29',
       duration: 'per day',
       color: const Color(0xFFFAFA33),
-      lightColor: const Color(0xFFFAFA99),
+      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
       features: [
         'One meal per day for weekends',
         'Standard dishes',
@@ -72,7 +72,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
       price: '49',
       duration: 'per day',
       color: const Color(0xFFFAFA33),
-      lightColor: const Color(0xFFEFF8F4),
+      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
       features: [
         'Two meals per day for weekdays',
         'Semi-custom menu',
@@ -99,7 +99,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
       price: '79',
       duration: 'per day',
       color: const Color((0xFFFAFA33)),
-      lightColor: const Color(0xFFEFF8F4),
+      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
       features: [
         'Three meals daily all week',
         'Fully customizable',
@@ -238,7 +238,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                     ),
                   ],
                 ),
-                child: const Icon(Icons.help_outline_rounded, color: Color(0xFFFAFA33)),
+                //child: const Icon(Icons.help_outline_rounded, color: Color(0xFFFAFA33)),
               ),
             ],
           ),
@@ -331,7 +331,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         color: plan.color.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(plan.icon, color: plan.color, size: 24),
+                      child: Icon(plan.icon, color: Color(0xFF2E3C59), size: 24),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -342,7 +342,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: plan.color,
+                            color: const Color(0xFF2E3C59),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -350,7 +350,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                           plan.description,
                           style: TextStyle(
                             fontSize: 12,
-                            color: plan.color.withOpacity(0.8),
+                            color: const Color(0xFF2E3C59).withOpacity(0.8),
                           ),
                         ),
                       ],
@@ -373,7 +373,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                             ),
                             child: Icon(
                               isSpicyCustomization ? Icons.close : Icons.check,
-                              color: isSpicyCustomization ? Colors.red : plan.color,
+                              color: isSpicyCustomization ? Colors.red : Color(0xFF2E3C59),
                               size: 16,
                             ),
                           ),
@@ -438,7 +438,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: plan.color,
+                    color: const Color(0xFF2E3C59),
                   ),
                 ),
               ),
@@ -469,7 +469,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                         ),
                       ),
                       Text(
@@ -477,7 +477,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         style: TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                         ),
                       ),
                       Padding(
@@ -509,7 +509,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                       Icon(
                         Icons.edit_document,
                         size: 16,
-                        color: plan.color,
+                        color: Color(0xFF2E3C59),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -543,7 +543,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             decoration: const BoxDecoration(
-              color: Color(0xFF2E3C59),
+              color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(24),
                 topRight: Radius.circular(24),
@@ -572,7 +572,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                         ),
                       ),
                       IconButton(
@@ -604,7 +604,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         _buildTermSection(
                           title: "Features",
                           icon: Icons.check_circle_outline,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                           items: plan.features,
                         ),
                         
@@ -612,7 +612,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         _buildTermSection(
                           title: "Benefits",
                           icon: Icons.star_outline,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                           items: plan.benefits,
                         ),
                         
@@ -620,7 +620,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                         _buildTermSection(
                           title: "Pricing Includes",
                           icon: Icons.receipt_long,
-                          color: plan.color,
+                          color: Color(0xFF2E3C59),
                           items: plan.pricingIncludes,
                         ),
                         
@@ -652,7 +652,7 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Color(0xFF2E3C59),
+                    color: Colors.white,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.05),
