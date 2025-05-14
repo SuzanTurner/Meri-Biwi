@@ -13,7 +13,7 @@ class ChefProfilesPage extends StatefulWidget {
 class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerProviderStateMixin {
   // Chef preferences state
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
-  String _genderPreference = 'any';
+  String _genderPreference = 'Female';
   String _timePreference = 'any';
   String _communityPreference = 'any';
   bool _showPeakHours = false;
@@ -62,7 +62,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       return {
         'id': actualIndex,
         'name': 'Chef ${_getRandomName()}',
-        'image': 'assets/chefs/person icon.jpeg.jpeg', // Assuming you have at least 10 chef images
+        'image': 'assets/chefs/person icon.jpeg', // Assuming you have at least 10 chef images
         'rating': 3.5 + (actualIndex % 3) * 0.5,
         'speciality': _getRandomSpeciality(),
         'experience': '${2 + (actualIndex % 15)} years',
@@ -90,17 +90,13 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
   
   String _getRandomSpeciality() {
     final specialities =[
-  'Punjabi Cuisine',
-  'South Indian Cuisine',
-  'Gujarati Cuisine',
-  'Rajasthani Cuisine',
-  'Bengali Cuisine',
-  'Maharashtrian Cuisine',
-  'Kashmiri Cuisine',
-  'Hyderabadi Biryani',
-  'Jain Food',
-  'Chinese (Indian Style)'
-  'North Indian Cuisine'
+  'Jain',
+  'Marwadi',
+  'Hindu',
+  'Muslim',
+  'Parsi',
+  'Christian',
+  'Buddhist'
 ];
     return specialities[DateTime.now().millisecond % specialities.length];
   }
@@ -619,7 +615,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                                 Expanded(
                                   child: _infoCard(
                                     icon: Icons.restaurant,
-                                    title: 'Speciality',
+                                    title: 'Community',
                                     value: chef['speciality'],
                                   ),
                                 ),
@@ -879,7 +875,7 @@ class PreferencesDialog extends StatefulWidget {
 
 class _PreferencesDialogState extends State<PreferencesDialog> {
   late DateTime _selectedDate;
-  String _selectedGender = 'any';
+  String _selectedGender = 'female';
   String _selectedTime = 'any';
   String _selectedCommunity = 'any';
   bool _showPeakHours = false;
@@ -925,7 +921,11 @@ class _PreferencesDialogState extends State<PreferencesDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Filter Chef Preferences'),
-      content: SingleChildScrollView(
+      content: SizedBox( // set width of the alert dialog
+        width: MediaQuery.of(context).size.width * 1.0,
+        height: MediaQuery.of(context).size.height*0.7,
+        child: 
+        SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -972,7 +972,7 @@ class _PreferencesDialogState extends State<PreferencesDialog> {
             const SizedBox(height: 16),
 
             // Time preference
-            const Text('Time Preference: (update required)', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Time Preference:', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               decoration: const InputDecoration(
@@ -980,7 +980,7 @@ class _PreferencesDialogState extends State<PreferencesDialog> {
                 prefixIcon: Icon(Icons.access_time, color: Color.fromARGB(255, 62, 113, 93)),
               ),
               value: _selectedTime,
-              items: <String>['any', '7:00', '8:00', '9:00']
+              items: <String>['any', '6:00 am','7:00 am', '8:00 am', '9:00 am','10:00 am','11:00 am','12:00 am','1:00 pm','2:00 pm','3:00 pm','4:00 pm','5:00 pm','6:00 pm','7:00 pm','8:00 pm','9:00 pm','10:00 pm','11:00 pm','12:00 pm','1:00 am','2:00 am','3:00 am','4:00 am','5:00 am']
                   .map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
@@ -994,49 +994,10 @@ class _PreferencesDialogState extends State<PreferencesDialog> {
               },
             ),
             const SizedBox(height: 16),
-
-            // Community preference
-            const Text('Community Preference:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.people, color: Color.fromARGB(255, 62, 113, 93)),
-              ),
-              value: _selectedCommunity,
-              items: <String>['any', 'Jain','Marwadi','Muslim','Buddhist','Hindu','Christian','Parsi']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value[0].toUpperCase() + value.substring(1)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedCommunity = newValue!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Show peak hours
-            Row(
-              children: [
-                Checkbox(
-                  value: _showPeakHours,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _showPeakHours = value!;
-                    });
-                  },
-                  activeColor: const Color.fromARGB(255, 62, 113, 93),
-                ),
-                const Text('Show peak-hour chefs'),
-              ],
-            ),
+            
           ],
         ),
-      ),
+      )),
       actions: <Widget>[
         TextButton(
           child: const Text('Cancel', style: TextStyle(color: Colors.grey)),

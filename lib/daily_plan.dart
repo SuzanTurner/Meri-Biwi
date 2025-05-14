@@ -11,9 +11,9 @@ class HomeHelperApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'HomeHelper',
       theme: ThemeData(
-        primaryColor: const Color(0xFF6A9C89),
+        primaryColor: const Color(0xFFFEF54A),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6A9C89),
+          seedColor: const Color(0xFFFEF54A),
           secondary: const Color(0xFFF5E8C7),
         ),
         fontFamily: 'Poppins',
@@ -41,6 +41,8 @@ class Plan {
   final List<String> features;
   final String description;
   final IconData icon;
+  final List<String> benefits; // Added benefits
+  final List<String> pricingIncludes; // Added pricingIncludes
 
   Plan({
     required this.name,
@@ -51,6 +53,8 @@ class Plan {
     required this.features,
     required this.description,
     required this.icon,
+    this.benefits = const [],
+    this.pricingIncludes = const [],
   });
 }
 
@@ -62,45 +66,67 @@ class DailyPlan extends StatefulWidget {
 }
 
 class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
-  int _selectedPlanIndex = 0; // Default to the first remaining plan (Standard)
+  int _selectedPlanIndex = 0;
   late final TabController _tabController;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
 
-  final List<Plan> _plans = [
+    final List<Plan> _plans = [
     Plan(
       name: 'Standard',
       price: '49',
       duration: 'per day',
-      color: const Color(0xFF6A9C89),
-      lightColor: const Color(0xFFEFF8F4),
+      color: const Color(0xFFFEF54A),
+      lightColor: const Color(0xFFFFFAA5),
       features: [
-        'Two meals per day',
-        'Customized menu options',
-        'Premium ingredients',
-        'Same day booking',
-        'Dietary accommodations',
+        'Two meals per day for weekdays',
+        'Semi-custom menu',
+        'Sweets/snacks included',
+        'Access to festive menu',
+        'Weekly menu rotation',
+        'Customer support',
       ],
-      description: 'Our most popular plan for quality daily meal.',
+      description: 'A balanced meal solution for busy families.',
       icon: Icons.restaurant_menu,
+       benefits: [
+        'More variety',
+        'Healthy combinations',
+        'Reliable scheduling',
+      ],
+      pricingIncludes: [
+        'Includes GST',
+        'Free rescheduling x2/month',
+        'Doorstep delivery',
+      ],
     ),
     Plan(
       name: 'Premium',
       price: '79',
       duration: 'per day',
-      color: const Color(0xFF3C725E),
+      color: const Color(0xFFFEF54A),
       lightColor: const Color(0xFFE0F0E9),
       features: [
-        'Three meals per day',
-        'Gourmet menu options',
-        'Organic ingredients',
-        'Priority booking',
-        'Special dietary needs',
-        'Meal planning consultation',
-        'Leftover management',
+        'Three meals daily all week',
+        'Fully customizable',
+        'Chef-designed menus',
+        'Priority support',
+        'Desserts & snacks daily',
+        'Festive menus included',
+        'Nutrition tracking',
+        'Flexible pause option',
       ],
-      description: 'The ultimate experience with gourmet meals.',
+      description: 'Best suited for gourmet-style daily meals.',
       icon: Icons.stars_rounded,
+       benefits: [
+        'Maximum flexibility',
+        'Rich culinary experience',
+        'Premium customer care',
+      ],
+      pricingIncludes: [
+        'Includes GST',
+        'Priority chef availability',
+        'No additional service fee',
+      ],
     ),
   ];
 
@@ -217,7 +243,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.help_outline_rounded, color: Color(0xFF6A9C89)),
+                //child: const Icon(Icons.help_outline_rounded, color: Color(0xFF2E3C59)),
               ),
             ],
           ),
@@ -261,7 +287,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
           borderRadius: BorderRadius.circular(16),
           color: _plans[_selectedPlanIndex].color,
         ),
-        labelColor: Colors.white,
+        labelColor: const Color(0xFF2E3C59),
         unselectedLabelColor: const Color(0xFF5C6E6E),
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
@@ -282,7 +308,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildPlanDetails({Key? key}) {
+Widget _buildPlanDetails({Key? key}) {
     final plan = _plans[_selectedPlanIndex];
 
     return Padding(
@@ -310,7 +336,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                         color: plan.color.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(plan.icon, color: plan.color, size: 24),
+                      child: Icon(plan.icon, color: const Color(0xFF2E3C59), size: 24),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -321,7 +347,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: plan.color,
+                            color: const Color(0xFF2E3C59),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -329,7 +355,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                           plan.description,
                           style: TextStyle(
                             fontSize: 12,
-                            color: plan.color.withOpacity(0.8),
+                            color:const Color(0xFF2E3C59),
                           ),
                         ),
                       ],
@@ -348,7 +374,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                               color: plan.color.withOpacity(0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(Icons.check, color: plan.color, size: 16),
+                            child: Icon(Icons.check, color: const Color(0xFF2E3C59), size: 16),
                           ),
                           const SizedBox(width: 12),
                           Text(
@@ -410,7 +436,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: plan.color,
+                    color: const Color(0xFF2E3C59),
                   ),
                 ),
               ),
@@ -441,7 +467,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
-                          color: plan.color,
+                          color: const Color(0xFF2E3C59),
                         ),
                       ),
                       Text(
@@ -449,7 +475,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                         style: TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
-                          color: plan.color,
+                          color: const Color(0xFF2E3C59),
                         ),
                       ),
                       Padding(
@@ -466,29 +492,34 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: plan.color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.edit_document,
-                      size: 16,
-                      color: plan.color,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Terms & Conditions',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: plan.color,
+              GestureDetector(
+                onTap: () {
+                  _showTermsAndConditions(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: plan.color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.edit_document,
+                        size: 16,
+                        color: const Color(0xFF2E3C59),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        'Terms & Conditions',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF2E3C59),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -499,7 +530,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomButton() {
-    final plan = _plans[_selectedPlanIndex];
+      final plan = _plans[_selectedPlanIndex];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -546,9 +577,9 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                 ),
               );
               Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ChefProfilesPage()),
-    );            
+                context,
+                MaterialPageRoute(builder: (context) => ChefProfilesPage()),
+              );
             },
             child: Center(
               child: Row(
@@ -557,7 +588,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                   Text(
                     "Continue with ${plan.name}",
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: const Color(0xFF2E3C59),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -565,7 +596,7 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
                   const SizedBox(width: 8),
                   const Icon(
                     Icons.arrow_forward_rounded,
-                    color: Colors.white,
+                    color: const Color(0xFF2E3C59),
                   ),
                 ],
               ),
@@ -575,4 +606,246 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
       ),
     );
   }
+  void _showTermsAndConditions(BuildContext context) {
+    final plan = _plans[_selectedPlanIndex];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "${plan.name} Plan",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E3C59),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close, size: 24),
+                        color: Colors.grey[600],
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 24),
+                // Content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.description,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Features
+                        _buildTermSection(
+                          title: "Features",
+                          icon: Icons.check_circle_outline,
+                          color: Color(0xFF2E3C59),
+                          items: plan.features,
+                        ),
+
+                        // Benefits
+                        if (plan.benefits.isNotEmpty)
+                          _buildTermSection(
+                            title: "Benefits",
+                            icon: Icons.star_outline,
+                            color: Color(0xFF2E3C59),
+                            items: plan.benefits,
+                          ),
+
+                        // Pricing Includes
+                        if (plan.pricingIncludes.isNotEmpty)
+                          _buildTermSection(
+                            title: "Pricing Includes",
+                            icon: Icons.receipt_long,
+                            color: Color(0xFF2E3C59),
+                            items: plan.pricingIncludes,
+                          ),
+
+                        const SizedBox(height: 24),
+
+                        // Additional T&C (You can customize these for Daily Plan if needed)
+                        _buildTermsParagraph(
+                          title: "Payment Terms",
+                          content: "Payment is to be made in advance for the selected plan duration. All prices are inclusive of applicable taxes. Refunds are processed as per our refund policy within 5 working days for daily plans.",
+                        ),
+
+                        _buildTermsParagraph(
+                          title: "Cancellation Policy",
+                          content: "Customers can cancel their daily subscription with 24 hours notice. Pro-rated refunds will be processed for unused days. Cancellation fees may apply.",
+                        ),
+
+                        _buildTermsParagraph(
+                          title: "Service Delivery",
+                          content: "HomeEase guarantees daily delivery of meals as per the schedule. Any changes to the delivery schedule must be communicated at least 4 hours in advance.",
+                        ),
+
+                        const SizedBox(height: 36),
+                      ],
+                    ),
+                  ),
+                ),
+                // Button
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, -3),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: plan.color,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      "Confirm ${plan.name} Plan",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: const Color(0xFF2E3C59),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTermSection({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required List<String> items,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...items.map((item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "• ",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  Widget _buildTermsParagraph({required String title, required String content}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[800],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          content,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 }
+

@@ -19,8 +19,8 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
     'dinner': false,
   };
   String _purpose = 'daily';
-  bool _dishwashingRequired = true;
-  bool _childrenSpecial = false;
+  //bool _dishwashingRequired = true;
+  //bool _childrenSpecial = false;
   bool _kitchenPlatform = false;
 
   // Animation controller for the slide-in effect
@@ -28,7 +28,10 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
   late Animation<Offset> _slideAnimation;
 
   final _gradient = const LinearGradient(
-    colors: [Color(0xFF6A9C89), Color(0xFF4F7A6A)],
+    colors: [
+      //Color(0xFFFAFA99), 
+      Color(0xFFFAFA33),
+      Color(0xFFFAFA33)],
   );
 
   @override
@@ -254,10 +257,57 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                         _buildSubtitle(
                           'Add Services',
                           Icons.add,
-                          isSelected: _dishwashingRequired, // Apply gradient if dishwashing is required
+                          isSelected: _kitchenPlatform, // Apply gradient if dishwashing is required
                         ),
                         const SizedBox(height: 16),
                         GestureDetector(
+                          onTap: () => setState(() => _kitchenPlatform = !_kitchenPlatform),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(                      
+                                color: _kitchenPlatform
+                                    ? const Color(0xFF2E3C59)
+                                    : Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.cleaning_services,
+                                  color: _kitchenPlatform
+                                      ? const Color(0xFF2E3C59)
+                                      : Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Text(
+                                    'Kitchen platform cleaning',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: _kitchenPlatform,
+                                  onChanged: (value) {
+                                    setState(() => _kitchenPlatform = value);
+                                  },
+                                  activeColor: const Color(0xFFFAFA33)
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  /*GestureDetector(
                           onTap: () => setState(() => _dishwashingRequired = !_dishwashingRequired),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -346,53 +396,8 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                           ),
                         ),
                         //service3
-                        const SizedBox(height: 12),
-                        GestureDetector(
-                          onTap: () => setState(() => _kitchenPlatform = !_kitchenPlatform),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(                      
-                                color: _kitchenPlatform
-                                    ? const Color(0xFF6A9C89)
-                                    : Colors.grey.shade300,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.cleaning_services,
-                                  color: _kitchenPlatform
-                                      ? const Color(0xFF6A9C89)
-                                      : Colors.grey.shade500,
-                                ),
-                                const SizedBox(width: 16),
-                                const Expanded(
-                                  child: Text(
-                                    'Kitchen platform cleaning',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Switch(
-                                  value: _kitchenPlatform,
-                                  onChanged: (value) {
-                                    setState(() => _kitchenPlatform = value);
-                                  },
-                                  activeColor: const Color.fromARGB(255, 29, 95, 70)
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        //const SizedBox(height: 12),*/
+                        
 
                   const SizedBox(height: 36),
 
@@ -434,11 +439,11 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: Color(0xFF2E3C59),
                               ),
                             ),
                             SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, color: Colors.white),
+                            Icon(Icons.arrow_forward, color: Color(0xFF2E3C59)),
                           ],
                         ),
                       ),
@@ -469,7 +474,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
       children: [
         ShaderMask(
           shaderCallback: (bounds) => isSelected ? _gradient.createShader(bounds) : const LinearGradient(colors: [Colors.grey, Colors.grey]).createShader(bounds),
-          child: Icon(icon, color: isSelected ? Colors.white : Colors.grey.shade600),
+          child: Icon(icon, color: isSelected ? const Color(0xFF2E3C59) : Colors.grey.shade600),
         ),
         const SizedBox(width: 8),
         Text(
@@ -540,7 +545,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
             children: [
               Icon(
                 icon,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
+                color: isSelected ? Color(0xFF2E3C59) : Colors.grey.shade600,
                 size: 28,
               ),
               const SizedBox(height: 8),
@@ -549,7 +554,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                  color: isSelected ? Color(0xFF2E3C59) : Colors.grey.shade600,
                 ),
               ),
             ],
@@ -591,7 +596,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
               style: TextStyle(
                 fontSize: fontSize, // Use the determined fontSize
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
+                color: isSelected ? Color(0xFF2E3C59) : Colors.grey.shade600,
               ),
             ),
           ],
@@ -623,7 +628,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.grey.shade600,
+              color: isSelected ? Color(0xFF2E3C59) : Colors.grey.shade600,
               size: 28,
             ),
             const SizedBox(height: 8),
@@ -632,7 +637,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.grey.shade600,
+                color: isSelected ? const Color(0xFF2E3C59) : Colors.grey.shade600,
               ),
             ),
           ],

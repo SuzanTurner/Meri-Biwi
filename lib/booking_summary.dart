@@ -25,7 +25,6 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
   
   // Payment breakup
   final double basePrice = 1299.0;
-  final double serviceFee = 200.0;
   
   // For Maps - You would use actual coordinates
   /*final CameraPosition initialCameraPosition = const CameraPosition(
@@ -37,7 +36,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
     if (couponController.text.toUpperCase() == "FIRSTORDER") {
       setState(() {
         discount = 150.0;
-        finalAmount = basePrice + serviceFee - discount;
+        finalAmount = basePrice;
         isCouponApplied = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -487,7 +486,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
                           ),
                         ),
                         Text(
-                          "₹$basePrice",
+                          "₹$finalAmount",
                           style: const TextStyle(
                             fontWeight: FontWeight.w500,
                           ),
@@ -495,23 +494,7 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Service Fee",
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        Text(
-                          "₹$serviceFee",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                    
                     if (discount > 0) ...[
                       const SizedBox(height: 12),
                       Row(
