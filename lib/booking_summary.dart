@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 class ChefBookingSummaryPage extends StatefulWidget {
   const ChefBookingSummaryPage({Key? key}) : super(key: key);
@@ -9,6 +11,36 @@ class ChefBookingSummaryPage extends StatefulWidget {
 }
 
 class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
+  
+  LatLng? currentLocation;
+
+@override
+void initState() {
+  super.initState();
+  _getCurrentLocation();
+}
+
+Future<void> _getCurrentLocation() async {
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    await Geolocator.openLocationSettings();
+    return;
+  }
+
+  LocationPermission permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.deniedForever) return;
+  }
+
+  Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high);
+
+  setState(() {
+    currentLocation = LatLng(position.latitude, position.longitude);
+  });
+}
+
   bool termsAccepted = false;
   final TextEditingController noteController = TextEditingController();
   final TextEditingController couponController = TextEditingController();
@@ -274,16 +306,53 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            "123, Green Park, New Delhi, 110016",
-                            style: TextStyle(
-                              color: Colors.grey.shade800,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+  currentLocation != null
+      ? "${currentLocation!.latitude.toStringAsFixed(2)}, ${currentLocation!.longitude.toStringAsFixed(2)}"
+      : "Fetching location...",
+  style: TextStyle(
+    color: Colors.grey.shade800,
+    fontWeight: FontWeight.w500,
+  ),
+),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 160),
+                    const SizedBox(height: 16),
+ClipRRect(
+  borderRadius: BorderRadius.circular(12),
+  child: SizedBox(
+    height: 200,
+    width: double.infinity,
+    child: FlutterMap(
+      options: MapOptions(
+        initialCenter: currentLocation ?? const LatLng(21.1458, 79.0882), // Default to Nagpur
+        initialZoom: 10.0,
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          subdomains: ['a', 'b', 'c'],
+          userAgentPackageName: 'com.example.app',
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              width: 80,
+              height: 80,
+              point: currentLocation ?? const LatLng(21.1458, 79.0882), // Default to Nagpur
+              child: const Icon(
+                Icons.location_pin,
+                color: Colors.red,
+                size: 40,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+),
+
                     /*ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: SizedBox(
