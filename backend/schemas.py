@@ -4,6 +4,7 @@ class Veg_Breakfast_Lunch_Base(BaseModel):
     food_type : str
     plan_type : str   # Basic, Standard, Premium
     num_people : int
+    meal_combo : str 
     frequency : str
     duration : str
     price : float

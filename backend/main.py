@@ -20,16 +20,19 @@ def create_veg_breakfast_lunch(veg_breakfast_lunch: schemas.Veg_Breakfast_Lunch,
 
 @app.get("/Veg_Breakfast_Lunch/{veg_breakfast_lunch_id}", response_model=schemas.Veg_Breakfast_Lunch)
 def get_veg_breakfast_lunch_by_id(veg_breakfast_lunch_id: int, db: Session = Depends(get_db)):
-    return services.get_veg_breakfast_lunch_by_id(db, veg_breakfast_lunch_id)
+    get_item = services.get_v_breakfast_lunch(db, veg_breakfast_lunch_id)
+    if  not get_item:
+        raise HTTPException(status_code=404, detail="This id does not exist")
+    return get_item
 
 @app.put("/Veg_Breakfast_Lunch/{veg_breakfast_lunch_id}", response_model=schemas.Veg_Breakfast_Lunch)
-def update_veg_breakfast_lunch(veg_breakfast_lunch_id: int, veg_breakfast_lunch: schemas.Veg_Breakfast_Lunch, db: Session = Depends(get_db)):
-    return services.update_veg_breakfast_lunch(db, veg_breakfast_lunch_id, veg_breakfast_lunch)
+def update_veg_breakfast_lunch(veg_breakfast_lunch_id: int, veg_breakfast_lunch: schemas.Veg_Breakfast_Lunch_Create, db: Session = Depends(get_db)):
+    return services.update_v_breakfast_lunch(db, veg_breakfast_lunch_id, veg_breakfast_lunch)
 
 @app.delete("/Veg_Breakfast_Lunch/{veg_breakfast_lunch_id}", response_model=schemas.Veg_Breakfast_Lunch)
 def delete_veg_breakfast_lunch(veg_breakfast_lunch_id: int, db: Session = Depends(get_db)):
     deleted_item = services.delete_veg_breakfast_lunch(db, veg_breakfast_lunch_id)
     if not deleted_item:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="This id does not exist")
     return deleted_item
 

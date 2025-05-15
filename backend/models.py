@@ -8,6 +8,7 @@ class V_Breakfast_Lunch(Base):
     food_type = Column(String, default="Veg")  # constant for this sheet
     plan_type = Column(String, index=True)     # Basic, Standard, Premium
     num_people = Column(Integer, index=True)   
+    meal_combo = Column(String, nullable=False)
     frequency = Column(String)
     duration = Column(String)
     price = Column(Float)
