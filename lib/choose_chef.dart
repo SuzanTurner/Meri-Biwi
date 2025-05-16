@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:home_ease/booking_summary.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:home_ease/booking_summary.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChefProfilesPage extends StatefulWidget {
   const ChefProfilesPage({Key? key}) : super(key: key);
@@ -10,23 +12,19 @@ class ChefProfilesPage extends StatefulWidget {
   _ChefProfilesPageState createState() => _ChefProfilesPageState();
 }
 
-class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerProviderStateMixin {
-  // Chef preferences state
+class _ChefProfilesPageState extends State<ChefProfilesPage>
+    with SingleTickerProviderStateMixin {
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
-  String _genderPreference = 'Female';
+  String _genderPreference = 'any';
   String _timePreference = 'any';
   String _communityPreference = 'any';
-  bool _showPeakHours = false;
-  
-  // Animation controller for scrolling effects
+  TimeOfDay _selectedTime = TimeOfDay(hour: 12, minute: 0);
+
   late AnimationController _animationController;
-  
-  
-  // Mock data for chefs
   List<Map<String, dynamic>> _chefs = [];
   bool _isLoading = false;
   int _currentPage = 0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -34,117 +32,95 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    
-    
-    // Show preferences dialog after build
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPreferencesDialog();
     });
-    
-    // Initialize with first batch of chefs
+
     _loadChefs();
   }
-  
- 
-  
-  void _loadChefs() {
-  if (_isLoading) return;
 
-  setState(() {
-    _isLoading = true;
-  });
-
-  // Simulate API call with delay
-  Future.delayed(const Duration(milliseconds: 800), () {
-    // Generate some mock chef data using local assets
-    final newChefs = List.generate(8, (index) {
-      final actualIndex = _currentPage * 8 + index;
-      return {
-        'id': actualIndex,
-        'name': 'Chef ${_getRandomName()}',
-        'image': 'assets/chefs/person icon.jpeg', // Assuming you have at least 10 chef images
-        'rating': 3.5 + (actualIndex % 3) * 0.5,
-        'speciality': _getRandomSpeciality(),
-        'experience': '${2 + (actualIndex % 15)} years',
-        'bio': 'Passionate chef specializing in ${_getRandomSpeciality()}. '
-            'Bringing creative flavors to your table with attention to detail '
-            'and culinary excellence.',
-        'languages': _getRandomLanguages(),
-      };
-    });
+  Future<void> _loadChefs() async {
+    if (_isLoading) return;
 
     setState(() {
-      _chefs.addAll(newChefs);
-      _currentPage++;
-      _isLoading = false;
+      _isLoading = true;
     });
-  });
-}
-  
-  // Mock data generators
-  String _getRandomName() {
-    final names = ['Sarah', 'Michael', 'Priya', 'Raj', 'Emma', 'Ahmed', 'Liu', 'Isabella', 'Jamal', 'Sophia', 'Arjun', 'Maria'];
-    final surnames = ['Smith', 'Patel', 'Wong', 'Ali', 'Johnson', 'Kumar', 'Garcia', 'Chen', 'Rossi', 'Singh', 'Lopez', 'Sato'];
-    return '${names[DateTime.now().microsecond % names.length]} ${surnames[DateTime.now().millisecond % surnames.length]}';
-  }
-  
-  String _getRandomSpeciality() {
-    final specialities =[
-  'Jain',
-  'Marwadi',
-  'Hindu',
-  'Muslim',
-  'Parsi',
-  'Christian',
-  'Buddhist'
-];
-    return specialities[DateTime.now().millisecond % specialities.length];
-  }
-  
-  List<String> _getRandomLanguages() {
-    final allLanguages = ['English', 'Hindi', 'Marathi','Gujrati', 'Arbi', 'Telugu'];
-    final count = 1 + (DateTime.now().millisecond % 3);
-    final languages = <String>[];
-    
-    for (int i = 0; i < count; i++) {
-      final language = allLanguages[DateTime.now().microsecond % allLanguages.length];
-      if (!languages.contains(language)) {
-        languages.add(language);
+
+    try {
+      var query = Supabase.instance.client.from('chef').select();
+
+      if (_genderPreference != 'any') {
+        query = query.eq('gender', _genderPreference);
       }
+      if (_communityPreference != 'any') {
+        query = query.eq('community', _communityPreference);
+      }
+
+      final List<dynamic> data =
+          await query.range(_currentPage * 8, _currentPage * 8 + 7);
+
+      setState(() {
+        _chefs.addAll(data.map((chef) {
+          return {
+            'id': chef['id'],
+            'name': chef['name'],
+            'image': chef['image'],
+            'rating': chef['rating'] ?? 0.0,
+            'experience': chef['experience'] ?? '',
+            'bio': chef['bio'] ?? '',
+            'languages': chef['languages'] != null
+                ? (chef['languages'] is String
+                    ? chef['languages'].split(',').map((e) => e.trim()).toList()
+                    : List<String>.from(chef['languages']))
+                : <String>[],
+            'community': chef['community'] ?? '',
+            'speciality': chef['speciality'] ?? chef['community'] ?? '',
+            'gender': chef['gender'] ?? '',
+          };
+        }).toList());
+        _currentPage++;
+      });
+    } catch (e) {
+      print('Exception fetching chefs: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    
-    return languages;
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   void _showPreferencesDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => PreferencesDialog(
-        onSubmit: (startDate, gender, timePreference, community, showPeakHours) {
+        initialStartDate: _startDate,
+        initialGender: _genderPreference,
+        initialTime: _timePreference,
+        initialCommunity: _communityPreference,
+        onSubmit: (startDate, gender, timePreference, community, selectedTime) {
           setState(() {
             _startDate = startDate;
             _genderPreference = gender;
             _timePreference = timePreference;
             _communityPreference = community;
-            _showPeakHours = showPeakHours;
-            
-            // Reset and reload chefs based on new preferences
+            _selectedTime = selectedTime;
             _chefs = [];
             _currentPage = 0;
-            _loadChefs();
           });
+          _loadChefs();
         },
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,63 +145,59 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       ),
       body: Column(
         children: [
-          // Active filters display
-          if (_genderPreference != 'any' || _timePreference != 'any' || _communityPreference != 'any')
+          if (_genderPreference != 'any' ||
+              _timePreference != 'any' ||
+              _communityPreference != 'any')
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: const Color(0xFFFEF54A).withOpacity(0.06),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     _filterChip(
-                      label: 'Date: ${DateFormat('MMM d, yyyy').format(_startDate)}',
+                      label:
+                          'Date: ${DateFormat('MMM d, yyyy').format(_startDate)}',
                       icon: Icons.calendar_today,
+                    ),
+                    _filterChip(
+                      label: 'Time: ${_selectedTime.format(context)}',
+                      icon: Icons.access_time,
                     ),
                     if (_genderPreference != 'any')
                       _filterChip(
-                        label: 'Gender: ${_genderPreference[0].toUpperCase() + _genderPreference.substring(1)}',
-                        icon: _genderPreference == 'male' ? Icons.male : Icons.female,
-                      ),
-                    if (_timePreference != 'any')
-                      _filterChip(
-                        label: 'Time: ${_timePreference[0].toUpperCase() + _timePreference.substring(1)}',
-                        icon: Icons.access_time,
+                        label:
+                            'Gender: ${_genderPreference[0].toUpperCase() + _genderPreference.substring(1)}',
+                        icon: _genderPreference == 'male'
+                            ? Icons.male
+                            : Icons.female,
                       ),
                     if (_communityPreference != 'any')
                       _filterChip(
-                        label: 'Community: ${_communityPreference[0].toUpperCase() + _communityPreference.substring(1)}',
+                        label:
+                            'Community: ${_communityPreference[0].toUpperCase() + _communityPreference.substring(1)}',
                         icon: Icons.people,
-                      ),
-                    if (_showPeakHours)
-                      _filterChip(
-                        label: 'Peak Hours',
-                        icon: Icons.trending_up,
-                        color: Colors.amber[700],
                       ),
                   ],
                 ),
               ),
             ),
-          
-          // Chef grid
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                // Determine number of columns based on screen width
                 final double width = constraints.maxWidth;
-                int crossAxisCount = 2; // Default for phones
-                
-                if (width > 600) crossAxisCount = 3; // Tablets
-                if (width > 900) crossAxisCount = 4; // Large tablets/desktop
-                
+                int crossAxisCount = 2;
+                if (width > 600) crossAxisCount = 3;
+                if (width > 900) crossAxisCount = 4;
+
                 return RefreshIndicator(
                   onRefresh: () async {
                     setState(() {
                       _chefs = [];
                       _currentPage = 0;
                     });
-                    _loadChefs();
+                    await _loadChefs();
                   },
                   color: const Color.fromARGB(255, 62, 113, 93),
                   child: CustomScrollView(
@@ -234,7 +206,8 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                       SliverPadding(
                         padding: const EdgeInsets.all(16),
                         sliver: SliverGrid(
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             childAspectRatio: 0.75,
                             crossAxisSpacing: 16,
@@ -242,18 +215,14 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                              if (index >= _chefs.length) {
-                                return null;
-                              }
-                              
+                              if (index >= _chefs.length) return null;
+
                               final chef = _chefs[index];
-                              
-                              // Add staggered animation to chef cards
                               return AnimatedBuilder(
                                 animation: _animationController,
                                 builder: (context, child) {
-                                  // Calculate delay based on position
-                                  final delay = index % (crossAxisCount * 2) * 0.1;
+                                  final delay =
+                                      index % (crossAxisCount * 2) * 0.1;
                                   final animation = CurvedAnimation(
                                     parent: _animationController,
                                     curve: Interval(
@@ -262,9 +231,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                                       curve: Curves.easeOutQuart,
                                     ),
                                   );
-                                  
                                   _animationController.forward();
-                                  
                                   return FadeTransition(
                                     opacity: animation,
                                     child: SlideTransition(
@@ -288,7 +255,8 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                                 padding: const EdgeInsets.all(16.0),
                                 alignment: Alignment.center,
                                 child: const CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color.fromARGB(255, 62, 113, 93)),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color.fromARGB(255, 62, 113, 93)),
                                 ),
                               )
                             : const SizedBox.shrink(),
@@ -303,8 +271,9 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       ),
     );
   }
-  
-  Widget _filterChip({required String label, required IconData icon, Color? color}) {
+
+  Widget _filterChip(
+      {required String label, required IconData icon, Color? color}) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -312,7 +281,9 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
         color: color ?? const Color(0xFFEDF7ED),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color != null ? color.withOpacity(0.3) : const Color(0xFF2E3C59).withOpacity(0.3),
+          color: color != null
+              ? color.withOpacity(0.3)
+              : const Color(0xFF2E3C59).withOpacity(0.3),
         ),
       ),
       child: Row(
@@ -335,7 +306,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       ),
     );
   }
-  
+
   Widget _buildChefCard(Map<String, dynamic> chef) {
     return GestureDetector(
       onTap: () => _showChefDetails(chef),
@@ -354,56 +325,19 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Chef image
             Expanded(
-  flex: 5,
-  child: Container(
-    decoration: BoxDecoration(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      image: DecorationImage(
-        image: AssetImage(chef['image']), // Use AssetImage here
-        fit: BoxFit.cover,
-      ),
-    ),
-                child: Stack(
-                  children: [
-                    // Add peak hour badge if applicable
-                    if (_showPeakHours && chef['id'] % 3 == 0)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.amber[700],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.bolt,
-                                color: Colors.white,
-                                size: 14,
-                              ),
-                              SizedBox(width: 2),
-                              Text(
-                                'Peak',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
+              flex: 5,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(16)),
+                  image: DecorationImage(
+                    image: NetworkImage(chef['image']),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
-            // Chef info
             Expanded(
               flex: 3,
               child: Padding(
@@ -421,19 +355,10 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      chef['speciality'],
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                     Row(
                       children: [
                         RatingBar.builder(
-                          initialRating: chef['rating'],
+                          initialRating: (chef['rating'] as num).toDouble(),
                           minRating: 1,
                           direction: Axis.horizontal,
                           allowHalfRating: true,
@@ -465,361 +390,329 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
       ),
     );
   }
-  
+
+  // --- UPDATED CHEF DETAILS MODAL WITH CIRCLEAVATAR AND YELLOW BG ---
   void _showChefDetails(Map<String, dynamic> chef) {
+    bool _showPeakHours = true;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        builder: (context, scrollController) {
-          return Container(
+      builder: (context) => Stack(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 60),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                  left: 20, right: 20, top: 60, bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Name, rating, badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Chef header with image
-                      Stack(
-                        clipBehavior: Clip.none,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Banner background
-                          Container(
-                            height: 120,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFFFEF54A),
-                                  const Color(0xFFFEF54A),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                          Text(
+                            chef['name'],
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          // Chef image
-                          Positioned(
-  left: 20,
-  top: 60,
-  child: Container(
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(color: Colors.white, width: 4),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 10,
-          spreadRadius: 2,
-        ),
-      ],
-    ),
-    child: CircleAvatar(
-      radius: 60,
-      backgroundImage: AssetImage(chef['image']), // Use AssetImage here
-    ),
-  ),
-),
-                          
-                          // Handle
-                          Positioned(
-                            top: 10,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Container(
-                                width: 40,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(10),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              RatingBar.builder(
+                                initialRating:
+                                    (chef['rating'] as num).toDouble(),
+                                minRating: 1,
+                                direction: Axis.horizontal,
+                                allowHalfRating: true,
+                                itemCount: 5,
+                                itemSize: 18,
+                                ignoreGestures: true,
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                                onRatingUpdate: (rating) {},
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${chef['rating']}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
-                      
-                      // Chef info
                       Container(
-                        padding: const EdgeInsets.only(left: 20, right: 20, top: 60, bottom: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      chef['name'],
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        RatingBar.builder(
-                                          initialRating: chef['rating'],
-                                          minRating: 1,
-                                          direction: Axis.horizontal,
-                                          allowHalfRating: true,
-                                          itemCount: 5,
-                                          itemSize: 18,
-                                          ignoreGestures: true,
-                                          itemBuilder: (context, _) => const Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                          ),
-                                          onRatingUpdate: (rating) {},
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '${chef['rating']}',
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: const Color.fromARGB(255, 62, 113, 93).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            
-                            const SizedBox(height: 16),
-                            
-                            // Speciality and experience
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _infoCard(
-                                    icon: Icons.restaurant,
-                                    title: 'Community',
-                                    value: chef['speciality'],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _infoCard(
-                                    icon: Icons.work,
-                                    title: 'Experience',
-                                    value: chef['experience'],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // About section
-                            const Text(
-                              'About',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              chef['bio'],
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey[700],
-                                height: 1.5,
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Languages
-                            const Text(
-                              'Languages',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: chef['languages'].map<Widget>((language) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Colors.grey[300]!,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    language,
-                                    style: TextStyle(
-                                      color: Colors.grey[800],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Availability
-                            const Text(
-                              'Availability',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[50],
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.grey[200]!,
-                                ),
-                              ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_today,
-                                        size: 16,
-                                        color: Color(0xFF2E3C59),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Available from ${DateFormat('MMM d, yyyy').format(_startDate)}',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.access_time,
-                                        size: 16,
-                                        color: Color(0xFF2E3C59),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        'Flexible hours',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (_showPeakHours && chef['id'] % 3 == 0) ...[
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.amber[50],
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.amber[100]!),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.warning_amber_rounded,
-                                            color: Colors.amber[700],
-                                            size: 18,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              'Peak hour surcharge applies during 6-9 PM on weekdays',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.amber[900],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 80), // Space for booking button
-                          ],
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 62, 113, 93)
+                              .withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          chef['speciality'] ?? chef['community'] ?? '',
+                          style: const TextStyle(
+                            color: Color.fromARGB(255, 62, 113, 93),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                
-                // Floating booking button
-                Positioned(
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ChefBookingSummaryPage()),
-    );
-  },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFEF54A),
-                      foregroundColor: Color(0xFF2E3C59),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 16),
+
+                  // Speciality and experience
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _infoCard(
+                          icon: Icons.restaurant,
+                          title: 'Community',
+                          value: chef['speciality'] ?? chef['community'] ?? '',
+                        ),
                       ),
-                      elevation: 4,
-                    ),
-                    child: const Text(
-                      'Book This Chef',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _infoCard(
+                          icon: Icons.work,
+                          title: 'Experience',
+                          value: chef['experience'],
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // About section
+                  const Text(
+                    'About',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    chef['bio'],
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.grey[700],
+                      height: 1.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Languages
+                  const Text(
+                    'Languages',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: (chef['languages'] as List)
+                        .map<Widget>((language) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                          ),
+                        ),
+                        child: Text(
+                          language,
+                          style: TextStyle(
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Availability
+                  const Text(
+                    'Availability',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey[200]!,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 16,
+                              color: Color(0xFF2E3C59),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Available from ${DateFormat('MMM d, yyyy').format(_startDate)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Color(0xFF2E3C59),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Flexible hours',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_showPeakHours && chef['id'] % 3 == 0) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.amber[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.amber[100]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Colors.amber[700],
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                const Expanded(
+                                  child: Text(
+                                    'Peak hour surcharge applies during 6-9 PM on weekdays',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.amber,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
-          );
-        },
+          ),
+          // Chef Image in CircleAvatar with yellow background, floating above modal
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 110,
+                height: 110,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF54A),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 52,
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: NetworkImage(chef['image']),
+                ),
+              ),
+            ),
+          ),
+          // Floating booking button
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ChefBookingSummaryPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFEF54A),
+                foregroundColor: const Color(0xFF2E3C59),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 4,
+              ),
+              child: const Text(
+                'Book This Chef',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-  
-  Widget _infoCard({required IconData icon, required String title, required String value}) {
+
+  Widget _infoCard(
+      {required IconData icon, required String title, required String value}) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -840,9 +733,9 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
               const SizedBox(width: 4),
               Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -864,166 +757,275 @@ class _ChefProfilesPageState extends State<ChefProfilesPage> with SingleTickerPr
   }
 }
 
-class PreferencesDialog extends StatefulWidget {
-  final Function(DateTime, String, String, String, bool) onSubmit;
+// Dummy Booking Summary Page (replace with real one)
 
-  const PreferencesDialog({Key? key, required this.onSubmit}) : super(key: key);
+
+// PreferencesDialog with original (white) colors
+class PreferencesDialog extends StatefulWidget {
+  final DateTime initialStartDate;
+  final String initialGender;
+  final String initialTime;
+  final String initialCommunity;
+  final void Function(DateTime, String, String, String, TimeOfDay) onSubmit;
+
+  const PreferencesDialog({
+    Key? key,
+    required this.initialStartDate,
+    required this.initialGender,
+    required this.initialTime,
+    required this.initialCommunity,
+    required this.onSubmit,
+  }) : super(key: key);
 
   @override
-  _PreferencesDialogState createState() => _PreferencesDialogState();
+  State<PreferencesDialog> createState() => _PreferencesDialogState();
 }
 
 class _PreferencesDialogState extends State<PreferencesDialog> {
-  late DateTime _selectedDate;
-  String _selectedGender = 'female';
-  String _selectedTime = 'any';
-  String _selectedCommunity = 'any';
-  bool _showPeakHours = false;
+  late DateTime _startDate;
+  late String _gender;
+  late String _time;
+  late String _community;
+  late TimeOfDay _selectedTime;
+
+  final List<String> _genders = ['any', 'male', 'female'];
+  final List<String> _communities = [
+    'any',
+    'jain',
+    'marwadi',
+    'hindu',
+    'muslim',
+    'parsi',
+    'christian',
+    'buddhist'
+  ];
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now().add(const Duration(days: 1));
+    _startDate = widget.initialStartDate;
+    _gender = widget.initialGender;
+    _time = widget.initialTime;
+    _community = widget.initialCommunity;
+    _selectedTime = TimeOfDay(hour: 12, minute: 0); // Default time
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  void _showDatePicker() {
+    showDialog(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now().add(const Duration(days: 1)),
-      lastDate: DateTime(DateTime.now().year + 1),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color.fromARGB(255, 62, 113, 93),
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: const Color.fromARGB(255, 62, 113, 93), // button text color
-              ),
+      builder: (context) {
+        DateTime tempPickedDate = _startDate;
+        return AlertDialog(
+          title: const Text('Select Date'),
+          content: SizedBox(
+            height: 180,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.date,
+              initialDateTime: _startDate,
+              minimumDate: DateTime.now(),
+              maximumDate: DateTime.now().add(const Duration(days: 365)),
+              onDateTimeChanged: (newDate) {
+                tempPickedDate = newDate;
+              },
             ),
           ),
-          child: child!,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _startDate = tempPickedDate;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Select'),
+            ),
+          ],
         );
       },
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
+  }
+
+  void _showTimePicker() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        TimeOfDay tempPickedTime = _selectedTime;
+        return AlertDialog(
+          title: const Text('Select Time'),
+          content: SizedBox(
+            height: 180,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.time,
+              initialDateTime: DateTime(
+                0,
+                0,
+                0,
+                _selectedTime.hour,
+                _selectedTime.minute,
+              ),
+              use24hFormat: false,
+              onDateTimeChanged: (newTime) {
+                tempPickedTime = TimeOfDay(hour: newTime.hour, minute: newTime.minute);
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _selectedTime = tempPickedTime;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Select'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Filter Chef Preferences'),
-      content: SizedBox( // set width of the alert dialog
-        width: MediaQuery.of(context).size.width * 1.0,
-        height: MediaQuery.of(context).size.height*0.7,
-        child: 
-        SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Date selection
-            const Text('Select Date:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            InkWell(
-              onTap: () => _selectDate(context),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today, color: Color.fromARGB(255, 62, 113, 93)),
-                ),
-                child: Text(
-                  DateFormat('MMM d, yyyy').format(_selectedDate),
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Gender preference
-            const Text('Gender Preference:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person, color: Color.fromARGB(255, 62, 113, 93)),
-              ),
-              value: _selectedGender,
-              items: <String>['any', 'male', 'female']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value[0].toUpperCase() + value.substring(1)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedGender = newValue!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-
-            // Time preference
-            const Text('Time Preference:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.access_time, color: Color.fromARGB(255, 62, 113, 93)),
-              ),
-              value: _selectedTime,
-              items: <String>['any', '6:00 am','7:00 am', '8:00 am', '9:00 am','10:00 am','11:00 am','12:00 am','1:00 pm','2:00 pm','3:00 pm','4:00 pm','5:00 pm','6:00 pm','7:00 pm','8:00 pm','9:00 pm','10:00 pm','11:00 pm','12:00 pm','1:00 am','2:00 am','3:00 am','4:00 am','5:00 am']
-                  .map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value[0].toUpperCase() + value.substring(1)),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedTime = newValue!;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            
-          ],
-        ),
-      )),
-      actions: <Widget>[
-        TextButton(
-          child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color.fromARGB(255, 62, 113, 93),
-            foregroundColor: Colors.white,
+Widget build(BuildContext context) {
+  return Dialog(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+    backgroundColor: Colors.white, // So inner containers control color
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Header (Dark Yellow)
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Color(0xFFFEF54A), // Dark Yellow
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          onPressed: () {
-            widget.onSubmit(
-              _selectedDate,
-              _selectedGender,
-              _selectedTime,
-              _selectedCommunity,
-              _showPeakHours,
-            );
-            Navigator.of(context).pop();
-          },
-          child: const Text('Apply Filters'),
+          padding: const EdgeInsets.all(16),
+          child: const Center(
+            child: Text(
+              'Chef Preferences',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+
+        // Body (Light Yellow)
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF54A).withOpacity(0.15), // Light Yellow
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+          ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Date picker
+                ListTile(
+                  leading: const Icon(Icons.calendar_today),
+                  title: Text('Start Date: ${DateFormat('MMM d, yyyy').format(_startDate)}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      _showDatePicker();
+                    },
+                  ),
+                ),
+
+                // Time picker
+                ListTile(
+                  leading: const Icon(Icons.access_time),
+                  title: Text('Time: ${_selectedTime.format(context)}'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      _showTimePicker();
+                    },
+                  ),
+                ),
+
+                // Gender dropdown
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text('Gender'),
+                  trailing: DropdownButton<String>(
+                    value: _gender,
+                    items: _genders
+                        .map((g) => DropdownMenuItem(
+                              value: g,
+                              child: Text(g[0].toUpperCase() + g.substring(1)),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _gender = val);
+                    },
+                  ),
+                ),
+
+                // Community dropdown
+                ListTile(
+                  leading: const Icon(Icons.people),
+                  title: const Text('Community'),
+                  trailing: DropdownButton<String>(
+                    value: _community,
+                    items: _communities
+                        .map((c) => DropdownMenuItem(
+                              value: c,
+                              child: Text(c[0].toUpperCase() + c.substring(1)),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setState(() => _community = val);
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      child: const Text('Cancel',style: TextStyle(color: Colors.black),),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      child: const Text('Apply'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFEF54A),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        widget.onSubmit(
+                            _startDate, _gender, _time, _community, _selectedTime);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ],
-    );
-  }
+    ),
+  );
 }
-//
+}

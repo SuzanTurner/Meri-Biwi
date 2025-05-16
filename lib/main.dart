@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:home_ease/login.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://hhginjabqhgalovkvboe.supabase.co', // replace with your project URL
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZ2luamFicWhnYWxvdmt2Ym9lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMzI2NzEsImV4cCI6MjA2MjgwODY3MX0.kVOdl_qGtEVLUCB6yc9yucuZp-qTl5GZIk5ywxCin2c', // replace with your anon key
+    url: 'https://hhginjabqhgalovkvboe.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZ2luamFicWhnYWxvdmt2Ym9lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcyMzI2NzEsImV4cCI6MjA2MjgwODY3MX0.kVOdl_qGtEVLUCB6yc9yucuZp-qTl5GZIk5ywxCin2c',
   );
 
   runApp(MyApp());

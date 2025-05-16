@@ -809,14 +809,6 @@ class _NonDailyPlanState extends State<NonDailyPlan> with TickerProviderStateMix
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               // Handle continue button tap
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Selected ${plan.name} plan!',
-                  ),
-                  backgroundColor: plan.color,
-                ),
-              );
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ChefProfilesPage()),

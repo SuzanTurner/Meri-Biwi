@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_ease/home_screen.dart';
 import 'getstarted.dart';
 
 class MyApp extends StatelessWidget {
@@ -221,8 +222,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {},
-                      child: const Text(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SignUpScreen()),
+    );
+  },                      child: const Text(
                         "Sign up",
                         style: TextStyle(
                           color: Colors.black,
@@ -238,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Log In Button
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFEF54A),
