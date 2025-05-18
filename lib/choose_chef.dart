@@ -685,7 +685,11 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChefBookingSummaryPage()),
+                      builder: (context) => ChefBookingSummaryPage(
+                        chef:chef,
+                        startDate: _startDate,
+                        selectedTime: _selectedTime,
+                      )),
                 );
               },
               style: ElevatedButton.styleFrom(

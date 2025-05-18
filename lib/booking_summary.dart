@@ -4,7 +4,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 class ChefBookingSummaryPage extends StatefulWidget {
-  const ChefBookingSummaryPage({Key? key}) : super(key: key);
+  final Map<String, dynamic> chef;
+  final DateTime startDate;
+  final TimeOfDay selectedTime;
+  
+
+  const ChefBookingSummaryPage({
+    Key? key,
+    required this.chef,
+    required this.startDate,
+    required this.selectedTime,
+    }) : super(key: key);
 
   @override
   State<ChefBookingSummaryPage> createState() => _ChefBookingSummaryPageState();
@@ -13,6 +23,14 @@ class ChefBookingSummaryPage extends StatefulWidget {
 class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
   
   LatLng? currentLocation;
+
+  String _monthName(int month) {
+  const months = [
+    '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+  return months[month];
+}
 
 @override
 void initState() {
@@ -48,12 +66,6 @@ Future<void> _getCurrentLocation() async {
   double finalAmount = 1499.0;
   double discount = 0.0;
   
-  // Chef details
-  final String chefName = "Chef Sarah";
-  final String chefSpecialty = "North Indian Cuisine";
-  final double rating = 4.8;
-  final String bookingDate = "24 April, 2025";
-  final String bookingTime = "7:00 PM - 10:00 PM";
   
   // Payment breakup
   final double basePrice = 1299.0;
@@ -131,9 +143,7 @@ Future<void> _getCurrentLocation() async {
                     CircleAvatar(
                       radius: 40,
                       backgroundColor: Colors.orange.shade50,
-                      backgroundImage: const NetworkImage(
-                        "https://via.placeholder.com/150",
-                      ),
+                      backgroundImage: NetworkImage(widget.chef['image']),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -141,21 +151,13 @@ Future<void> _getCurrentLocation() async {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            chefName,
+                            widget.chef['name'] ?? '',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            chefSpecialty,
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Icon(
@@ -165,7 +167,7 @@ Future<void> _getCurrentLocation() async {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                rating.toString(),
+                                (widget.chef['rating'] ?? '').toString(),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey.shade800,
@@ -224,7 +226,7 @@ Future<void> _getCurrentLocation() async {
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          bookingDate,
+                          "${widget.startDate.day} ${_monthName(widget.startDate.month)}, ${widget.startDate.year}",
                           style: TextStyle(
                             color: Colors.grey.shade800,
                             fontWeight: FontWeight.w500,
@@ -249,7 +251,7 @@ Future<void> _getCurrentLocation() async {
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          bookingTime,
+                          widget.selectedTime.format(context),
                           style: TextStyle(
                             color: Colors.grey.shade800,
                             fontWeight: FontWeight.w500,

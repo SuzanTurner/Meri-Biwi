@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:home_ease/home_screen.dart';
 import 'package:home_ease/login.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Add this
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -36,8 +37,68 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget { // <-- Change to StatefulWidget
   const SignUpScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  // Controllers for text fields
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  // Helper for showing SnackBar
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _signUp() async {
+    setState(() => isLoading = true);
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+
+      if (email.isEmpty || password.isEmpty) {
+        _showMessage('Please enter email and password');
+        setState(() => isLoading = false);
+        return;
+      }
+
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.user != null) {
+        _showMessage('Sign up successful!');
+        // Optionally, navigate to login screen after a delay:
+        // Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+        // });
+      } else {
+        _showMessage('Sign up failed');
+      }
+    } on AuthException catch (e) {
+      _showMessage(e.message);
+    } catch (e) {
+      _showMessage('Unexpected error: $e');
+    }
+    setState(() => isLoading = false);
+  }
+
+  @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +130,7 @@ class SignUpScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 30),
-                
+
                 // First Name and Last Name Row
                 Row(
                   children: [
@@ -86,6 +147,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           TextField(
+                            controller: firstNameController,
                             decoration: InputDecoration(
                               hintText: '',
                               border: OutlineInputBorder(
@@ -110,6 +172,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           TextField(
+                            controller: lastNameController,
                             decoration: InputDecoration(
                               hintText: '',
                               border: OutlineInputBorder(
@@ -122,9 +185,9 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Email Field
                 const Text(
                   'Email',
@@ -135,6 +198,7 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     hintText: '',
                     border: OutlineInputBorder(
@@ -142,9 +206,9 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Password Field
                 const Text(
                   'Password',
@@ -155,6 +219,7 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     hintText: '',
@@ -163,9 +228,8 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
                 // Already have an account? Log in
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -178,9 +242,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to login screen
                         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-
                       },
                       child: const Text(
                         "Log in",
@@ -192,15 +254,11 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                
                 const SizedBox(height: 25),
-                
+
                 // Sign Up Button
                 ElevatedButton(
-                  onPressed: () {Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );},
+                  onPressed: isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFEF54A), // Bright yellow
                     foregroundColor: Colors.black,
@@ -210,17 +268,21 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                        )
+                      : const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
-                
+
                 const SizedBox(height: 25),
-                
+
                 // Or sign up with Divider
                 Row(
                   children: [
@@ -238,9 +300,9 @@ class SignUpScreen extends StatelessWidget {
                     Expanded(child: Divider(color: Colors.grey[300])),
                   ],
                 ),
-                
+
                 const SizedBox(height: 25),
-                
+
                 // Social Sign Up Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -278,7 +340,7 @@ class SignUpScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    
+
                     // WhatsApp Button
                     Container(
                       width: 160,

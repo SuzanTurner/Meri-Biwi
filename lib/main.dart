@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:home_ease/login.dart';
+import 'package:home_ease/getstarted.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
@@ -163,7 +163,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF6FF00), // Bright yellow from screenshot
