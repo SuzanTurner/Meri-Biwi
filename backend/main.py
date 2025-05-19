@@ -7,8 +7,31 @@ from schemas import Meal, AdditionalService as AdditionalServiceSchema
 from services import get_meals, get_services
 from sqlalchemy import text
 from decimal import Decimal
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from routes import router
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+app.include_router(router)
+
+class UserDetails(BaseModel):
+    food_type: str  # Changed from dietary_preference
+    plan_type: str  # Changed from purpose
+    num_people: int  # Changed from people_count
+    basic_details: str  # Changed from meals
+    frequency: str = "8 Times/Month"  # Added default
+    duration: str = "1.5 Hour"  # Added default
+    kitchen_platform: bool
 
 @app.get("/meals", response_model=List[Meal])
 def get_meals_endpoint(db: Session = Depends(get_db)):
@@ -175,8 +198,111 @@ def calculate_total(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/save_details")
+async def save_details(details: UserDetails, db: Session = Depends(get_db)):
+    try:
+        # Store the details in the database or session
+        # For now, we'll just validate and process the data
+        if details.num_people < 1 or details.num_people > 10:
+            raise HTTPException(status_code=400, detail="Number of people must be between 1 and 10")
+        
+        # Convert food type to match database format
+        food_type = details.food_type.replace(" - ", "-").strip()
+        
+        # Get meal plans based on the details
+        meal_plans = db.query(Meals).filter(
+            Meals.food_type.ilike(f"%{food_type}%"),
+            Meals.num_people == details.num_people
+        ).all()
+        
+        if not meal_plans:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No meal plans found for {food_type} with {details.num_people} people"
+            )
+        
+        # Calculate base price considering kitchen platform
+        base_price = Decimal('0')
+        for meal in meal_plans:
+            base_price += meal.basic_price
+        
+        # Add kitchen platform cleaning cost if selected
+        if details.kitchen_platform:
+            kitchen_service = db.query(AdditionalService).filter(
+                AdditionalService.code == 'KP',
+                AdditionalService.food_type.ilike(f"%{food_type}%")
+            ).first()
+            
+            if kitchen_service:
+                price_field = getattr(kitchen_service, f'price_{details.num_people}')
+                if kitchen_service.is_percentage:
+                    base_price += (base_price * price_field / 100)
+                else:
+                    base_price += price_field
+        
+        return {
+            "status": "success",
+            "data": {
+                "food_type": details.food_type,
+                "plan_type": details.plan_type,
+                "num_people": details.num_people,
+                "basic_details": details.basic_details,
+                "frequency": details.frequency,
+                "duration": details.duration,
+                "kitchen_platform": details.kitchen_platform,
+                "base_price": float(base_price),
+                "available_plans": len(meal_plans)
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/meals", response_model=List[Meal])
+def get_meals_endpoint(
+    food_type: str = Query(..., description="Food type (vegetarian/non-vegetarian)"),
+    num_people: int = Query(..., ge=1, le=10, description="Number of people (1-10)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Clean up the food_type to match database format
+        food_type = food_type.replace(" - ", "-").strip()
+        
+        meals = db.query(Meals).filter(
+            Meals.food_type.ilike(f"%{food_type}%"),
+            Meals.num_people == num_people
+        ).all()
+        
+        if not meals:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No meal plans found for {food_type} with {num_people} people"
+            )
+        
+        return meals
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching meals: {str(e)}")
+
 if __name__ == "__main__":
+    # Configure logging
+    import logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler()
+        ]
+    )
+    
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info"
+    )
 
 
