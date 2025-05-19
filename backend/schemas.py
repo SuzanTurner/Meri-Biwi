@@ -1,20 +1,40 @@
 from pydantic import BaseModel
+from typing import List, Optional
+from decimal import Decimal
 
-class Veg_Breakfast_Lunch_Base(BaseModel):
-    food_type : str
-    plan_type : str   # Basic, Standard, Premium
-    num_people : int
-    meal_combo : str 
-    frequency : str
-    duration : str
-    price : float
+class AdditionalServiceBase(BaseModel):
+    code: str
+    name: str
+    is_percentage: bool
+    food_type: str
+    plan_type: str
+    meal_combo: str
+    price_1: Optional[Decimal] = None
+    price_2: Optional[Decimal] = None
+    price_3: Optional[Decimal] = None
+    price_4: Optional[Decimal] = None
+    price_5: Optional[Decimal] = None
+    price_6: Optional[Decimal] = None
+    price_7: Optional[Decimal] = None
 
-class Veg_Breakfast_Lunch_Create(Veg_Breakfast_Lunch_Base):
-    pass
+class AdditionalService(AdditionalServiceBase):
+    id: int
 
-class Veg_Breakfast_Lunch(Veg_Breakfast_Lunch_Base):
-    id : int
+    class Config:
+        from_attributes = True
 
-    class config():
-        # orm = True  # if version < 2.x
-        from_attribute = True
+class MealBase(BaseModel):
+    food_type: str
+    plan_type: str
+    num_people: int
+    basic_price: Decimal
+    basic_details: Optional[str] = None
+    frequency: Optional[str] = None
+    duration: Optional[str] = None
+
+class Meal(MealBase):
+    id: int
+    additional_services: List[AdditionalService] = []
+
+    class Config:
+        from_attributes = True 
