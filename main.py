@@ -6,6 +6,7 @@ from models import Meals, AdditionalService
 from schemas import Meal, AdditionalService as AdditionalServiceSchema
 from services import get_meals, get_services
 from sqlalchemy import text
+from decimal import Decimal
 
 app = FastAPI()
 
@@ -35,13 +36,16 @@ def calculate_total(
     db: Session = Depends(get_db)
 ):
     try:
-        num_key = min(num_people, 7)
-        price_col = f"price_{num_key}"
+        # Use the actual number of people for the price column
+        price_col = f"price_{num_people}"
 
         # Get base price
         base_query = text("""
             SELECT basic_price FROM meals 
-            WHERE food_type=:food_type AND plan_type=:plan_type AND num_people=:num_people AND basic_details=:meal_type
+            WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
+            AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type)) 
+            AND num_people=:num_people 
+            AND LOWER(TRIM(basic_details))=LOWER(TRIM(:meal_type))
         """)
         base_result = db.execute(base_query, {
             "food_type": food_type,
@@ -57,40 +61,115 @@ def calculate_total(
             )
             
         base_price = base_result[0]
-        total = base_price
+        total = Decimal(str(base_price))
 
         # Get additional services
         if services:
+            # Clean up the food_type to match database format
+            food_type = food_type.replace(" - ", "-").strip()
+            
             placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
             add_query = text(f"""
-                SELECT code, is_percentage, {price_col} FROM additional_services
-                WHERE food_type=:food_type AND plan_type=:plan_type AND meal_combo=:meal_type AND code IN ({placeholders})
+                SELECT DISTINCT ON (code) code, name, is_percentage, {price_col} as price 
+                FROM additional_services 
+                WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
+                AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
+                AND code IN ({placeholders})
+                ORDER BY code
             """)
             
             params = {
                 "food_type": food_type,
-                "plan_type": plan_type,
-                "meal_type": meal_type
+                "plan_type": plan_type
             }
             params.update({f"service{i}": service for i, service in enumerate(services)})
             
-            results = db.execute(add_query, params).fetchall()
+            try:
+                print(f"\nDEBUG: Query being executed:")
+                print(f"SQL: {add_query}")
+                print(f"Parameters: {params}")
+                print(f"Price column being used: {price_col}")
+                
+                # First, let's check if the service exists with these parameters
+                check_query = text("""
+                    SELECT code, name, {price_col} as price
+                    FROM additional_services 
+                    WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
+                    AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
+                    AND code = :service0
+                    ORDER BY {price_col}
+                """.format(price_col=price_col))
+                
+                check_results = db.execute(check_query, {
+                    "food_type": food_type,
+                    "plan_type": plan_type,
+                    "service0": services[0]
+                }).fetchall()
+                
+                print("\nDEBUG: Available services in database:")
+                for row in check_results:
+                    print(f"Code: {row[0]}, Name: {row[1]}, Price: {row[2]}")
+                
+                results = db.execute(add_query, params).fetchall()
+                print(f"\nQuery results: {results}")
+                print(f"Number of services found: {len(results)}")
 
-            for code, is_percent, price in results:
-                if is_percent:
-                    total += (base_price * price / 100)
-                else:
-                    total += price
+                if not results:
+                    print("WARNING: No additional services found in database for the given parameters")
+                    print(f"Food type: {food_type}")
+                    print(f"Plan type: {plan_type}")
+                    print(f"Meal type: {meal_type}")
+                    print(f"Services requested: {services}")
+                    return {
+                        "base_price": round(Decimal(str(base_price)), 2),
+                        "total_price": round(Decimal(str(base_price)), 2),
+                        "num_people": num_people,
+                        "food_type": food_type,
+                        "plan_type": plan_type,
+                        "meal_type": meal_type,
+                        "services": services,
+                        "message": "No matching services found"
+                    }
 
-        return {
-            "base_price": round(base_price, 2),
-            "total_price": round(total, 2),
-            "num_people": num_people,
-            "food_type": food_type,
-            "plan_type": plan_type,
-            "meal_type": meal_type,
-            "services": services
-        }
+                print(f"\nDEBUG: Price Calculation Details:")
+                print(f"Base Price: {base_price}")
+                total = Decimal(str(base_price))
+                print(f"Initial Total: {total}")
+
+                for row in results:
+                    code, name, is_percent, price = row
+                    print(f"\nProcessing service {code} ({name}):")
+                    print(f"Is Percentage: {is_percent}")
+                    print(f"Price Value: {price}")
+                    
+                    if is_percent:
+                        service_amount = (total * Decimal(str(price)) / Decimal('100'))
+                        print(f"Percentage Calculation: {total} * {price}% = {service_amount}")
+                        total += service_amount
+                    else:
+                        print(f"Adding Fixed Amount: {price}")
+                        total += Decimal(str(price))
+                    
+                    print(f"Running Total: {total}")
+
+                print(f"\nFinal Total: {total}")
+                print(f"Rounded Total: {round(total, 2)}")
+
+                return {
+                    "base_price": round(Decimal(str(base_price)), 2),
+                    "total_price": round(total, 2),
+                    "num_people": num_people,
+                    "food_type": food_type,
+                    "plan_type": plan_type,
+                    "meal_type": meal_type,
+                    "services": services
+                }
+            except Exception as e:
+                print(f"ERROR: {str(e)}")
+                print(f"Error type: {type(e)}")
+                import traceback
+                print(f"Traceback: {traceback.format_exc()}")
+                raise HTTPException(status_code=500, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:
