@@ -19,8 +19,6 @@ class Meals(Base):
     num_people = Column(Integer)
     basic_price = Column(Numeric)
     basic_details = Column(Text)
-    frequency = Column(Text)
-    duration = Column(Text)
 
     # Relationship to additional services
     additional_services = relationship(

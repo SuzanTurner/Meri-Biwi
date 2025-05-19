@@ -1,12 +1,29 @@
 from fastapi import APIRouter, Depends, HTTPException, Body, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import models
 import schemas
 from database import get_db
 from sqlalchemy import text
+from enum import Enum
+import json
+import logging
+from decimal import Decimal
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+class FoodType(str, Enum):
+    VEG = "Veg"
+    NON_VEG = "Non - Veg"
+
+class PlanType(str, Enum):
+    BASIC = "Basic"
+    STANDARD = "Standard"
+    PREMIUM = "Premium"
 
 @router.get("/meals/", response_model=List[schemas.Meal])
 def get_meals(
@@ -72,9 +89,7 @@ def create_meal(
             plan_type=meal.plan_type,
             num_people=meal.num_people,
             basic_price=meal.basic_price,
-            basic_details=meal.basic_details,
-            frequency=meal.frequency,
-            duration=meal.duration
+            basic_details=meal.basic_details
         )
         
         # Add additional services if any
@@ -99,71 +114,192 @@ def create_meal(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/calculate-total")
+@router.get("/calculate_total")
 def calculate_total(
-    food_type: str = Query(..., description="Food type (VEG/NON_VEG)"),
-    plan_type: str = Query(..., description="Plan type (BASIC/STANDARD/PREMIUM)"),
-    num_people: int = Query(..., ge=1, le=7, description="Number of people (1-7)"),
-    meal_type: str = Query(..., description="Meal type (BREAKFAST/LUNCH/DINNER/etc)"),
-    services: List[str] = Query([], description="List of service codes (A/B/C/D)"),
+    food_type: str,
+    plan_type: str,
+    num_people: int,
+    meal_type: str,
+    services: List[str] = Query([]),
     db: Session = Depends(get_db)
 ):
     try:
-        num_key = min(num_people, 7)
-        price_col = f"price_{num_key}"
-
+        logger.info("=== Request Details ===")
+        logger.info(f"Query Parameters: food_type={food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}")
+        
+        # Convert food type to match database format
+        db_food_type = food_type.replace(" - ", "-").strip()
+        logger.info(f"Converted food_type to: {db_food_type}")
+        
         # Get base price
         base_query = text("""
             SELECT basic_price FROM meals 
-            WHERE food_type=:food_type AND plan_type=:plan_type AND num_people=:num_people AND basic_details=:meal_type
+            WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
+            AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type)) 
+            AND num_people=:num_people 
+            AND LOWER(TRIM(basic_details))=LOWER(TRIM(:meal_type))
         """)
+        
+        logger.info("Executing base price query with parameters:")
+        logger.info(f"food_type={db_food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}")
+        
         base_result = db.execute(base_query, {
-            "food_type": food_type,
+            "food_type": db_food_type,
             "plan_type": plan_type,
             "num_people": num_people,
             "meal_type": meal_type
         }).fetchone()
         
         if not base_result:
+            logger.error("No matching meal plan found")
             raise HTTPException(
-                status_code=404, 
-                detail=f"No meal plan found for food_type={food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}"
+                status_code=404,
+                detail=f"No meal plan found for food_type={db_food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}"
             )
-            
+        
         base_price = base_result[0]
-        total = base_price
-
-        # Get additional services
+        total = Decimal(str(base_price))
+        
+        # Get additional services if any
         if services:
             placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
             add_query = text(f"""
-                SELECT code, is_percentage, {price_col} FROM additional_serives
-                WHERE food_type=:food_type AND plan_type=:plan_type AND meal_combo=:meal_type AND code IN ({placeholders})
+                SELECT code, name, is_percentage, price_{num_people} as price 
+                FROM additional_services 
+                WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
+                AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
+                AND code IN ({placeholders})
             """)
             
             params = {
-                "food_type": food_type,
-                "plan_type": plan_type,
-                "meal_type": meal_type
+                "food_type": db_food_type,
+                "plan_type": plan_type
             }
             params.update({f"service{i}": service for i, service in enumerate(services)})
             
+            logger.info("Executing additional services query with parameters:")
+            logger.info(f"Query: {add_query}")
+            logger.info(f"Parameters: {params}")
+            
             results = db.execute(add_query, params).fetchall()
-
-            for code, is_percent, price in results:
+            
+            logger.info("Additional services found:")
+            for code, name, is_percent, price in results:
+                logger.info(f"Service: {code} ({name})")
+                logger.info(f"Is Percentage: {is_percent}")
+                logger.info(f"Price: {price}")
+                
                 if is_percent:
-                    total += (base_price * price / 100)
+                    service_amount = (base_price * Decimal(str(price)) / Decimal('100'))
+                    logger.info(f"Percentage calculation: {base_price} * {price}% = {service_amount}")
+                    total += service_amount
                 else:
-                    total += price
-
-        return {
-            "base_price": round(base_price, 2),
-            "total_price": round(total, 2),
+                    logger.info(f"Adding fixed amount: {price}")
+                    total += Decimal(str(price))
+                
+                logger.info(f"Running total: {total}")
+        
+        response = {
+            "base_price": float(base_price),
+            "total_price": float(total),
             "num_people": num_people,
-            "food_type": food_type,
+            "food_type": db_food_type,
             "plan_type": plan_type,
             "meal_type": meal_type,
             "services": services
         }
+        
+        logger.info("=== Response ===")
+        logger.info(json.dumps(response, indent=2))
+        
+        return response
+        
     except Exception as e:
+        logger.error(f"Error in calculate_total: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/save_details")
+def save_details(
+    details: schemas.UserDetails,
+    db: Session = Depends(get_db)
+):
+    try:
+        logger.info("=== Saving User Details ===")
+        logger.info(f"Received details: {details.dict()}")
+
+        # Convert food type to match database format
+        db_food_type = FoodType.VEG.value if details.food_type.lower() in ["vegetarian", "veg"] else FoodType.NON_VEG.value
+        
+        # Convert plan type to match database format
+        plan_type = details.plan_type.capitalize()
+        if plan_type not in [pt.value for pt in PlanType]:
+            logger.error(f"Invalid plan type: {plan_type}")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid plan type. Must be one of: {', '.join([pt.value for pt in PlanType])}"
+            )
+
+        # Validate number of people
+        if not 1 <= details.num_people <= 7:
+            logger.error(f"Invalid number of people: {details.num_people}")
+            raise HTTPException(
+                status_code=400,
+                detail="Number of people must be between 1 and 7"
+            )
+
+        # Validate meal type format
+        valid_meal_types = [
+            "3 Meals {Breakfast+Tea & Lunch + Dinner}",
+            "2 Meals {Breakfast+Tea & Lunch}",
+            "1 Meal Lunch",
+            "1 Meal Dinner"
+        ]
+        
+        if details.basic_details not in valid_meal_types:
+            logger.warning(f"Invalid meal type: {details.basic_details}, defaulting to 2 Meals")
+            details.basic_details = "2 Meals {Breakfast+Tea & Lunch}"
+
+        # Get base price
+        base_query = text("""
+            SELECT basic_price FROM meals 
+            WHERE food_type=:food_type 
+            AND LOWER(plan_type)=LOWER(:plan_type) 
+            AND num_people=:num_people 
+            AND basic_details=:meal_type
+        """)
+        
+        base_result = db.execute(base_query, {
+            "food_type": db_food_type,
+            "plan_type": plan_type,
+            "num_people": details.num_people,
+            "meal_type": details.basic_details
+        }).fetchone()
+
+        if not base_result:
+            logger.error("No matching meal plan found")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No meal plan found for the provided details"
+            )
+
+        # Return success response with the details
+        response = {
+            "status": "success",
+            "data": {
+                "food_type": db_food_type,
+                "plan_type": plan_type,
+                "num_people": details.num_people,
+                "basic_details": details.basic_details,
+                "base_price": float(base_result[0]),
+                "available_plans": 24  # This could be calculated based on available plans
+            }
+        }
+
+        logger.info("=== Response ===")
+        logger.info(json.dumps(response, indent=2))
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Error in save_details: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 
