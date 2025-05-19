@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:home_ease/your_details.dart';
+import 'package:home_ease/your_details_clean.dart'; // Assuming you have this page
 
 class HomeScreen extends StatelessWidget {
   final List<String> topSliderImages = [
@@ -10,12 +11,12 @@ class HomeScreen extends StatelessWidget {
   ];
 
   final List<Map<String, String>> featuredServices = [
-    {"title": "Domestic help", "image": "assets/chef/domestic.jpg"},
-    {"title": "Babysitters/ Japas", "image": "assets/chef/babysitter.jpg"},
-    {"title": "Cooks", "image": "assets/chef/cook.jpg"},
-    {"title": "All-rounders", "image": "assets/chef/allrounder.jpg"},
-    {"title": "24 hrs - Full Time", "image": "assets/chef/fulltime.jpg"},
-    {"title": "24 Hrs - Japas", "image": "assets/chef/japas.jpg"},
+    {"title": "Domestic help", "image": "assets/chef/domestic.jpg", "route": "domestic_help"},
+    {"title": "Babysitters/ Japas", "image": "assets/chef/babysitter.jpg", "route": "babysitters"},
+    {"title": "Cooks", "image": "assets/chef/cook.jpg", "route": "cooks"},
+    {"title": "All-rounders", "image": "assets/chef/allrounder.jpg", "route": "all_rounders"},
+    {"title": "24 hrs - Full Time", "image": "assets/chef/fulltime.jpg", "route": "full_time"},
+    {"title": "24 Hrs - Japas", "image": "assets/chef/japas.jpg", "route": "japas"},
   ];
 
   final List<Map<String, String>> exploreBroomees = [
@@ -32,10 +33,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: "Bookings"),
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle), label: "Attendance"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.home,color: Color(0xFF2E3C59)), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.book,color: Color(0xFF2E3C59)), label: "Bookings"),
+          BottomNavigationBarItem(icon: Icon(Icons.check_circle,color: Color(0xFF2E3C59)), label: "Attendance"),
+          BottomNavigationBarItem(icon: Icon(Icons.person,color: Color(0xFF2E3C59)), label: "Profile"),
         ],
       ),
       body: SafeArea(
@@ -88,35 +89,41 @@ class HomeScreen extends StatelessWidget {
                     children: featuredServices.map((service) {
                       return GestureDetector(
                         onTap: () {
-        // Example: Navigate to a detail screen or print
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => YourDetails(),
-          ),
-        );
-
-        // Or use: print(service["title"]);
-      },
-                      
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            radius: 35,
-                            backgroundImage: AssetImage(service["image"]!),
-                          ),
-                          SizedBox(height: 5),
-                          SizedBox(
-                            width: 80,
-                            child: Text(
-                              service["title"]!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12),
+                          if (service["title"] == "Domestic help") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YourDetailsClean(),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YourDetails(),
+                              ),
+                            );
+                          }
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 35,
+                              backgroundImage: AssetImage(service["image"]!),
                             ),
-                          ),
-                        ],
-                      ));
+                            SizedBox(height: 5),
+                            SizedBox(
+                              width: 80,
+                              child: Text(
+                                service["title"]!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     }).toList(),
                   ),
                 ],

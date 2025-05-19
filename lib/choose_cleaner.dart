@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:home_ease/booking_summary.dart';
+import 'package:home_ease/booking_summary_clean.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class ChefProfilesPage extends StatefulWidget {
-  const ChefProfilesPage({Key? key}) : super(key: key);
+class CleanerProfilesPage extends StatefulWidget {
+  const CleanerProfilesPage({Key? key}) : super(key: key);
 
   @override
-  _ChefProfilesPageState createState() => _ChefProfilesPageState();
+  _CleanerProfilesPageState createState() => _CleanerProfilesPageState();
 }
 
-class _ChefProfilesPageState extends State<ChefProfilesPage>
+class _CleanerProfilesPageState extends State<CleanerProfilesPage>
     with SingleTickerProviderStateMixin {
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
-  String _genderPreference = 'female';
+  String _genderPreference = 'any';
   String _timePreference = 'any';
   String _communityPreference = 'any';
   TimeOfDay _selectedTime = TimeOfDay(hour: 12, minute: 0);
@@ -129,7 +129,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
         elevation: 0,
         backgroundColor: Colors.white,
         title: const Text(
-          'Find Your Chef',
+          'Find Your Domestic Helper',
           style: TextStyle(
             color: Color(0xFF2E3C59),
             fontWeight: FontWeight.bold,
@@ -177,7 +177,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                       _filterChip(
                         label:
                             'Community: ${_communityPreference[0].toUpperCase() + _communityPreference.substring(1)}',
-                        icon: Icons.groups,
+                        icon: Icons.people,
                       ),
                   ],
                 ),
@@ -685,7 +685,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChefBookingSummaryPage(
+                      builder: (context) => CleanerBookingSummary(
                         chef:chef,
                         startDate: _startDate,
                         selectedTime: _selectedTime,
@@ -702,7 +702,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                 elevation: 4,
               ),
               child: const Text(
-                'Book This Chef',
+                'Book This Helper',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -982,7 +982,7 @@ Widget build(BuildContext context) {
 
                 // Community dropdown
                 ListTile(
-                  leading: const Icon(Icons.groups),
+                  leading: const Icon(Icons.people),
                   title: const Text('Community'),
                   trailing: DropdownButton<String>(
                     value: _community,

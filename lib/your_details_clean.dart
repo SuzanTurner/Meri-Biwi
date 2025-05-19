@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:home_ease/your_plan.dart';
-import 'package:home_ease/daily_plan.dart';
+import 'package:home_ease/daily_plan_clean.dart';
+import 'package:home_ease/your_plan_clean.dart';
 
-class YourDetails extends StatefulWidget {
-  const YourDetails({Key? key}) : super(key: key);
+class YourDetailsClean extends StatefulWidget {
+  const YourDetailsClean({Key? key}) : super(key: key);
 
   @override
-  _YourDetailsState createState() => _YourDetailsState();
+  _YourDetailsCleanState createState() => _YourDetailsCleanState();
 }
 
-class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStateMixin {
+class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerProviderStateMixin {
   // Form state
-  String _dietaryPreference = 'vegetarian';
-  int _peopleCount = 2;
-  final Map<String, bool> _meals = {
-    'breakfast': true,
-    'lunch': true,
-    'dinner': false,
-  };
+  int _floorCount = 1;
+  int _bhk=2;
+  int _bathroomCount= 1;
+  
   String _purpose = 'daily';
-  //bool _dishwashingRequired = true;
-  //bool _childrenSpecial = false;
-  bool _kitchenPlatform = false;
+  bool _BathroomCleaning = false;
+  bool _DeepCleaning = false;
 
   // Animation controller for the slide-in effect
   late AnimationController _animationController;
@@ -65,7 +61,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: const Text(
-          'Your Cooking Details',
+          'Your Cleaning Details',
           style: TextStyle(
             color: Color(0xFF2E3C59),
             fontWeight: FontWeight.bold,
@@ -90,51 +86,15 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                   _buildSectionTitle('Tell us about your preferences'),
                   const SizedBox(height: 24),
 
-                  // Dietary Preference Card
-                  _buildCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSubtitle(
-                          'Dietary Preference',
-                          Icons.restaurant,
-                          isSelected: _dietaryPreference.isNotEmpty, // Apply gradient if any preference is selected
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            _buildSelectionButton(
-                              label: 'Vegetarian',
-                              isSelected: _dietaryPreference == 'vegetarian',
-                              onTap: () => setState(() => _dietaryPreference = 'vegetarian'),
-                              icon: Icons.spa,
-                              gradient: _gradient,
-                            ),
-                            const SizedBox(width: 16),
-                            _buildSelectionButton(
-                              label: 'Non-vegetarian',
-                              isSelected: _dietaryPreference == 'non-vegetarian',
-                              onTap: () => setState(() => _dietaryPreference = 'non-vegetarian'),
-                              icon: Icons.restaurant_menu,
-                              gradient: _gradient,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
                   // People Count Card
                   _buildCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSubtitle(
-                          'People at Home',
-                          Icons.people,
-                          isSelected: _peopleCount > 0, // Apply gradient if people count is greater than 0
+                          'Number of floors',
+                          Icons.layers_rounded,
+                          isSelected: _floorCount > 0, // Apply gradient if people count is greater than 0
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -142,8 +102,8 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                           children: [
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline, size: 32, color: Color(0xFF2E3C59)),
-                              onPressed: _peopleCount > 1
-                                  ? () => setState(() => _peopleCount--)
+                              onPressed: _floorCount > 1
+                                  ? () => setState(() => _floorCount--)
                                   : null,
                             ),
                             Container(
@@ -163,7 +123,7 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                               ),
                               child: Center(
                                 child: Text(
-                                  '$_peopleCount',
+                                  '$_floorCount',
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
@@ -174,8 +134,8 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                             ),
                             IconButton(
                               icon: const Icon(Icons.add_circle_outline, size: 32, color: Color(0xFF2E3C59)),
-                              onPressed: _peopleCount < 10
-                                  ? () => setState(() => _peopleCount++)
+                              onPressed: _floorCount < 10
+                                  ? () => setState(() => _floorCount++)
                                   : null,
                             ),
                           ],
@@ -186,35 +146,124 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
 
                   const SizedBox(height: 24),
 
-                  // Meals Card
                   _buildCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildSubtitle(
-                          'Meals per Day',
-                          Icons.dining,
-                          isSelected: _meals.values.any((element) => element), // Apply gradient if any meal is selected
+                          'Number of BHK',
+                          Icons.living_outlined,
+                          isSelected: _bhk > 0, // Apply gradient if people count is greater than 0
                         ),
                         const SizedBox(height: 16),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildMealToggle('Breakfast', 'breakfast', 
-                            //Icons.free_breakfast,
-                                gradient: _gradient),
-                            _buildMealToggle('Lunch', 'lunch', 
-                            //Icons.lunch_dining,
-                                gradient: _gradient),
-                            _buildMealToggle('Dinner', 'dinner', 
-                            //Icons.dinner_dining,
-                                gradient: _gradient),
-                          ],),
-                        ],
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, size: 32, color: Color(0xFF2E3C59)),
+                              onPressed: _bhk > 1
+                                  ? () => setState(() => _bhk--)
+                                  : null,
+                            ),
+                            Container(
+                              width: 80,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$_bhk',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E3C59),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, size: 32, color: Color(0xFF2E3C59)),
+                              onPressed: _bhk < 10
+                                  ? () => setState(() => _bhk++)
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
 
                   const SizedBox(height: 24),
 
+                  _buildCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSubtitle(
+                          'Number of Bathroom',
+                          Icons.bathroom_rounded,
+                          isSelected: _bathroomCount > 0, // Apply gradient if people count is greater than 0
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, size: 32, color: Color(0xFF2E3C59)),
+                              onPressed: _bathroomCount > 1
+                                  ? () => setState(() => _bathroomCount--)
+                                  : null,
+                            ),
+                            Container(
+                              width: 80,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$_bathroomCount',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2E3C59),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle_outline, size: 32, color: Color(0xFF2E3C59)),
+                              onPressed: _bathroomCount < 10
+                                  ? () => setState(() => _bathroomCount++)
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  
                   // Purpose Card
                   _buildCard(
                     child: Column(
@@ -257,18 +306,64 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                         _buildSubtitle(
                           'Add Services',
                           Icons.add,
-                          isSelected: _kitchenPlatform, // Apply gradient if dishwashing is required
+                          isSelected: _BathroomCleaning, // Apply gradient if dishwashing is required
                         ),
                         const SizedBox(height: 16),
                         GestureDetector(
-                          onTap: () => setState(() => _kitchenPlatform = !_kitchenPlatform),
+                          onTap: () => setState(() => _BathroomCleaning = !_BathroomCleaning),
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(                      
-                                color: _kitchenPlatform
+                                color: _BathroomCleaning
+                                    ? const Color(0xFF2E3C59)
+                                    : Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.bubble_chart_outlined,
+                                  color: _BathroomCleaning
+                                      ? const Color(0xFF2E3C59)
+                                      : Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Text(
+                                    'Bathroom Cleaning',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Switch(
+                                  value: _BathroomCleaning,
+                                  onChanged: (value) {
+                                    setState(() => _BathroomCleaning = value);
+                                  },
+                                  activeColor: const Color(0xFFFAFA33)
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        GestureDetector(
+                          onTap: () => setState(() => _DeepCleaning = !_DeepCleaning),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(                      
+                                color: _DeepCleaning
                                     ? const Color(0xFF2E3C59)
                                     : Colors.grey.shade300,
                                 width: 1.5,
@@ -278,14 +373,14 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                               children: [
                                 Icon(
                                   Icons.cleaning_services,
-                                  color: _kitchenPlatform
+                                  color: _DeepCleaning
                                       ? const Color(0xFF2E3C59)
                                       : Colors.grey.shade500,
                                 ),
                                 const SizedBox(width: 16),
                                 const Expanded(
                                   child: Text(
-                                    'Kitchen platform cleaning',
+                                    'Deep Cleaning',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -293,20 +388,21 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                                   ),
                                 ),
                                 Switch(
-                                  value: _kitchenPlatform,
+                                  value: _DeepCleaning,
                                   onChanged: (value) {
-                                    setState(() => _kitchenPlatform = value);
+                                    setState(() => _DeepCleaning = value);
                                   },
                                   activeColor: const Color(0xFFFAFA33)
                                 ),
                               ],
                             ),
                           ),
-                        ),
+                        ),  
+
                       ],
                     ),
-                  ),
-                  
+                  ),           
+
                   const SizedBox(height: 36),
 
                   // Continue Button
@@ -316,12 +412,12 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                       if (_purpose == 'daily') {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const DailyPlan()),
+                          MaterialPageRoute(builder: (context) => const DailyPlanClean()),
                         );
                       } else {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const NonDailyPlan()),
+                          MaterialPageRoute(builder: (context) => const NonDailyPlanClean()),
                         );
                       }
                     },
@@ -471,48 +567,6 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
       ),
     );
   }
-
-  Widget _buildMealToggle(String label, String mealKey,
-  // IconData icon, 
-  {required Gradient gradient}) {
-  final isSelected = _meals[mealKey] ?? false;
-  final double fontSize = mealKey == 'breakfast' ? 14 : 15; // Determine fontSize here
-
-  return Expanded(
-    child: GestureDetector(
-      onTap: () => setState(() => _meals[mealKey] = !isSelected),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        margin: const EdgeInsets.only(right: 8),
-        decoration: BoxDecoration(
-          gradient: isSelected ? gradient : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.grey.shade300,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //Icon( icon,color: isSelected ? Colors.white : Colors.grey.shade600,),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: fontSize, // Use the determined fontSize
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Color(0xFF2E3C59) : Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
   Widget _buildPurposeOption(String label, String value, IconData icon, {required Gradient gradient}) {
     final isSelected = _purpose == value;
