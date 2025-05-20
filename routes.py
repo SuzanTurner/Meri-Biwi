@@ -352,3 +352,203 @@ def save_details(
     except Exception as e:
         logger.error(f"Error in save_details: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 
+    
+        # Convert food type to match database format
+    
+@router.get("/cleaning", response_model=List[schemas.Cleaning])
+def get_cleaning_plans(
+    floor: Optional[int] = None,
+    plan: Optional[str] = None,
+    bhk: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    try:
+        logger.info("=== Fetching Cleaning Plans ===")
+        logger.info(f"Parameters: floor={floor}, plan={plan}, bhk={bhk}")
+        
+        query = db.query(models.Cleaning)
+        
+        if floor is not None:
+            # Format floor parameter to match database format
+            floor_str = f"Floor {floor}"
+            logger.info(f"Formatted floor parameter: {floor_str}")
+            query = query.filter(models.Cleaning.floor == floor_str)
+            
+        if plan:
+            # Normalize plan parameter
+            plan = plan.strip().capitalize()
+            logger.info(f"Normalized plan parameter: {plan}")
+            query = query.filter(models.Cleaning.plan == plan)
+            
+        if bhk is not None:
+            query = query.filter(models.Cleaning.bhk == bhk)
+            
+        cleaning_plans = query.all()
+        logger.info(f"Found {len(cleaning_plans)} cleaning plans")
+        
+        if not cleaning_plans:
+            logger.warning("No cleaning plans found with the given parameters")
+            
+        return cleaning_plans
+        
+    except Exception as e:
+        logger.error(f"Error in get_cleaning_plans: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/additional-cleaning", response_model=List[schemas.AdditionalCleaningPlan])
+def get_additional_cleaning_plans(
+    code: Optional[str] = None,
+    plan: Optional[str] = None,
+    floor: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    try:
+        logger.info("=== Fetching Additional Cleaning Plans ===")
+        logger.info(f"Parameters: code={code}, plan={plan}, floor={floor}")
+        
+        query = db.query(models.AdditionalCleaningPlan)
+        
+        if code:
+            # Normalize code parameter (A, B, or C)
+            code = code.strip().upper()
+            logger.info(f"Normalized code parameter: {code}")
+            if code not in ['A', 'B', 'C']:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid code. Must be one of: A, B, C"
+                )
+            query = query.filter(models.AdditionalCleaningPlan.code == code)
+            
+        if plan:
+            # Normalize plan parameter
+            plan = plan.strip().capitalize()
+            logger.info(f"Normalized plan parameter: {plan}")
+            query = query.filter(models.AdditionalCleaningPlan.plan == plan)
+            
+        if floor is not None:
+            # Format floor parameter to match database format
+            floor_str = f"Floor {floor}"
+            logger.info(f"Formatted floor parameter: {floor_str}")
+            query = query.filter(models.AdditionalCleaningPlan.floor == floor_str)
+            
+        additional_plans = query.all()
+        logger.info(f"Found {len(additional_plans)} additional cleaning plans")
+        
+        if not additional_plans:
+            logger.warning("No additional cleaning plans found with the given parameters")
+            
+        return additional_plans
+        
+    except Exception as e:
+        logger.error(f"Error in get_additional_cleaning_plans: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/calculate-cleaning-total")
+def calculate_cleaning_total(
+    floor: int = Query(..., ge=1, le=10, description="Floor number (1-10)"),
+    plan: str = Query(..., description="Plan type (Basic/Standard/Premium)"),
+    bhk: int = Query(..., ge=1, le=5, description="BHK (1-5)"),
+    code: List[str] = Query([], description="List of additional service codes (A/B/C)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        logger.info("=== Request Details ===")
+        logger.info(f"Query Parameters: floor={floor}, plan={plan}, bhk={bhk}, code={code}")
+        
+        # Format floor for database query
+        floor_str = f"Floor {floor}"
+        
+        # Get base price
+        base_query = text("""
+            SELECT price FROM cleaning 
+            WHERE floor = :floor 
+            AND LOWER(TRIM(plan)) = LOWER(TRIM(:plan)) 
+            AND bhk = :bhk
+        """)
+        
+        logger.info("Executing base price query with parameters:")
+        logger.info(f"floor={floor_str}, plan={plan}, bhk={bhk}")
+        
+        base_result = db.execute(base_query, {
+            "floor": floor_str,
+            "plan": plan,
+            "bhk": bhk
+        }).fetchone()
+        
+        if not base_result:
+            logger.error("No matching cleaning plan found")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No cleaning plan found for floor={floor}, plan={plan}, bhk={bhk}"
+            )
+        
+        base_price = base_result[0]
+        total = Decimal(str(base_price))
+        logger.info(f"Base price: {base_price}")
+        
+        # Get additional services if any
+        if code:
+            # Convert services to a set to ensure uniqueness
+            unique_services = set(code)
+            
+            # Validate service codes
+            invalid_codes = [c for c in unique_services if c not in ['A', 'B', 'C']]
+            if invalid_codes:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid service codes: {invalid_codes}. Must be one of: A, B, C"
+                )
+            
+            placeholders = ', '.join([':service' + str(i) for i in range(len(unique_services))])
+            add_query = text(f"""
+                SELECT service_name, bathroom_1, bathroom_2, bathroom_3, bathroom_4, bathroom_5
+                FROM additional_cleaning 
+                WHERE code IN ({placeholders})
+                AND LOWER(TRIM(plan)) = LOWER(TRIM(:plan))
+                AND LOWER(TRIM(floor)) = LOWER(TRIM(:floor))
+                ORDER BY code
+            """)
+            
+            params = {
+                "plan": plan,
+                "floor": floor_str
+            }
+            params.update({f"service{i}": service for i, service in enumerate(unique_services)})
+            
+            logger.info("Executing additional services query with parameters:")
+            logger.info(f"Query: {add_query}")
+            logger.info(f"Parameters: {params}")
+            
+            results = db.execute(add_query, params).fetchall()
+            
+            logger.info("Additional services found:")
+            # Track processed services to prevent duplicates
+            processed_services = set()
+            
+            for name, b1, b2, b3, b4, b5 in results:
+                # Calculate total price for all bathrooms
+                bathroom_prices = [b1, b2, b3, b4, b5]
+                service_price = sum(price for price in bathroom_prices if price is not None)
+                logger.info(f"Service: {name}, Price: {service_price}")
+                
+                total += Decimal(str(service_price))
+                logger.info(f"Running total: {total}")
+        
+        response = {
+            "base_price": float(base_price),
+            "total_price": float(total),
+            "floor": floor_str,  # Return the formatted floor string
+            "plan": plan,
+            "bhk": bhk,
+            "services": code
+        }
+        
+        logger.info("=== Response ===")
+        logger.info(json.dumps(response, indent=2))
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error in calculate_cleaning_total: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+

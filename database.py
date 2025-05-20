@@ -3,8 +3,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+import dotenv
+import os
 
 DB_NAME = "Veg_Breakfast_Lunch"
+
+dotenv.load_dotenv()
+POSTGRES = os.getenv("POSTGRES")
 
 def create_database():
     # Connect to PostgreSQL server
@@ -33,7 +38,7 @@ def create_database():
 create_database()
 
 # Use the database for SQLAlchemy
-SQLALCHEMY_DATABASE_URL = f"postgresql://postgres:postgres@localhost:5432/{DB_NAME}"
+SQLALCHEMY_DATABASE_URL = POSTGRES
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

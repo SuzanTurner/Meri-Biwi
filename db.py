@@ -54,3 +54,4 @@ def alter_table_auto_increment():
         """))
         
         conn.commit()
+

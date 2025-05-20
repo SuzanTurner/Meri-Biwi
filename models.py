@@ -52,3 +52,45 @@ class AdditionalService(Base):
         back_populates="additional_services"
     )
 
+cleaning_additional_plans = Table(
+    "cleaning_additional_plans",
+    Base.metadata,
+    Column("cleaning_id", Integer, ForeignKey("cleaning.id", ondelete="CASCADE")),
+    Column("additional_plan_id", Integer, ForeignKey("additional_cleaning.id", ondelete="CASCADE"))
+)
+
+class AdditionalCleaningPlan(Base):
+    __tablename__ = "additional_cleaning"
+
+    id = Column(Integer, primary_key=True, index=True)
+    bathroom_1 = Column(Numeric)
+    bathroom_2 = Column(Numeric)
+    bathroom_3 = Column(Numeric)
+    bathroom_4 = Column(Numeric)
+    bathroom_5 = Column(Numeric)
+    code = Column(String(5))
+    service_name = Column(Text)
+    plan = Column(String(20))
+    floor = Column(Integer)
+
+    cleanings = relationship(
+        "Cleaning",
+        secondary="cleaning_additional_plans",
+        back_populates="additional_cleaning_plans"
+    )
+
+class Cleaning(Base):
+    __tablename__ = "cleaning"
+
+    id = Column(Integer, primary_key=True, index=True)
+    floor = Column(Integer)
+    plan = Column(String(20))
+    bhk = Column(Integer)
+    price = Column(Numeric)
+
+    # Relationship to additional cleaning plans
+    additional_cleaning_plans = relationship(
+        "AdditionalCleaningPlan",
+        secondary="cleaning_additional_plans",
+        back_populates="cleanings"
+    )

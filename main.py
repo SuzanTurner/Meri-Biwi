@@ -2,16 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
-from models import Meals, AdditionalService
-from schemas import Meal, AdditionalService as AdditionalServiceSchema
-from services import get_meals, get_services
+from models import Meals, AdditionalService, Cleaning, AdditionalCleaningPlan
+from schemas import Meal, AdditionalService as AdditionalServiceSchema, Cleaning, AdditionalCleaningPlan
+from services import get_meals, get_services, get_cleaning_plans, get_additional_cleaning_plans
 from sqlalchemy import text
 from decimal import Decimal
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from routes import router
 
-app = FastAPI()
+
+app = FastAPI( debug = True)
 
 # Add CORS middleware
 app.add_middleware(
@@ -290,6 +291,23 @@ def get_meals_endpoint(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching meals: {str(e)}")
+    
+@app.get("/cleaning", response_model=List[Cleaning])
+def get_cleaning_plans(db: Session = Depends(get_db)):
+    try:
+        cleaning_plans = get_cleaning_plans(db)
+        return cleaning_plans
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching cleaning plans: {str(e)}")
+    
+@app.get("/additional-cleaning", response_model=List[AdditionalCleaningPlan])
+def get_additional_cleaning_plans(db: Session = Depends(get_db)):
+    try:
+        additional_cleaning_plans = get_additional_cleaning_plans(db)
+        return additional_cleaning_plans
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching additional cleaning plans: {str(e)}")
+    
 
 if __name__ == "__main__":
     # Configure logging
