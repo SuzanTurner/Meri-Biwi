@@ -88,21 +88,30 @@ def calculate_total(
 
         # Get additional services
         if services:
-            # Clean up the food_type to match database format
-            food_type = food_type.replace(" - ", "-").strip()
+            # Normalize food type for comparison
+            normalized_food_type = food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-")
+            print(f"\nDEBUG: Food Type Normalization:")
+            print(f"Original food_type: {food_type}")
+            print(f"Normalized food_type: {normalized_food_type}")
             
             placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
             add_query = text(f"""
                 SELECT DISTINCT ON (code) code, name, is_percentage, {price_col} as price 
                 FROM additional_services 
-                WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
-                AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
+                WHERE (
+                    LOWER(TRIM(food_type)) = LOWER(TRIM(:food_type))
+                    OR LOWER(TRIM(REPLACE(food_type, ' - ', '-'))) = LOWER(TRIM(:food_type))
+                    OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
+                    OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
+                )
+                AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
                 AND code IN ({placeholders})
                 ORDER BY code
             """)
             
             params = {
                 "food_type": food_type,
+                "normalized_food_type": normalized_food_type,
                 "plan_type": plan_type
             }
             params.update({f"service{i}": service for i, service in enumerate(services)})
@@ -115,23 +124,19 @@ def calculate_total(
                 
                 # First, let's check if the service exists with these parameters
                 check_query = text("""
-                    SELECT code, name, {price_col} as price
+                    SELECT code, name, food_type, {price_col} as price
                     FROM additional_services 
-                    WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
-                    AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
-                    AND code = :service0
+                    WHERE code = :service0
                     ORDER BY {price_col}
                 """.format(price_col=price_col))
                 
                 check_results = db.execute(check_query, {
-                    "food_type": food_type,
-                    "plan_type": plan_type,
                     "service0": services[0]
                 }).fetchall()
                 
                 print("\nDEBUG: Available services in database:")
                 for row in check_results:
-                    print(f"Code: {row[0]}, Name: {row[1]}, Price: {row[2]}")
+                    print(f"Code: {row[0]}, Name: {row[1]}, Food Type: {row[2]}, Price: {row[3]}")
                 
                 results = db.execute(add_query, params).fetchall()
                 print(f"\nQuery results: {results}")
@@ -139,7 +144,7 @@ def calculate_total(
 
                 if not results:
                     print("WARNING: No additional services found in database for the given parameters")
-                    print(f"Food type: {food_type}")
+                    print(f"Food type: {normalized_food_type}")
                     print(f"Plan type: {plan_type}")
                     print(f"Meal type: {meal_type}")
                     print(f"Services requested: {services}")
@@ -287,7 +292,22 @@ def get_meals_endpoint(
         raise HTTPException(status_code=500, detail=f"Error fetching meals: {str(e)}")
 
 if __name__ == "__main__":
+    # Configure logging
+    import logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler()
+        ]
+    )
+    
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info"
+    )
 
 

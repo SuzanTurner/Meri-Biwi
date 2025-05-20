@@ -27,9 +27,11 @@ class PlanType(str, Enum):
 
 @router.get("/meals/", response_model=List[schemas.Meal])
 def get_meals(
+    food_type: str,
+    num_people: int,
     db: Session = Depends(get_db)
 ):
-    meals = db.query(models.Meals).all()
+    meals = db.query(models.Meals).filter(models.Meals.food_type == food_type, models.Meals.num_people == num_people).all()
     return meals
 
 @router.get("/additional-services/", response_model=List[schemas.AdditionalService])
@@ -128,7 +130,7 @@ def calculate_total(
         logger.info(f"Query Parameters: food_type={food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}")
         
         # Convert food type to match database format
-        db_food_type = food_type.replace(" - ", "-").strip()
+        db_food_type = food_type
         logger.info(f"Converted food_type to: {db_food_type}")
         
         # Get base price
@@ -162,20 +164,30 @@ def calculate_total(
         
         # Get additional services if any
         if services:
-            placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
+            # Convert services to a set to ensure uniqueness
+            unique_services = set(services)
+            
+            placeholders = ', '.join([':service' + str(i) for i in range(len(unique_services))])
             add_query = text(f"""
-                SELECT code, name, is_percentage, price_{num_people} as price 
+                SELECT DISTINCT ON (code) code, name, is_percentage, price_{num_people} as price 
                 FROM additional_services 
-                WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
-                AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type))
+                WHERE (
+                    LOWER(TRIM(food_type)) = LOWER(TRIM(:food_type))
+                    OR LOWER(TRIM(REPLACE(food_type, ' - ', '-'))) = LOWER(TRIM(:food_type))
+                    OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
+                    OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
+                )
+                AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
                 AND code IN ({placeholders})
+                ORDER BY code
             """)
             
             params = {
                 "food_type": db_food_type,
+                "normalized_food_type": db_food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-"),
                 "plan_type": plan_type
             }
-            params.update({f"service{i}": service for i, service in enumerate(services)})
+            params.update({f"service{i}": service for i, service in enumerate(unique_services)})
             
             logger.info("Executing additional services query with parameters:")
             logger.info(f"Query: {add_query}")
@@ -184,7 +196,16 @@ def calculate_total(
             results = db.execute(add_query, params).fetchall()
             
             logger.info("Additional services found:")
+            # Track processed services to prevent duplicates
+            processed_services = set()
+            
             for code, name, is_percent, price in results:
+                # Skip if we've already processed this service
+                if code in processed_services:
+                    logger.info(f"Skipping duplicate service: {code}")
+                    continue
+                    
+                processed_services.add(code)
                 logger.info(f"Service: {code} ({name})")
                 logger.info(f"Is Percentage: {is_percent}")
                 logger.info(f"Price: {price}")
@@ -218,7 +239,7 @@ def calculate_total(
         logger.error(f"Error in calculate_total: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/save_details")
+@router.post("/api/save_details")
 def save_details(
     details: schemas.UserDetails,
     db: Session = Depends(get_db)
@@ -228,7 +249,26 @@ def save_details(
         logger.info(f"Received details: {details.dict()}")
 
         # Convert food type to match database format
-        db_food_type = FoodType.VEG.value if details.food_type.lower() in ["vegetarian", "veg"] else FoodType.NON_VEG.value
+        db_food_type = details.food_type
+        if db_food_type.lower() in ["vegetarian", "veg"]:
+            db_food_type = "Veg"
+        elif db_food_type.lower() in ["non-vegetarian", "non vegetarian", "non veg", "non-veg", "non veg", "Non-Veg", "Non-veg", "Non-Vegetarian", "Non-vegetarian", "Non - Veg", "Non - veg", "Non - Vegetarian", "Non - Vegetarian"]:
+            db_food_type = "Non - Veg"  # Ensure consistent format with spaces around hyphen
+        
+        logger.info(f"=== Food Type Conversion ===")
+        logger.info(f"Original food type: '{details.food_type}'")
+        logger.info(f"Converted food type: '{db_food_type}'")
+        
+        # Debug: Check all meal plans in database
+        all_meals_query = text("""
+            SELECT food_type, plan_type, num_people, basic_details 
+            FROM meals 
+            ORDER BY food_type, plan_type, num_people
+        """)
+        all_meals = db.execute(all_meals_query).fetchall()
+        logger.info("=== Available Meal Plans in Database ===")
+        for meal in all_meals:
+            logger.info(f"Meal: food_type='{meal[0]}', plan_type='{meal[1]}', num_people={meal[2]}, details='{meal[3]}'")
         
         # Convert plan type to match database format
         plan_type = details.plan_type.capitalize()
@@ -259,27 +299,36 @@ def save_details(
             logger.warning(f"Invalid meal type: {details.basic_details}, defaulting to 2 Meals")
             details.basic_details = "2 Meals {Breakfast+Tea & Lunch}"
 
-        # Get base price
+        # Get base price with exact matching
         base_query = text("""
-            SELECT basic_price FROM meals 
-            WHERE food_type=:food_type 
-            AND LOWER(plan_type)=LOWER(:plan_type) 
-            AND num_people=:num_people 
-            AND basic_details=:meal_type
+            SELECT * FROM meals 
+            WHERE food_type = :food_type 
+            AND plan_type = :plan_type 
+            AND num_people = :num_people 
+            AND basic_details = :meal_type
         """)
         
-        base_result = db.execute(base_query, {
+        params = {
             "food_type": db_food_type,
             "plan_type": plan_type,
             "num_people": details.num_people,
             "meal_type": details.basic_details
-        }).fetchone()
-
+        }
+        
+        logger.info("=== Query Parameters ===")
+        logger.info(f"food_type: '{params['food_type']}'")
+        logger.info(f"plan_type: '{params['plan_type']}'")
+        logger.info(f"num_people: {params['num_people']}")
+        logger.info(f"meal_type: '{params['meal_type']}'")
+        
+        base_result = db.execute(base_query, params).fetchone()
+        
         if not base_result:
             logger.error("No matching meal plan found")
+            logger.error(f"Query parameters: {params}")
             raise HTTPException(
                 status_code=404,
-                detail=f"No meal plan found for the provided details"
+                detail=f"No meal plan found for food_type={db_food_type}, plan_type={plan_type}, num_people={details.num_people}, meal_type={details.basic_details}"
             )
 
         # Return success response with the details
@@ -290,7 +339,7 @@ def save_details(
                 "plan_type": plan_type,
                 "num_people": details.num_people,
                 "basic_details": details.basic_details,
-                "base_price": float(base_result[0]),
+                "base_price": float(base_result.basic_price),
                 "available_plans": 24  # This could be calculated based on available plans
             }
         }
