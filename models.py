@@ -71,26 +71,16 @@ class AdditionalCleaningPlan(Base):
     code = Column(String(5))
     service_name = Column(Text)
     plan = Column(String(20))
-    floor = Column(Integer)
-
-    cleanings = relationship(
-        "Cleaning",
-        secondary="cleaning_additional_plans",
-        back_populates="additional_cleaning_plans"
-    )
+    floor = Column(String(20))
 
 class Cleaning(Base):
     __tablename__ = "cleaning"
 
     id = Column(Integer, primary_key=True, index=True)
-    floor = Column(Integer)
+    floor = Column(String(20))
     plan = Column(String(20))
     bhk = Column(Integer)
     price = Column(Numeric)
 
-    # Relationship to additional cleaning plans
-    additional_cleaning_plans = relationship(
-        "AdditionalCleaningPlan",
-        secondary="cleaning_additional_plans",
-        back_populates="cleanings"
-    )
+    class Config:
+        from_attributes = True

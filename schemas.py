@@ -58,11 +58,11 @@ class AdditionalCleaningPlanBase(BaseModel):
     service_name: str
     plan: str
     floor: str
-    bathroom_1: Optional[float] = None
-    bathroom_2: Optional[float] = None
-    bathroom_3: Optional[float] = None
-    bathroom_4: Optional[float] = None
-    bathroom_5: Optional[float] = None
+    bathroom_1: Optional[Decimal] = None
+    bathroom_2: Optional[Decimal] = None
+    bathroom_3: Optional[Decimal] = None
+    bathroom_4: Optional[Decimal] = None
+    bathroom_5: Optional[Decimal] = None
 
     class Config:
         from_attributes = True
@@ -77,13 +77,25 @@ class CleaningBase(BaseModel):
     floor: str
     plan: str
     bhk: int
-    price: float
+    price: Decimal
 
     class Config:
         from_attributes = True
 
 class Cleaning(CleaningBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+class CleaningTotalResponse(BaseModel):
+    base_price: float
+    total_price: float
+    floor: str
+    plan: str
+    bhk: int
+    bathrooms: int
+    services: List[str]
 
     class Config:
         from_attributes = True

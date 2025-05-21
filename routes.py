@@ -448,12 +448,13 @@ def calculate_cleaning_total(
     floor: int = Query(..., ge=1, le=10, description="Floor number (1-10)"),
     plan: str = Query(..., description="Plan type (Basic/Standard/Premium)"),
     bhk: int = Query(..., ge=1, le=5, description="BHK (1-5)"),
-    code: List[str] = Query([], description="List of additional service codes (A/B/C)"),
+    bathrooms: int = Query(1, ge=1, le=5, description="Number of bathrooms (1-5)"),
+    services: List[str] = Query([], description="List of additional service codes (A/B/C)"),
     db: Session = Depends(get_db)
 ):
     try:
         logger.info("=== Request Details ===")
-        logger.info(f"Query Parameters: floor={floor}, plan={plan}, bhk={bhk}, code={code}")
+        logger.info(f"Query Parameters: floor={floor}, plan={plan}, bhk={bhk}, bathrooms={bathrooms}, services={services}")
         
         # Format floor for database query
         floor_str = f"Floor {floor}"
@@ -461,18 +462,18 @@ def calculate_cleaning_total(
         # Get base price
         base_query = text("""
             SELECT price FROM cleaning 
-            WHERE floor = :floor 
-            AND LOWER(TRIM(plan)) = LOWER(TRIM(:plan)) 
+            WHERE LOWER(TRIM(plan)) = LOWER(TRIM(:plan)) 
             AND bhk = :bhk
+            AND LOWER(TRIM(floor)) = LOWER(TRIM(:floor))
         """)
         
         logger.info("Executing base price query with parameters:")
-        logger.info(f"floor={floor_str}, plan={plan}, bhk={bhk}")
+        logger.info(f"plan={plan}, bhk={bhk}, floor={floor_str}")
         
         base_result = db.execute(base_query, {
-            "floor": floor_str,
             "plan": plan,
-            "bhk": bhk
+            "bhk": bhk,
+            "floor": floor_str
         }).fetchone()
         
         if not base_result:
@@ -487,9 +488,9 @@ def calculate_cleaning_total(
         logger.info(f"Base price: {base_price}")
         
         # Get additional services if any
-        if code:
+        if services:
             # Convert services to a set to ensure uniqueness
-            unique_services = set(code)
+            unique_services = set(services)
             
             # Validate service codes
             invalid_codes = [c for c in unique_services if c not in ['A', 'B', 'C']]
@@ -499,13 +500,14 @@ def calculate_cleaning_total(
                     detail=f"Invalid service codes: {invalid_codes}. Must be one of: A, B, C"
                 )
             
+            bathroom_col = f"bathroom_{bathrooms}"
             placeholders = ', '.join([':service' + str(i) for i in range(len(unique_services))])
             add_query = text(f"""
-                SELECT service_name, bathroom_1, bathroom_2, bathroom_3, bathroom_4, bathroom_5
+                SELECT DISTINCT ON (code) code, service_name, {bathroom_col} as price 
                 FROM additional_cleaning 
-                WHERE code IN ({placeholders})
-                AND LOWER(TRIM(plan)) = LOWER(TRIM(:plan))
+                WHERE LOWER(TRIM(plan)) = LOWER(TRIM(:plan))
                 AND LOWER(TRIM(floor)) = LOWER(TRIM(:floor))
+                AND code IN ({placeholders})
                 ORDER BY code
             """)
             
@@ -525,22 +527,34 @@ def calculate_cleaning_total(
             # Track processed services to prevent duplicates
             processed_services = set()
             
-            for name, b1, b2, b3, b4, b5 in results:
-                # Calculate total price for all bathrooms
-                bathroom_prices = [b1, b2, b3, b4, b5]
-                service_price = sum(price for price in bathroom_prices if price is not None)
-                logger.info(f"Service: {name}, Price: {service_price}")
+            for code, name, price in results:
+                # Skip if we've already processed this service
+                if code in processed_services:
+                    logger.info(f"Skipping duplicate service: {code}")
+                    continue
+                    
+                processed_services.add(code)
+                logger.info(f"Service: {code} ({name})")
+                logger.info(f"Price: {price}")
                 
-                total += Decimal(str(service_price))
+                if code == 'C':  # Only code 'C' is percentage
+                    service_amount = (total * Decimal(str(price)) / Decimal('100'))
+                    logger.info(f"Percentage calculation: {total} * {price}% = {service_amount}")
+                    total += service_amount
+                else:
+                    logger.info(f"Adding fixed amount: {price}")
+                    total += Decimal(str(price))
+                
                 logger.info(f"Running total: {total}")
         
         response = {
             "base_price": float(base_price),
             "total_price": float(total),
-            "floor": floor_str,  # Return the formatted floor string
+            "floor": floor_str,
             "plan": plan,
             "bhk": bhk,
-            "services": code
+            "bathrooms": bathrooms,
+            "services": services
         }
         
         logger.info("=== Response ===")

@@ -3,267 +3,57 @@ from sqlalchemy.orm import Session
 from typing import List
 from database import get_db
 from models import Meals, AdditionalService, Cleaning, AdditionalCleaningPlan
-from schemas import Meal, AdditionalService as AdditionalServiceSchema, Cleaning, AdditionalCleaningPlan
+from schemas import (
+    Meal, 
+    AdditionalService as AdditionalServiceSchema, 
+    Cleaning as CleaningSchema, 
+    AdditionalCleaningPlan as AdditionalCleaningPlanSchema,
+    CleaningTotalResponse
+)
 from services import get_meals, get_services, get_cleaning_plans, get_additional_cleaning_plans
 from sqlalchemy import text
 from decimal import Decimal
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from routes import router
+import logging
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(levelname)s:%(name)s:%(message)s"
+)
 
-app = FastAPI( debug = True)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(debug=True)
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(router)
 
 class UserDetails(BaseModel):
-    food_type: str  # Changed from dietary_preference
-    plan_type: str  # Changed from purpose
-    num_people: int  # Changed from people_count
-    basic_details: str  # Changed from meals
-    frequency: str = "8 Times/Month"  # Added default
-    duration: str = "1.5 Hour"  # Added default
+    food_type: str
+    plan_type: str
+    num_people: int
+    basic_details: str
+    frequency: str = "8 Times/Month"
+    duration: str = "1.5 Hour"
     kitchen_platform: bool
 
-@app.get("/meals", response_model=List[Meal])
-def get_meals_endpoint(db: Session = Depends(get_db)):
-    try:
-        meals = get_meals(db)
-        return meals
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching meals: {str(e)}")
-
-@app.get("/additional-services", response_model=List[AdditionalServiceSchema])
-def get_additional_services_endpoint(db: Session = Depends(get_db)):
-    try:
-        services = get_services(db)
-        return services
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching additional services: {str(e)}")
-
-@app.get("/calculate_total")
-def calculate_total(
-    food_type: str,
-    plan_type: str,
-    num_people: int,
-    meal_type: str,
-    services: List[str] = Query([]),
-    db: Session = Depends(get_db)
-):
-    try:
-        # Use the actual number of people for the price column
-        price_col = f"price_{num_people}"
-
-        # Get base price
-        base_query = text("""
-            SELECT basic_price FROM meals 
-            WHERE LOWER(TRIM(food_type))=LOWER(TRIM(:food_type)) 
-            AND LOWER(TRIM(plan_type))=LOWER(TRIM(:plan_type)) 
-            AND num_people=:num_people 
-            AND LOWER(TRIM(basic_details))=LOWER(TRIM(:meal_type))
-        """)
-        base_result = db.execute(base_query, {
-            "food_type": food_type,
-            "plan_type": plan_type,
-            "num_people": num_people,
-            "meal_type": meal_type
-        }).fetchone()
-        
-        if not base_result:
-            raise HTTPException(
-                status_code=404, 
-                detail=f"No meal plan found for food_type={food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}"
-            )
-            
-        base_price = base_result[0]
-        total = Decimal(str(base_price))
-
-        # Get additional services
-        if services:
-            # Normalize food type for comparison
-            normalized_food_type = food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-")
-            print(f"\nDEBUG: Food Type Normalization:")
-            print(f"Original food_type: {food_type}")
-            print(f"Normalized food_type: {normalized_food_type}")
-            
-            placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
-            add_query = text(f"""
-                SELECT DISTINCT ON (code) code, name, is_percentage, {price_col} as price 
-                FROM additional_services 
-                WHERE (
-                    LOWER(TRIM(food_type)) = LOWER(TRIM(:food_type))
-                    OR LOWER(TRIM(REPLACE(food_type, ' - ', '-'))) = LOWER(TRIM(:food_type))
-                    OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
-                    OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
-                )
-                AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
-                AND code IN ({placeholders})
-                ORDER BY code
-            """)
-            
-            params = {
-                "food_type": food_type,
-                "normalized_food_type": normalized_food_type,
-                "plan_type": plan_type
-            }
-            params.update({f"service{i}": service for i, service in enumerate(services)})
-            
-            try:
-                print(f"\nDEBUG: Query being executed:")
-                print(f"SQL: {add_query}")
-                print(f"Parameters: {params}")
-                print(f"Price column being used: {price_col}")
-                
-                # First, let's check if the service exists with these parameters
-                check_query = text("""
-                    SELECT code, name, food_type, {price_col} as price
-                    FROM additional_services 
-                    WHERE code = :service0
-                    ORDER BY {price_col}
-                """.format(price_col=price_col))
-                
-                check_results = db.execute(check_query, {
-                    "service0": services[0]
-                }).fetchall()
-                
-                print("\nDEBUG: Available services in database:")
-                for row in check_results:
-                    print(f"Code: {row[0]}, Name: {row[1]}, Food Type: {row[2]}, Price: {row[3]}")
-                
-                results = db.execute(add_query, params).fetchall()
-                print(f"\nQuery results: {results}")
-                print(f"Number of services found: {len(results)}")
-
-                if not results:
-                    print("WARNING: No additional services found in database for the given parameters")
-                    print(f"Food type: {normalized_food_type}")
-                    print(f"Plan type: {plan_type}")
-                    print(f"Meal type: {meal_type}")
-                    print(f"Services requested: {services}")
-                    return {
-                        "base_price": round(Decimal(str(base_price)), 2),
-                        "total_price": round(Decimal(str(base_price)), 2),
-                        "num_people": num_people,
-                        "food_type": food_type,
-                        "plan_type": plan_type,
-                        "meal_type": meal_type,
-                        "services": services,
-                        "message": "No matching services found"
-                    }
-
-                print(f"\nDEBUG: Price Calculation Details:")
-                print(f"Base Price: {base_price}")
-                total = Decimal(str(base_price))
-                print(f"Initial Total: {total}")
-
-                for row in results:
-                    code, name, is_percent, price = row
-                    print(f"\nProcessing service {code} ({name}):")
-                    print(f"Is Percentage: {is_percent}")
-                    print(f"Price Value: {price}")
-                    
-                    if is_percent:
-                        service_amount = (total * Decimal(str(price)) / Decimal('100'))
-                        print(f"Percentage Calculation: {total} * {price}% = {service_amount}")
-                        total += service_amount
-                    else:
-                        print(f"Adding Fixed Amount: {price}")
-                        total += Decimal(str(price))
-                    
-                    print(f"Running Total: {total}")
-
-                print(f"\nFinal Total: {total}")
-                print(f"Rounded Total: {round(total, 2)}")
-
-                return {
-                    "base_price": round(Decimal(str(base_price)), 2),
-                    "total_price": round(total, 2),
-                    "num_people": num_people,
-                    "food_type": food_type,
-                    "plan_type": plan_type,
-                    "meal_type": meal_type,
-                    "services": services
-                }
-            except Exception as e:
-                print(f"ERROR: {str(e)}")
-                print(f"Error type: {type(e)}")
-                import traceback
-                print(f"Traceback: {traceback.format_exc()}")
-                raise HTTPException(status_code=500, detail=str(e))
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/save_details")
-async def save_details(details: UserDetails, db: Session = Depends(get_db)):
-    try:
-        # Store the details in the database or session
-        # For now, we'll just validate and process the data
-        if details.num_people < 1 or details.num_people > 10:
-            raise HTTPException(status_code=400, detail="Number of people must be between 1 and 10")
-        
-        # Convert food type to match database format
-        food_type = details.food_type.replace(" - ", "-").strip()
-        
-        # Get meal plans based on the details
-        meal_plans = db.query(Meals).filter(
-            Meals.food_type.ilike(f"%{food_type}%"),
-            Meals.num_people == details.num_people
-        ).all()
-        
-        if not meal_plans:
-            raise HTTPException(
-                status_code=404,
-                detail=f"No meal plans found for {food_type} with {details.num_people} people"
-            )
-        
-        # Calculate base price considering kitchen platform
-        base_price = Decimal('0')
-        for meal in meal_plans:
-            base_price += meal.basic_price
-        
-        # Add kitchen platform cleaning cost if selected
-        if details.kitchen_platform:
-            kitchen_service = db.query(AdditionalService).filter(
-                AdditionalService.code == 'KP',
-                AdditionalService.food_type.ilike(f"%{food_type}%")
-            ).first()
-            
-            if kitchen_service:
-                price_field = getattr(kitchen_service, f'price_{details.num_people}')
-                if kitchen_service.is_percentage:
-                    base_price += (base_price * price_field / 100)
-                else:
-                    base_price += price_field
-        
-        return {
-            "status": "success",
-            "data": {
-                "food_type": details.food_type,
-                "plan_type": details.plan_type,
-                "num_people": details.num_people,
-                "basic_details": details.basic_details,
-                "frequency": details.frequency,
-                "duration": details.duration,
-                "kitchen_platform": details.kitchen_platform,
-                "base_price": float(base_price),
-                "available_plans": len(meal_plans)
-            }
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+class CleaningDetails(BaseModel):
+    floor: int
+    plan: str
+    bhk: int
+    bathrooms: int
+    code: List[str] = []
+    purpose: str
 
 @app.get("/meals", response_model=List[Meal])
 def get_meals_endpoint(
@@ -272,9 +62,7 @@ def get_meals_endpoint(
     db: Session = Depends(get_db)
 ):
     try:
-        # Clean up the food_type to match database format
         food_type = food_type.replace(" - ", "-").strip()
-        
         meals = db.query(Meals).filter(
             Meals.food_type.ilike(f"%{food_type}%"),
             Meals.num_people == num_people
@@ -291,35 +79,128 @@ def get_meals_endpoint(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching meals: {str(e)}")
-    
-@app.get("/cleaning", response_model=List[Cleaning])
-def get_cleaning_plans(db: Session = Depends(get_db)):
+
+@app.get("/additional-services", response_model=List[AdditionalServiceSchema])
+def get_additional_services_endpoint(db: Session = Depends(get_db)):
     try:
-        cleaning_plans = get_cleaning_plans(db)
+        services = get_services(db)
+        return services
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching additional services: {str(e)}")
+
+@app.get("/cleaning", response_model=List[CleaningSchema])
+def get_cleaning_plans_endpoint(
+    floor: int = Query(None, ge=1, le=10, description="Floor number (1-10)"),
+    plan: str = Query(None, description="Plan type (Basic/Standard/Premium)"),
+    bhk: int = Query(None, ge=1, le=5, description="BHK (1-5)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        cleaning_plans = get_cleaning_plans(db, floor, plan, bhk)
         return cleaning_plans
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching cleaning plans: {str(e)}")
-    
-@app.get("/additional-cleaning", response_model=List[AdditionalCleaningPlan])
-def get_additional_cleaning_plans(db: Session = Depends(get_db)):
+
+@app.get("/additional-cleaning", response_model=List[AdditionalCleaningPlanSchema])
+def get_additional_cleaning_plans_endpoint(
+    code: str = Query(None, description="Service code (A/B/C)"),
+    plan: str = Query(None, description="Plan type (Basic/Standard/Premium)"),
+    floor: int = Query(None, ge=1, le=10, description="Floor number (1-10)"),
+    db: Session = Depends(get_db)
+):
     try:
-        additional_cleaning_plans = get_additional_cleaning_plans(db)
-        return additional_cleaning_plans
+        additional_plans = get_additional_cleaning_plans(db, code, plan, floor)
+        return additional_plans
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching additional cleaning plans: {str(e)}")
-    
+
+@app.get("/calculate-cleaning-total", response_model=CleaningTotalResponse)
+def calculate_cleaning_total(
+    floor: int = Query(..., ge=1, le=10, description="Floor number (1-10)"),
+    plan: str = Query(..., description="Plan type (Basic/Standard/Premium)"),
+    bhk: int = Query(..., ge=1, le=5, description="BHK (1-5)"),
+    bathrooms: int = Query(1, ge=1, le=5, description="Number of bathrooms (1-5)"),
+    services: List[str] = Query([], description="List of additional service codes (A/B/C)"),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Get base price
+        base_query = text("""
+            SELECT price FROM cleaning 
+            WHERE LOWER(TRIM(plan))=LOWER(TRIM(:plan)) 
+            AND bhk=:bhk
+        """)
+        
+        base_result = db.execute(base_query, {
+            "plan": plan,
+            "bhk": bhk
+        }).fetchone()
+        
+        if not base_result:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No cleaning plan found for plan={plan}, bhk={bhk}"
+            )
+            
+        base_price = base_result[0]
+        total = Decimal(str(base_price))
+
+        # Get additional services if any
+        if services:
+            bathroom_col = f"bathroom_{bathrooms}"
+            placeholders = ', '.join([':service' + str(i) for i in range(len(services))])
+            add_query = text(f"""
+                SELECT DISTINCT ON (code) code, service_name, {bathroom_col} as price 
+                FROM additional_cleaning 
+                WHERE LOWER(TRIM(plan))=LOWER(TRIM(:plan))
+                AND LOWER(TRIM(floor))=LOWER(TRIM(:floor))
+                AND code IN ({placeholders})
+                ORDER BY code
+            """)
+            
+            params = {
+                "plan": plan,
+                "floor": f"Floor {floor}"
+            }
+            params.update({f"service{i}": service for i, service in enumerate(services)})
+            
+            results = db.execute(add_query, params).fetchall()
+            
+            # Track processed services to prevent duplicates
+            processed_services = set()
+            
+            for code, name, price in results:
+                if code in processed_services:
+                    continue
+                    
+                processed_services.add(code)
+                
+                if code == 'C':  # Only code 'C' is percentage
+                    service_amount = (total * Decimal(str(price)) / Decimal('100'))
+                    total += service_amount
+                else:
+                    total += Decimal(str(price))
+
+        return {
+            "base_price": float(base_price),
+            "total_price": float(total),
+            "floor": f"Floor {floor}",
+            "plan": plan,
+            "bhk": bhk,
+            "bathrooms": bathrooms,
+            "services": services
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in calculate_cleaning_total: {str(e)}")
+        logger.error(f"Error type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    # Configure logging
-    import logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler()
-        ]
-    )
-    
     import uvicorn
     uvicorn.run(
         app,
