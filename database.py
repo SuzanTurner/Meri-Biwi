@@ -9,7 +9,7 @@ import os
 DB_NAME = "Veg_Breakfast_Lunch"
 
 dotenv.load_dotenv()
-POSTGRES = os.getenv("POSTGRES")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def create_database():
     # Connect to PostgreSQL server
@@ -38,7 +38,7 @@ def create_database():
 create_database()
 
 # Use the database for SQLAlchemy
-SQLALCHEMY_DATABASE_URL = POSTGRES
+SQLALCHEMY_DATABASE_URL = DATABASE_URL
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

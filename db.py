@@ -4,12 +4,12 @@ import dotenv
 import os
 
 dotenv.load_dotenv()
-POSTGRES = os.getenv("POSTGRES")  
+DATABASE_URL = os.getenv("DATABASE_URL")  
 
-if not POSTGRES:
+if not DATABASE_URL:
     raise ValueError("POSTGRES environment variable is not set")
 
-SQLALCHEMY_DATABASE_URL = POSTGRES
+SQLALCHEMY_DATABASE_URL = DATABASE_URL
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
 
