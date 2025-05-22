@@ -13,12 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 def create_database():
     # Connect to PostgreSQL server
-    conn = psycopg2.connect(
-        user="postgres",
-        password="postgres",
-        host="localhost",
-        port="5432"
-    )
+    conn = psycopg2.connect(os.environ["DATABASE_URL"])
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
     
     # Create a cursor object
