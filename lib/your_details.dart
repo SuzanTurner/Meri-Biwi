@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:home_ease/your_plan.dart';
 import 'package:home_ease/daily_plan.dart';
+import 'package:provider/provider.dart';
 
 class YourDetails extends StatefulWidget {
   const YourDetails({Key? key}) : super(key: key);
@@ -11,7 +12,7 @@ class YourDetails extends StatefulWidget {
 
 class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStateMixin {
   // Form state
-  String _dietaryPreference = 'vegetarian';
+  String _dietaryPreference = 'Veg';
   int _peopleCount = 2;
   final Map<String, bool> _meals = {
     'breakfast': true,
@@ -105,16 +106,16 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                           children: [
                             _buildSelectionButton(
                               label: 'Vegetarian',
-                              isSelected: _dietaryPreference == 'vegetarian',
-                              onTap: () => setState(() => _dietaryPreference = 'vegetarian'),
+                              isSelected: _dietaryPreference == 'Veg',
+                              onTap: () => setState(() => _dietaryPreference = 'Veg'),
                               icon: Icons.spa,
                               gradient: _gradient,
                             ),
                             const SizedBox(width: 16),
                             _buildSelectionButton(
                               label: 'Non-vegetarian',
-                              isSelected: _dietaryPreference == 'non-vegetarian',
-                              onTap: () => setState(() => _dietaryPreference = 'non-vegetarian'),
+                              isSelected: _dietaryPreference == 'Non - Veg',
+                              onTap: () => setState(() => _dietaryPreference = 'Non - Veg'),
                               icon: Icons.restaurant_menu,
                               gradient: _gradient,
                             ),
@@ -314,14 +315,48 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
                     onPressed: () {
                       // Navigate based on the selected purpose
                       if (_purpose == 'daily') {
+                        print('YourDetails: Navigating to DailyPlan');
+                        print('Parameters being passed:');
+                        print('- foodType: $_dietaryPreference');
+                        print('- numPeople: $_peopleCount');
+                        print('- selectedServices: ${_kitchenPlatform ? ['D'] : []}');
+                        print('- mealType: ${_getMealType()}');
+                        
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const DailyPlan()),
+                          MaterialPageRoute(
+                            builder: (context) => DailyPlan(
+                              foodType: _dietaryPreference,
+                              numPeople: _peopleCount,
+                              selectedServices: _kitchenPlatform ? ['D'] : [],
+                              planType: 'Standard',
+                              mealType: _getMealType(),
+                              basePrice: 0.0,
+                              totalPrice: 0.0,
+                            ),
+                          ),
                         );
                       } else {
+                        print('YourDetails: Navigating to NonDailyPlan');
+                        print('Parameters being passed:');
+                        print('- foodType: $_dietaryPreference');
+                        print('- numPeople: $_peopleCount');
+                        print('- selectedServices: ${_kitchenPlatform ? ['D'] : []}');
+                        print('- mealType: ${_getMealType()}');
+                        
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const NonDailyPlan()),
+                          MaterialPageRoute(
+                            builder: (context) => NonDailyPlan(
+                              foodType: _dietaryPreference,
+                              numPeople: _peopleCount,
+                              selectedServices: _kitchenPlatform ? ['D'] : [],
+                              planType: 'Standard',
+                              mealType: _getMealType(),
+                              basePrice: 0.0,
+                              totalPrice: 0.0,
+                            ),
+                          ),
                         );
                       }
                     },
@@ -552,4 +587,18 @@ class _YourDetailsState extends State<YourDetails> with SingleTickerProviderStat
         ),
       ),
     );
-  }}
+  }
+
+  // Helper method to determine meal type based on selected meals
+  String _getMealType() {
+    if (_meals['lunch'] == true && _meals['dinner'] == false) {
+      return '1 Meal Lunch';
+    } else if (_meals['lunch'] == false && _meals['dinner'] == true) {
+      return '1 Meal Dinner';
+    } else if (_meals['lunch'] == true && _meals['dinner'] == true) {
+      return '3 Meals {Breakfast+Tea & Lunch + Dinner}';
+    } else {
+      return '2 Meals {Breakfast+Tea & Lunch}';
+    }
+  }
+}

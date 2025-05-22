@@ -6,7 +6,12 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ChefProfilesPage extends StatefulWidget {
-  const ChefProfilesPage({Key? key}) : super(key: key);
+  final double totalPrice;
+  
+  const ChefProfilesPage({
+    Key? key,
+    required this.totalPrice,
+  }) : super(key: key);
 
   @override
   _ChefProfilesPageState createState() => _ChefProfilesPageState();
@@ -19,6 +24,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
   String _timePreference = 'any';
   String _communityPreference = 'any';
   TimeOfDay _selectedTime = TimeOfDay(hour: 12, minute: 0);
+  double _currentTotalPrice = 0.0;
 
   late AnimationController _animationController;
   List<Map<String, dynamic>> _chefs = [];
@@ -28,6 +34,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
   @override
   void initState() {
     super.initState();
+    _currentTotalPrice = widget.totalPrice;
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -117,6 +124,26 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
           });
           _loadChefs();
         },
+      ),
+    );
+  }
+
+  void _navigateToBookingSummary(Map<String, dynamic> chef) {
+    // Add community surcharge if applicable
+    double finalPrice = _currentTotalPrice;
+    if (chef['community'] != null && chef['community'].toString().toLowerCase() != 'Any') {
+      finalPrice += 1000.0;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChefBookingSummaryPage(
+          chef: chef,
+          startDate: _startDate,
+          selectedTime: _selectedTime,
+          totalPrice: finalPrice,
+        ),
       ),
     );
   }
@@ -309,7 +336,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
 
   Widget _buildChefCard(Map<String, dynamic> chef) {
     return GestureDetector(
-      onTap: () => _showChefDetails(chef),
+      onTap: () => _navigateToBookingSummary(chef),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -608,36 +635,7 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                             ),
                           ],
                         ),
-                        if (_showPeakHours && chef['id'] % 3 == 0) ...[
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.amber[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.amber[100]!),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.warning_amber_rounded,
-                                  color: Colors.amber[700],
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                const Expanded(
-                                  child: Text(
-                                    'Peak hour surcharge applies during 6-9 PM on weekdays',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.amber,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        
                       ],
                     ),
                   ),
@@ -685,11 +683,14 @@ class _ChefProfilesPageState extends State<ChefProfilesPage>
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChefBookingSummaryPage(
-                        chef:chef,
-                        startDate: _startDate,
-                        selectedTime: _selectedTime,
-                      )),
+                    builder: (context) => ChefBookingSummaryPage(
+                      chef: chef,
+                      startDate: _startDate,
+                      selectedTime: _selectedTime,
+                      totalPrice: _currentTotalPrice + (chef['community'] != null && 
+                        chef['community'].toString().toLowerCase() != 'any' ? 1000.0 : 0.0),
+                    ),
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(

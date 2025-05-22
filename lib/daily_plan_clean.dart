@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:home_ease/choose_cleaner.dart';
+import 'package:home_ease/services/cleaning_service.dart';
 
 class HomeHelperApp extends StatelessWidget {
   const HomeHelperApp({Key? key}) : super(key: key);
@@ -27,8 +28,11 @@ class HomeHelperApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const DailyPlanClean
-    (),
+      home: const DailyPlanClean(
+        totalPrice: 0.0,
+        basePrice: 0.0,
+        selectedServices: [],
+      ),
     );
   }
 }
@@ -60,12 +64,19 @@ class Plan {
 }
 
 class DailyPlanClean extends StatefulWidget {
-  const DailyPlanClean
-({Key? key}) : super(key: key);
+  final double totalPrice;
+  final double basePrice;
+  final List<String> selectedServices;
+
+  const DailyPlanClean({
+    Key? key,
+    required this.totalPrice,
+    required this.basePrice,
+    required this.selectedServices,
+  }) : super(key: key);
 
   @override
-  State<DailyPlanClean
-> createState() => _DailyPlanCleanState();
+  State<DailyPlanClean> createState() => _DailyPlanCleanState();
 }
 
 class _DailyPlanCleanState extends State<DailyPlanClean> with TickerProviderStateMixin {
@@ -73,80 +84,15 @@ class _DailyPlanCleanState extends State<DailyPlanClean> with TickerProviderStat
   late final TabController _tabController;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
-
-    final List<Plan> _plans = [
-    Plan(
-      name: 'Standard',
-      price: '49',
-      duration: 'per day',
-      color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Two meals per day for weekdays',
-        'Semi-custom menu',
-        'Sweets/snacks included',
-        'Access to festive menu',
-        'Weekly menu rotation',
-        'Customer support',
-      ],
-      description: 'A balanced meal solution for busy families.',
-      icon: Icons.bubble_chart_outlined,
-       benefits: [
-        'More variety',
-        'Healthy combinations',
-        'Reliable scheduling',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Free rescheduling x2/month',
-        'Doorstep delivery',
-      ],
-    ),
-    Plan(
-      name: 'Premium',
-      price: '79',
-      duration: 'per day',
-      color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Three meals daily all week',
-        'Fully customizable',
-        'Chef-designed menus',
-        'Priority support',
-        'Desserts & snacks daily',
-        'Festive menus included',
-        'Nutrition tracking',
-        'Flexible pause option',
-      ],
-      description: 'Best suited for gourmet-style daily meals.',
-      icon: Icons.cleaning_services,
-       benefits: [
-        'Maximum flexibility',
-        'Rich culinary experience',
-        'Premium customer care',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Priority chef availability',
-        'No additional service fee',
-      ],
-    ),
-  ];
+  final CleaningService _cleaningService = CleaningService();
+  List<dynamic> _plans = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: _plans.length,
-      vsync: this,
-      initialIndex: _selectedPlanIndex,
-    );
-    _tabController.addListener(() {
-      setState(() {
-        _selectedPlanIndex = _tabController.index;
-      });
-    });
-
+    _loadPlans();
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -158,17 +104,81 @@ class _DailyPlanCleanState extends State<DailyPlanClean> with TickerProviderStat
     _animationController.forward();
   }
 
+  Future<void> _loadPlans() async {
+    try {
+      final plans = await _cleaningService.getCleaningPlans(plan: 'Basic');
+      // Add color properties to plans
+      final plansWithColors = [
+        {
+          'name': 'Standard',
+          'color': const Color(0xFFFEF54A),
+          'lightColor': const Color(0xFFFEF54A).withOpacity(0.15),
+          'features': ['Deep cleaning', 'Detailed dusting', 'Floor polishing'],
+          'description': 'Ideal for weekend cleaning',
+          'icon': Icons.cleaning_services,
+        },
+        {
+          'name': 'Premium',
+          'color': const Color(0xFFFEF54A),
+          'lightColor': const Color(0xFFFEF54A).withOpacity(0.15),
+          'features': ['Complete cleaning', 'Premium dusting', 'Floor treatment'],
+          'description': 'For occasional deep cleaning',
+          'icon': Icons.cleaning_services,
+        },
+      ];
+      
+      setState(() {
+        _plans = plansWithColors;
+        _isLoading = false;
+        if (_plans.isNotEmpty) {
+          _tabController = TabController(
+            length: _plans.length,
+            vsync: this,
+            initialIndex: _selectedPlanIndex,
+          );
+          _tabController.addListener(() {
+            setState(() {
+              _selectedPlanIndex = _tabController.index;
+            });
+          });
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading plans: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
-    _tabController.dispose();
     _animationController.dispose();
+    if (_plans.isNotEmpty) {
+      _tabController.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_plans.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Text('No plans available'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F6F0),
@@ -288,25 +298,23 @@ class _DailyPlanCleanState extends State<DailyPlanClean> with TickerProviderStat
         controller: _tabController,
         indicator: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: _plans[_selectedPlanIndex].color,
+          color: _plans[_selectedPlanIndex]['color'],
         ),
         labelColor: const Color(0xFF2E3C59),
         unselectedLabelColor: const Color(0xFF5C6E6E),
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-        tabs: _plans
-            .map((plan) => Tab(
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(plan.icon, size: 18),
-                      const SizedBox(width: 8),
-                      Text(plan.name),
-                    ],
-                  ),
-                ))
-            .toList(),
+        tabs: _plans.map((plan) => Tab(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(plan['icon'] as IconData, size: 18),
+              const SizedBox(width: 8),
+              Text(plan['name'] as String),
+            ],
+          ),
+        )).toList(),
       ),
     );
   }
@@ -324,9 +332,9 @@ Widget _buildPlanDetails({Key? key}) {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: plan.lightColor,
+              color: plan['lightColor'],
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: plan.color.withOpacity(0.3), width: 1),
+              border: Border.all(color: plan['color'].withOpacity(0.3), width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,29 +344,33 @@ Widget _buildPlanDetails({Key? key}) {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: plan.color.withOpacity(0.2),
+                        color: plan['color'].withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(plan.icon, color: const Color(0xFF2E3C59), size: 24),
+                      child: Icon(
+                        plan['icon'] ?? Icons.cleaning_services,
+                        color: const Color(0xFF2E3C59),
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          plan.name,
-                          style: TextStyle(
+                          plan['name'] ?? 'Plan',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF2E3C59),
+                            color: Color(0xFF2E3C59),
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          plan.description,
-                          style: TextStyle(
+                          plan['description'] ?? '',
+                          style: const TextStyle(
                             fontSize: 12,
-                            color:const Color(0xFF2E3C59),
+                            color: Color(0xFF2E3C59),
                           ),
                         ),
                       ],
@@ -366,30 +378,34 @@ Widget _buildPlanDetails({Key? key}) {
                   ],
                 ),
                 const SizedBox(height: 20),
-                ...plan.features.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 24,
-                            width: 24,
-                            decoration: BoxDecoration(
-                              color: plan.color.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.check, color: const Color(0xFF2E3C59), size: 16),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            feature,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.black.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
+                ...(plan['features'] as List<dynamic>? ?? []).map((feature) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 24,
+                        width: 24,
+                        decoration: BoxDecoration(
+                          color: plan['color'].withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Color(0xFF2E3C59),
+                          size: 16,
+                        ),
                       ),
-                    )),
+                      const SizedBox(width: 12),
+                      Text(
+                        feature.toString(),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
               ],
             ),
           ),
@@ -409,7 +425,7 @@ Widget _buildPlanDetails({Key? key}) {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: plan.color.withOpacity(0.15),
+            color: plan['color'].withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -431,15 +447,15 @@ Widget _buildPlanDetails({Key? key}) {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: plan.lightColor,
+                  color: plan['lightColor'],
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  plan.name,
-                  style: TextStyle(
+                  plan['name'] ?? 'Plan',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF2E3C59),
+                    color: Color(0xFF2E3C59),
                   ),
                 ),
               ),
@@ -465,26 +481,26 @@ Widget _buildPlanDetails({Key? key}) {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         '\₹',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF2E3C59),
+                          color: Color(0xFF2E3C59),
                         ),
                       ),
                       Text(
-                        plan.price,
-                        style: TextStyle(
+                        widget.totalPrice.toString(),
+                        style: const TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2E3C59),
+                          color: Color(0xFF2E3C59),
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
-                          ' ${plan.duration}',
+                          ' ${plan['duration'] ?? 'per day'}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black.withOpacity(0.6),
@@ -502,15 +518,15 @@ Widget _buildPlanDetails({Key? key}) {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: plan.color.withOpacity(0.15),
+                    color: plan['color'].withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.edit_document,
                         size: 16,
-                        color: const Color(0xFF2E3C59),
+                        color: Color(0xFF2E3C59),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -533,7 +549,7 @@ Widget _buildPlanDetails({Key? key}) {
   }
 
   Widget _buildBottomButton() {
-      final plan = _plans[_selectedPlanIndex];
+    final plan = _plans[_selectedPlanIndex];
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -552,14 +568,14 @@ Widget _buildPlanDetails({Key? key}) {
         height: 60,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [plan.color, plan.color.withOpacity(0.8)],
+            colors: [plan['color'], plan['color'].withOpacity(0.8)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: plan.color.withOpacity(0.3),
+              color: plan['color'].withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -570,7 +586,6 @@ Widget _buildPlanDetails({Key? key}) {
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              // Handle continue button tap
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CleanerProfilesPage()),
@@ -581,9 +596,9 @@ Widget _buildPlanDetails({Key? key}) {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Continue with ${plan.name}",
+                    "Continue with ${plan['name'] ?? 'Plan'}",
                     style: const TextStyle(
-                      color: const Color(0xFF2E3C59),
+                      color: Color(0xFF2E3C59),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -591,7 +606,7 @@ Widget _buildPlanDetails({Key? key}) {
                   const SizedBox(width: 8),
                   const Icon(
                     Icons.arrow_forward_rounded,
-                    color: const Color(0xFF2E3C59),
+                    color: Color(0xFF2E3C59),
                   ),
                 ],
               ),
@@ -601,6 +616,7 @@ Widget _buildPlanDetails({Key? key}) {
       ),
     );
   }
+
   void _showTermsAndConditions(BuildContext context) {
     final plan = _plans[_selectedPlanIndex];
 
@@ -621,7 +637,6 @@ Widget _buildPlanDetails({Key? key}) {
             ),
             child: Column(
               children: [
-                // Handle bar
                 Container(
                   margin: const EdgeInsets.only(top: 12),
                   width: 40,
@@ -631,14 +646,13 @@ Widget _buildPlanDetails({Key? key}) {
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
-                // Header
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "${plan.name} Plan",
+                        "${plan['name'] ?? 'Plan'} Plan",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -654,7 +668,6 @@ Widget _buildPlanDetails({Key? key}) {
                   ),
                 ),
                 const Divider(height: 24),
-                // Content
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -662,7 +675,7 @@ Widget _buildPlanDetails({Key? key}) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          plan.description,
+                          plan['description'] ?? '',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[700],
@@ -670,35 +683,31 @@ Widget _buildPlanDetails({Key? key}) {
                         ),
                         const SizedBox(height: 24),
 
-                        // Features
                         _buildTermSection(
                           title: "Features",
                           icon: Icons.check_circle_outline,
                           color: Color(0xFF2E3C59),
-                          items: plan.features,
+                          items: plan['features'] as List<dynamic>?,
                         ),
 
-                        // Benefits
-                        if (plan.benefits.isNotEmpty)
+                        if ((plan['benefits'] as List<dynamic>? ?? []).isNotEmpty)
                           _buildTermSection(
                             title: "Benefits",
                             icon: Icons.star_outline,
                             color: Color(0xFF2E3C59),
-                            items: plan.benefits,
+                            items: plan['benefits'] as List<dynamic>?,
                           ),
 
-                        // Pricing Includes
-                        if (plan.pricingIncludes.isNotEmpty)
+                        if ((plan['pricingIncludes'] as List<dynamic>? ?? []).isNotEmpty)
                           _buildTermSection(
                             title: "Pricing Includes",
                             icon: Icons.receipt_long,
                             color: Color(0xFF2E3C59),
-                            items: plan.pricingIncludes,
+                            items: plan['pricingIncludes'] as List<dynamic>?,
                           ),
 
                         const SizedBox(height: 24),
 
-                        // Additional T&C (You can customize these for Daily Plan if needed)
                         _buildTermsParagraph(
                           title: "Payment Terms",
                           content: "Payment is to be made in advance for the selected plan duration. All prices are inclusive of applicable taxes. Refunds are processed as per our refund policy within 5 working days for daily plans.",
@@ -719,7 +728,6 @@ Widget _buildPlanDetails({Key? key}) {
                     ),
                   ),
                 ),
-                // Button
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -738,7 +746,7 @@ Widget _buildPlanDetails({Key? key}) {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: plan.color,
+                      backgroundColor: plan['color'],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -746,7 +754,7 @@ Widget _buildPlanDetails({Key? key}) {
                       ),
                     ),
                     child: Text(
-                      "Confirm ${plan.name} Plan",
+                      "Confirm ${plan['name'] ?? 'Plan'} Plan",
                       style: const TextStyle(
                         fontSize: 18,
                         color: const Color(0xFF2E3C59),
@@ -767,7 +775,7 @@ Widget _buildPlanDetails({Key? key}) {
     required String title,
     required IconData icon,
     required Color color,
-    required List<String> items,
+    required List<dynamic>? items,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -787,7 +795,7 @@ Widget _buildPlanDetails({Key? key}) {
           ],
         ),
         const SizedBox(height: 12),
-        ...items.map((item) => Padding(
+        ...(items as List<dynamic>? ?? []).map((item) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -802,7 +810,7 @@ Widget _buildPlanDetails({Key? key}) {
                   ),
                   Expanded(
                     child: Text(
-                      item,
+                      item.toString(),
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[700],

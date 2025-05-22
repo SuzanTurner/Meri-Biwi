@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:home_ease/daily_plan_clean.dart';
 import 'package:home_ease/your_plan_clean.dart';
+import 'package:home_ease/services/cleaning_service.dart';
 
 class YourDetailsClean extends StatefulWidget {
   const YourDetailsClean({Key? key}) : super(key: key);
@@ -12,12 +13,13 @@ class YourDetailsClean extends StatefulWidget {
 class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerProviderStateMixin {
   // Form state
   int _floorCount = 1;
-  int _bhk=2;
-  int _bathroomCount= 1;
+  int _bhk = 2;
+  int _bathroomCount = 1;
   
   String _purpose = 'daily';
   bool _BathroomCleaning = false;
   bool _DeepCleaning = false;
+  List<String> _selectedServices = [];
 
   // Animation controller for the slide-in effect
   late AnimationController _animationController;
@@ -30,9 +32,12 @@ class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerPr
       Color(0xFFFAFA33)],
   );
 
+  final CleaningService _cleaningService = CleaningService();
+
   @override
   void initState() {
     super.initState();
+    print('=== YourDetailsClean Initialized ===');
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -49,8 +54,66 @@ class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerPr
 
   @override
   void dispose() {
+    print('=== YourDetailsClean Disposed ===');
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _calculateTotal() async {
+    try {
+      // Update selected services based on switches
+      _selectedServices = [];
+      if (_BathroomCleaning) _selectedServices.add('A');
+      if (_DeepCleaning) _selectedServices.add('B');
+
+      print('Calculating total with parameters:');
+      print('Floor: $_floorCount');
+      print('Plan: Basic'); // Always send Basic as initial plan
+      print('BHK: $_bhk');
+      print('Selected Services: $_selectedServices');
+
+      final total = await _cleaningService.calculateCleaningTotal(
+        floor: _floorCount,
+        plan: 'Basic', // Always send Basic as initial plan
+        bhk: _bhk,
+        code: _selectedServices,
+      );
+
+      print('Total calculation response: $total');
+
+      if (!mounted) return;
+
+      // Navigate based on purpose
+      if (_purpose == 'daily') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DailyPlanClean(
+              totalPrice: total['total_price'] ?? 0.0,
+              basePrice: total['base_price'] ?? 0.0,
+              selectedServices: _selectedServices,
+            ),
+          ),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NonDailyPlanClean(
+              totalPrice: total['total_price'] ?? 0.0,
+              basePrice: total['base_price'] ?? 0.0,
+              selectedServices: _selectedServices,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error calculating total: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error calculating total: $e')),
+      );
+    }
   }
 
   @override
@@ -406,53 +469,7 @@ class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerPr
                   const SizedBox(height: 36),
 
                   // Continue Button
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigate based on the selected purpose
-                      if (_purpose == 'daily') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const DailyPlanClean()),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const NonDailyPlanClean()),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Ink(
-                      decoration: BoxDecoration(
-                        gradient: _gradient,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Container(
-                        height: 56,
-                        alignment: Alignment.center,
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Continue',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF2E3C59),
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, color: Color(0xFF2E3C59)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildBottomButton(),
                 ],
               ),
             ),
@@ -606,4 +623,67 @@ class _YourDetailsCleanState extends State<YourDetailsClean> with SingleTickerPr
         ),
       ),
     );
-  }}
+  }
+
+  Widget _buildBottomButton() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Container(
+        width: double.infinity,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [_gradient.colors[0], _gradient.colors[0].withOpacity(0.8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: _gradient.colors[0].withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: _calculateTotal,
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Continue",
+                    style: const TextStyle(
+                      color: Color(0xFF2E3C59),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Color(0xFF2E3C59),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

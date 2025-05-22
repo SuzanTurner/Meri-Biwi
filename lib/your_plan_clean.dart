@@ -1,144 +1,38 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:home_ease/choose_chef.dart';
+import 'package:home_ease/choose_cleaner.dart';
+import 'package:home_ease/services/cleaning_service.dart';
 
 class NonDailyPlanClean extends StatefulWidget {
-  const NonDailyPlanClean({Key? key}) : super(key: key);
+  final double totalPrice;
+  final double basePrice;
+  final List<String> selectedServices;
+
+  const NonDailyPlanClean({
+    Key? key,
+    required this.totalPrice,
+    required this.basePrice,
+    required this.selectedServices,
+  }) : super(key: key);
 
   @override
   State<NonDailyPlanClean> createState() => _NonDailyPlanCleanState();
 }
 
-class Plan {
-  final String name;
-  final String price;
-  final String duration;
-  final Color color;
-  final Color lightColor;
-  final List<String> features;
-  final String description;
-  final IconData icon;
-  final List<String> benefits;
-  final List<String> pricingIncludes;
-
-  Plan({
-    required this.name,
-    required this.price,
-    required this.duration,
-    required this.color,
-    required this.lightColor,
-    required this.features,
-    required this.description,
-    required this.icon,
-    required this.benefits,
-    required this.pricingIncludes,
-  });
-}
-
 class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProviderStateMixin {
-  int _selectedPlanIndex = 1; // Default to Standard plan
+  int _selectedPlanIndex = 0;
   late final TabController _tabController;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
-
-  final List<Plan> _plans = [
-    Plan(
-      name: 'Basic',
-      price: '29',
-      duration: 'per day',
-      color: const Color(0xFFFAFA33),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'One meal per day for weekends',
-        'Standard dishes',
-        'Preset menu only',
-        'Spicy customization',
-      ],
-      description: 'Perfect for light weekend meals with simplicity.',
-      icon: Icons.bubble_chart_outlined,
-      benefits: [
-        'Affordable pricing',
-        'Simple service',
-        'Quick setup',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'No hidden charges',
-        'Free weekend delivery',
-      ],
-    ),
-    Plan(
-      name: 'Standard',
-      price: '49',
-      duration: 'per day',
-      color: const Color(0xFFFAFA33),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Two meals per day for weekdays',
-        'Semi-custom menu',
-        'Sweets/snacks included',
-        'Access to festive menu',
-        'Weekly menu rotation',
-        'Customer support',
-      ],
-      description: 'A balanced meal solution for busy families.',
-      icon: Icons.cleaning_services,
-      benefits: [
-        'More variety',
-        'Healthy combinations',
-        'Reliable scheduling',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Free rescheduling x2/month',
-        'Doorstep delivery',
-      ],
-    ),
-    Plan(
-      name: 'Premium',
-      price: '79',
-      duration: 'per day',
-      color: const Color((0xFFFAFA33)),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Three meals daily all week',
-        'Fully customizable',
-        'Chef-designed menus',
-        'Priority support',
-        'Desserts & snacks daily',
-        'Festive menus included',
-        'Nutrition tracking',
-        'Flexible pause option',
-      ],
-      description: 'Best suited for gourmet-style daily meals.',
-      icon: Icons.stars_rounded,
-      benefits: [
-        'Maximum flexibility',
-        'Rich culinary experience',
-        'Premium customer care',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Priority chef availability',
-        'No additional service fee',
-      ],
-    ),
-  ];
+  final CleaningService _cleaningService = CleaningService();
+  List<dynamic> _plans = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-      length: _plans.length,
-      vsync: this,
-      initialIndex: _selectedPlanIndex,
-    );
-    _tabController.addListener(() {
-      setState(() {
-        _selectedPlanIndex = _tabController.index;
-      });
-    });
-
+    _loadPlans();
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -150,17 +44,89 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
     _animationController.forward();
   }
 
+  Future<void> _loadPlans() async {
+    try {
+      final plans = await _cleaningService.getCleaningPlans(plan: 'Basic');
+      // Add color properties to plans
+      final plansWithColors = [
+        {
+          'name': 'Basic',
+          'color': const Color(0xFFFEF54A),
+          'lightColor': const Color(0xFFFEF54A).withOpacity(0.15),
+          'features': ['Regular cleaning', 'Basic dusting', 'Floor cleaning'],
+          'description': 'Perfect for daily maintenance',
+          'icon': Icons.cleaning_services,
+        },
+        {
+          'name': 'Standard',
+          'color': const Color(0xFFFEF54A),
+          'lightColor': const Color(0xFFFEF54A).withOpacity(0.15),
+          'features': ['Deep cleaning', 'Detailed dusting', 'Floor polishing'],
+          'description': 'Ideal for weekend cleaning',
+          'icon': Icons.cleaning_services,
+        },
+        {
+          'name': 'Premium',
+          'color': const Color(0xFFFEF54A),
+          'lightColor': const Color(0xFFFEF54A).withOpacity(0.15),
+          'features': ['Complete cleaning', 'Premium dusting', 'Floor treatment'],
+          'description': 'For occasional deep cleaning',
+          'icon': Icons.cleaning_services,
+        },
+      ];
+      
+      setState(() {
+        _plans = plansWithColors;
+        _isLoading = false;
+        if (_plans.isNotEmpty) {
+          _tabController = TabController(
+            length: _plans.length,
+            vsync: this,
+            initialIndex: _selectedPlanIndex,
+          );
+          _tabController.addListener(() {
+            setState(() {
+              _selectedPlanIndex = _tabController.index;
+            });
+          });
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading plans: $e')),
+      );
+    }
+  }
+
   @override
   void dispose() {
-    _tabController.dispose();
     _animationController.dispose();
+    if (_plans.isNotEmpty) {
+      _tabController.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_plans.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Text('No plans available'),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F6F0),
@@ -280,25 +246,23 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
         controller: _tabController,
         indicator: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: _plans[_selectedPlanIndex].color,
+          color: _plans[_selectedPlanIndex]['color'],
         ),
-        labelColor: Color(0xFF2E3C59),
+        labelColor: const Color(0xFF2E3C59),
         unselectedLabelColor: const Color(0xFF5C6E6E),
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-        tabs: _plans
-            .map((plan) => Tab(
-                  height: 60,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(plan.icon, size: 18),
-                      const SizedBox(width: 8),
-                      Text(plan.name),
-                    ],
-                  ),
-                ))
-            .toList(),
+        tabs: _plans.map((plan) => Tab(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(plan['icon'] as IconData, size: 18),
+              const SizedBox(width: 8),
+              Text(plan['name'] as String),
+            ],
+          ),
+        )).toList(),
       ),
     );
   }
@@ -316,9 +280,9 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: plan.lightColor,
+              color: const Color(0xFFFEF54A).withOpacity(0.15),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: plan.color.withOpacity(0.3), width: 1),
+              border: Border.all(color: const Color(0xFFFEF54A).withOpacity(0.3), width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,29 +292,33 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: plan.color.withOpacity(0.2),
+                        color: const Color(0xFFFEF54A).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(plan.icon, color: Color(0xFF2E3C59), size: 24),
+                      child: Icon(
+                        plan['icon'] ?? Icons.cleaning_services,
+                        color: const Color(0xFF2E3C59),
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          plan.name,
-                          style: TextStyle(
+                          plan['name'] ?? 'Plan',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF2E3C59),
+                            color: Color(0xFF2E3C59),
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          plan.description,
-                          style: TextStyle(
+                          plan['description'] ?? '',
+                          style: const TextStyle(
                             fontSize: 12,
-                            color: const Color(0xFF2E3C59).withOpacity(0.8),
+                            color: Color(0xFF2E3C59),
                           ),
                         ),
                       ],
@@ -358,37 +326,34 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                   ],
                 ),
                 const SizedBox(height: 20),
-                ...plan.features.map((feature) {
-                  final isSpicyCustomization = feature == 'Spicy customization';
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 24,
-                            width: 24,
-                            decoration: BoxDecoration(
-                              color: plan.color.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              isSpicyCustomization ? Icons.close : Icons.check,
-                              color: isSpicyCustomization ? Colors.red : Color(0xFF2E3C59),
-                              size: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            feature,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.black.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
+                ...(plan['features'] as List<dynamic>? ?? []).map((feature) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        height: 24,
+                        width: 24,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF54A).withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Color(0xFF2E3C59),
+                          size: 16,
+                        ),
                       ),
-                    );
-                }),
+                      const SizedBox(width: 12),
+                      Text(
+                        feature.toString(),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.black.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
               ],
             ),
           ),
@@ -408,7 +373,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: plan.color.withOpacity(0.15),
+            color: const Color(0xFFFEF54A).withOpacity(0.15),
             blurRadius: 20,
             offset: const Offset(0, 5),
           ),
@@ -430,15 +395,15 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: plan.lightColor,
+                  color: const Color(0xFFFEF54A).withOpacity(0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  plan.name,
-                  style: TextStyle(
+                  plan['name'] ?? 'Plan',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF2E3C59),
+                    color: Color(0xFF2E3C59),
                   ),
                 ),
               ),
@@ -464,7 +429,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         '\₹',
                         style: TextStyle(
                           fontSize: 22,
@@ -473,8 +438,8 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                         ),
                       ),
                       Text(
-                        plan.price,
-                        style: TextStyle(
+                        widget.totalPrice.toString(),
+                        style: const TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2E3C59),
@@ -483,7 +448,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
-                          ' ${plan.duration}',
+                          ' ${plan['duration'] ?? 'per day'}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black.withOpacity(0.6),
@@ -501,12 +466,12 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: plan.color.withOpacity(0.15),
+                    color: const Color(0xFFFEF54A).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.edit_document,
                         size: 16,
                         color: Color(0xFF2E3C59),
@@ -517,7 +482,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF2E3C59),
+                          color: const Color(0xFF2E3C59),
                         ),
                       ),
                     ],
@@ -568,7 +533,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "${plan.name} Plan",
+                        "${plan['name'] ?? 'Plan'} Plan",
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -592,7 +557,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          plan.description,
+                          plan['description'] ?? '',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[700],
@@ -605,7 +570,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                           title: "Features",
                           icon: Icons.check_circle_outline,
                           color: Color(0xFF2E3C59),
-                          items: plan.features,
+                          items: plan['features'] as List<dynamic> ?? [],
                         ),
                         
                         // Benefits
@@ -613,7 +578,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                           title: "Benefits",
                           icon: Icons.star_outline,
                           color: Color(0xFF2E3C59),
-                          items: plan.benefits,
+                          items: plan['benefits'] as List<dynamic> ?? [],
                         ),
                         
                         // Pricing Includes
@@ -621,7 +586,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                           title: "Pricing Includes",
                           icon: Icons.receipt_long,
                           color: Color(0xFF2E3C59),
-                          items: plan.pricingIncludes,
+                          items: plan['pricingIncludes'] as List<dynamic> ?? [],
                         ),
                         
                         const SizedBox(height: 24),
@@ -666,7 +631,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: plan.color,
+                      backgroundColor: const Color(0xFFFEF54A),
                       foregroundColor: Color(0xFF2E3C59),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -674,7 +639,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                       ),
                     ),
                     child: Text(
-                      "Confirm ${plan.name} Plan",
+                      "Confirm ${plan['name'] ?? 'Plan'} Plan",
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -694,7 +659,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
     required String title,
     required IconData icon,
     required Color color,
-    required List<String> items,
+    required List<dynamic> items,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,7 +694,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
               ),
               Expanded(
                 child: Text(
-                  item,
+                  item.toString(),
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[700],
@@ -790,14 +755,14 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
         height: 60,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [plan.color, plan.color.withOpacity(0.8)],
+            colors: [const Color(0xFFFEF54A), const Color(0xFFFEF54A).withOpacity(0.8)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: plan.color.withOpacity(0.3),
+              color: const Color(0xFFFEF54A).withOpacity(0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -808,10 +773,9 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
-              // Handle continue button tap
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChefProfilesPage()),
+                MaterialPageRoute(builder: (context) => CleanerProfilesPage()),
               );
             },
             child: Center(
@@ -819,7 +783,7 @@ class _NonDailyPlanCleanState extends State<NonDailyPlanClean> with TickerProvid
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Continue with ${plan.name}",
+                    "Continue with ${plan['name'] ?? 'Plan'}",
                     style: const TextStyle(
                       color: Color(0xFF2E3C59),
                       fontSize: 18,

@@ -1,36 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:home_ease/choose_chef.dart';
-
-class HomeHelperApp extends StatelessWidget {
-  const HomeHelperApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'HomeHelper',
-      theme: ThemeData(
-        primaryColor: const Color(0xFFFEF54A),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFEF54A),
-          secondary: const Color(0xFFF5E8C7),
-        ),
-        fontFamily: 'Poppins',
-        textTheme: const TextTheme(
-          headlineMedium: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF2D3A3A),
-          ),
-          bodyLarge: TextStyle(
-            color: Color(0xFF2D3A3A),
-          ),
-        ),
-      ),
-      home: const DailyPlan(),
-    );
-  }
-}
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Plan {
   final String name;
@@ -41,8 +13,8 @@ class Plan {
   final List<String> features;
   final String description;
   final IconData icon;
-  final List<String> benefits; // Added benefits
-  final List<String> pricingIncludes; // Added pricingIncludes
+  final List<String> benefits;
+  final List<String> pricingIncludes;
 
   Plan({
     required this.name,
@@ -59,10 +31,96 @@ class Plan {
 }
 
 class DailyPlan extends StatefulWidget {
-  const DailyPlan({Key? key}) : super(key: key);
+  final String foodType;
+  final int numPeople;
+  final Map<String, dynamic>? details;
+  final List<String> selectedServices;
+  final String planType;
+  final String mealType;
+  final double basePrice;
+  final double totalPrice;
+
+  const DailyPlan({
+    Key? key,
+    required this.foodType,
+    required this.numPeople,
+    this.details,
+    required this.selectedServices,
+    required this.planType,
+    required this.mealType,
+    required this.basePrice,
+    required this.totalPrice,
+  }) : super(key: key);
 
   @override
   State<DailyPlan> createState() => _DailyPlanState();
+}
+
+Future<Plan> createPlanFromApi({
+  required String name,
+  required String foodType,
+  required String mealCombo,
+  required int numberOfPeople,
+  required String planType,
+  required String services,
+  required Color color,
+  required Color lightColor,
+  required List<String> features,
+  required String description,
+  required IconData icon,
+  required List<String> benefits,
+  required List<String> pricingIncludes,
+}) async {
+  print('[DEBUG] Creating plan from API for: $name');
+  print('[DEBUG] API Parameters:');
+  print('- foodType: $foodType');
+  print('- mealCombo: $mealCombo');
+  print('- numberOfPeople: $numberOfPeople');
+  print('- planType: $planType');
+  print('- services: $services');
+
+  final uri = Uri.parse('http://127.0.0.1:8000/calculate_total').replace(
+    queryParameters: {
+      'food_type': foodType,
+      'meal_type': mealCombo,
+      'num_people': numberOfPeople.toString(),
+      'plan_type': planType,
+      'services': services,
+    },
+  );
+  print('[DEBUG] API URL: $uri');
+
+  try {
+    print('[DEBUG] Making HTTP GET request');
+    final response = await http.get(uri);
+    print('[DEBUG] Received response with status code: ${response.statusCode}');
+    print('[DEBUG] Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final price = data['total_price'].toString();
+      print('[DEBUG] Successfully parsed price: $price');
+
+      return Plan(
+        name: name,
+        price: price,
+        duration: 'per day',
+        color: color,
+        lightColor: lightColor,
+        features: features,
+        description: description,
+        icon: icon,
+        benefits: benefits,
+        pricingIncludes: pricingIncludes,
+      );
+    } else {
+      print('[ERROR] API request failed with status code: ${response.statusCode}');
+      throw Exception('Failed to load price for $name');
+    }
+  } catch (e) {
+    print('[ERROR] Exception during API call: $e');
+    throw Exception('Failed to load price for $name: $e');
+  }
 }
 
 class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
@@ -70,74 +128,25 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
   late final TabController _tabController;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
-
-    final List<Plan> _plans = [
-    Plan(
-      name: 'Standard',
-      price: '49',
-      duration: 'per day',
-      color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Two meals per day for weekdays',
-        'Semi-custom menu',
-        'Sweets/snacks included',
-        'Access to festive menu',
-        'Weekly menu rotation',
-        'Customer support',
-      ],
-      description: 'A balanced meal solution for busy families.',
-      icon: Icons.restaurant_menu,
-       benefits: [
-        'More variety',
-        'Healthy combinations',
-        'Reliable scheduling',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Free rescheduling x2/month',
-        'Doorstep delivery',
-      ],
-    ),
-    Plan(
-      name: 'Premium',
-      price: '79',
-      duration: 'per day',
-      color: const Color(0xFFFEF54A),
-      lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
-      features: [
-        'Three meals daily all week',
-        'Fully customizable',
-        'Chef-designed menus',
-        'Priority support',
-        'Desserts & snacks daily',
-        'Festive menus included',
-        'Nutrition tracking',
-        'Flexible pause option',
-      ],
-      description: 'Best suited for gourmet-style daily meals.',
-      icon: Icons.stars_rounded,
-       benefits: [
-        'Maximum flexibility',
-        'Rich culinary experience',
-        'Premium customer care',
-      ],
-      pricingIncludes: [
-        'Includes GST',
-        'Priority chef availability',
-        'No additional service fee',
-      ],
-    ),
-  ];
+  List<Plan> _plans = [];
 
   @override
   void initState() {
+    print('[DEBUG] Initializing DailyPlan widget');
+    print('[DEBUG] Received parameters:');
+    print('- foodType: ${widget.foodType}');
+    print('- numPeople: ${widget.numPeople}');
+    print('- selectedServices: ${widget.selectedServices}');
+    print('- planType: ${widget.planType}');
+    print('- mealType: ${widget.mealType}');
+    
     super.initState();
     _tabController = TabController(
-      length: _plans.length,
+      length: 2, // Only Standard and Premium plans
       vsync: this,
       initialIndex: _selectedPlanIndex,
     );
+    
     _tabController.addListener(() {
       setState(() {
         _selectedPlanIndex = _tabController.index;
@@ -148,11 +157,169 @@ class _DailyPlanState extends State<DailyPlan> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
+    
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
     );
+    
     _animationController.forward();
+    loadPlans();
+  }
+
+  void loadPlans() async {
+    print('[DEBUG] Starting loadPlans()');
+    final List<Plan> fetchedPlans = [];
+
+    final Map<String, dynamic> params = {
+      'foodType': widget.foodType,
+      'mealCombo': widget.mealType,
+      'numberOfPeople': widget.numPeople,
+      'services': widget.selectedServices.isNotEmpty ? widget.selectedServices.join(',') : '',
+    };
+    print('[DEBUG] API Parameters: $params');
+
+    final List<String> planTypes = ['Standard', 'Premium'];
+    print('[DEBUG] Processing plan types: $planTypes');
+
+    for (String planType in planTypes) {
+      print('[DEBUG] Processing plan type: $planType');
+      try {
+        print('[DEBUG] Making API call for $planType plan');
+        final plan = await createPlanFromApi(
+          name: planType,
+          foodType: params['foodType'] as String,
+          mealCombo: params['mealCombo'] as String,
+          numberOfPeople: params['numberOfPeople'] as int,
+          planType: planType,
+          services: params['services'] as String,
+          color: const Color(0xFFFEF54A),
+          lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
+          features: getFeaturesFor(planType),
+          description: getDescriptionFor(planType),
+          icon: getIconFor(planType),
+          benefits: getBenefitsFor(planType),
+          pricingIncludes: getPricingIncludesFor(planType),
+        );
+        print('[DEBUG] Successfully created plan for $planType with price: ${plan.price}');
+        fetchedPlans.add(plan);
+        
+        if (mounted) {
+          setState(() {
+            _plans = List.from(fetchedPlans);
+          });
+          print('[DEBUG] Updated state with new plan: $planType (${plan.price})');
+        }
+      } catch (e) {
+        print('[ERROR] Failed to load plan $planType: $e');
+        print('[DEBUG] Creating fallback plan for $planType');
+        final fallbackPlan = Plan(
+          name: planType,
+          price: '0',
+          duration: 'per day',
+          color: const Color(0xFFFEF54A),
+          lightColor: const Color(0xFFFEF54A).withOpacity(0.15),
+          features: getFeaturesFor(planType),
+          description: getDescriptionFor(planType),
+          icon: getIconFor(planType),
+          benefits: getBenefitsFor(planType),
+          pricingIncludes: getPricingIncludesFor(planType),
+        );
+        print('[DEBUG] Fallback plan created for $planType');
+        fetchedPlans.add(fallbackPlan);
+        
+        if (mounted) {
+          setState(() {
+            _plans = List.from(fetchedPlans);
+          });
+          print('[DEBUG] Updated state with fallback plan: $planType');
+        }
+      }
+    }
+
+    print('[DEBUG] All plans processed. Total plans: ${fetchedPlans.length}');
+    if (mounted) {
+      print('[DEBUG] Final state update with all plans');
+      setState(() {
+        _plans = fetchedPlans;
+      });
+      print('[DEBUG] Final state updated with all plans');
+    } else {
+      print('[WARNING] Widget is not mounted, skipping final state update');
+    }
+  }
+
+  // Helper functions
+  List<String> getFeaturesFor(String planType) {
+    return switch (planType) {
+      'Standard' => <String>[
+          'Two meals per day for weekdays',
+          'Semi-custom menu',
+          'Sweets/snacks included',
+          'Access to festive menu',
+          'Weekly menu rotation',
+          'Customer support',
+        ],
+      'Premium' => <String>[
+          'Three meals daily all week',
+          'Fully customizable',
+          'Chef-designed menus',
+          'Priority support',
+          'Desserts & snacks daily',
+          'Festive menus included',
+          'Nutrition tracking',
+          'Flexible pause option',
+        ],
+      _ => <String>[],
+    };
+  }
+
+  String getDescriptionFor(String planType) {
+    return switch (planType) {
+      'Standard' => 'A balanced meal solution for busy families.',
+      'Premium' => 'Best suited for gourmet-style daily meals.',
+      _ => '',
+    };
+  }
+
+  IconData getIconFor(String planType) {
+    return switch (planType) {
+      'Standard' => Icons.restaurant_menu,
+      'Premium' => Icons.stars_rounded,
+      _ => Icons.restaurant,
+    };
+  }
+
+  List<String> getBenefitsFor(String planType) {
+    return switch (planType) {
+      'Standard' => <String>[
+          'More variety',
+          'Healthy combinations',
+          'Reliable scheduling',
+        ],
+      'Premium' => <String>[
+          'Maximum flexibility',
+          'Rich culinary experience',
+          'Premium customer care',
+        ],
+      _ => <String>[],
+    };
+  }
+
+  List<String> getPricingIncludesFor(String planType) {
+    return switch (planType) {
+      'Standard' => <String>[
+          'Includes GST',
+          'Free rescheduling x2/month',
+          'Doorstep delivery',
+        ],
+      'Premium' => <String>[
+          'Includes GST',
+          'Priority chef availability',
+          'No additional service fee',
+        ],
+      _ => <String>[],
+    };
   }
 
   @override
@@ -568,9 +735,15 @@ Widget _buildPlanDetails({Key? key}) {
             borderRadius: BorderRadius.circular(16),
             onTap: () {
               // Handle continue button tap
+              final totalPrice = double.parse(plan.price);
+              print('[DEBUG] Navigating to ChefProfilesPage with total price: $totalPrice');
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChefProfilesPage()),
+                MaterialPageRoute(
+                  builder: (context) => ChefProfilesPage(
+                    totalPrice: totalPrice,
+                  ),
+                ),
               );
             },
             child: Center(

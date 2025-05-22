@@ -15,7 +15,7 @@ class CleanerProfilesPage extends StatefulWidget {
 class _CleanerProfilesPageState extends State<CleanerProfilesPage>
     with SingleTickerProviderStateMixin {
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
-  String _genderPreference = 'any';
+  String _genderPreference = 'female';
   String _timePreference = 'any';
   String _communityPreference = 'any';
   TimeOfDay _selectedTime = TimeOfDay(hour: 12, minute: 0);
@@ -982,7 +982,7 @@ Widget build(BuildContext context) {
 
                 // Community dropdown
                 ListTile(
-                  leading: const Icon(Icons.people),
+                  leading: const Icon(Icons.groups),
                   title: const Text('Community'),
                   trailing: DropdownButton<String>(
                     value: _community,

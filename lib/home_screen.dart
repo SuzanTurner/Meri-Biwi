@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:home_ease/profile.dart';
 import 'package:home_ease/your_details.dart';
 import 'package:home_ease/your_details_clean.dart'; // Assuming you have this page
 
@@ -11,12 +12,32 @@ class HomeScreen extends StatelessWidget {
   ];
 
   final List<Map<String, String>> featuredServices = [
-    {"title": "Domestic help", "image": "assets/chef/domestic.jpg", "route": "domestic_help"},
-    {"title": "Babysitters/ Japas", "image": "assets/chef/babysitter.jpg", "route": "babysitters"},
+    {
+      "title": "Domestic help",
+      "image": "assets/chef/domestic.jpg",
+      "route": "domestic_help"
+    },
+    {
+      "title": "Babysitters/ Japas",
+      "image": "assets/chef/babysitter.jpg",
+      "route": "babysitters"
+    },
     {"title": "Cooks", "image": "assets/chef/cook.jpg", "route": "cooks"},
-    {"title": "All-rounders", "image": "assets/chef/allrounder.jpg", "route": "all_rounders"},
-    {"title": "24 hrs - Full Time", "image": "assets/chef/fulltime.jpg", "route": "full_time"},
-    {"title": "24 Hrs - Japas", "image": "assets/chef/japas.jpg", "route": "japas"},
+    {
+      "title": "All-rounders",
+      "image": "assets/chef/allrounder.jpg",
+      "route": "all_rounders"
+    },
+    {
+      "title": "24 hrs - Full Time",
+      "image": "assets/chef/fulltime.jpg",
+      "route": "full_time"
+    },
+    {
+      "title": "24 Hrs - Japas",
+      "image": "assets/chef/japas.jpg",
+      "route": "japas"
+    },
   ];
 
   final List<Map<String, String>> exploreBroomees = [
@@ -33,11 +54,30 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home,color: Color(0xFF2E3C59)), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.book,color: Color(0xFF2E3C59)), label: "Bookings"),
-          BottomNavigationBarItem(icon: Icon(Icons.check_circle,color: Color(0xFF2E3C59)), label: "Attendance"),
-          BottomNavigationBarItem(icon: Icon(Icons.person,color: Color(0xFF2E3C59)), label: "Profile"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home, color: Color(0xFF2E3C59)),
+              label: "Home"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.book, color: Color(0xFF2E3C59)),
+              label: "Bookings"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle, color: Color(0xFF2E3C59)),
+              label: "Attendance"),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person, color: Color(0xFF2E3C59)),
+              label: "Profile"),
         ],
+        onTap: (int index) { // Added onTap
+          if (index == 3) { // Index 3 is "Profile"
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    UserProfilesPage(), // Navigate to ProfilesScreen
+              ),
+            );
+          }
+        },
       ),
       body: SafeArea(
         child: ListView(
@@ -49,7 +89,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.location_pin, color: Colors.orange),
                   SizedBox(width: 5),
-                  Text("52CH+H3M, Dabha R...", style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text("52CH+H3M, Dabha R...",
+                      style: TextStyle(fontWeight: FontWeight.w600)),
                   Spacer(),
                   Icon(Icons.account_circle_outlined),
                 ],
@@ -68,7 +109,8 @@ class HomeScreen extends StatelessWidget {
                   builder: (BuildContext context) {
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: Image.asset(imgPath, fit: BoxFit.cover, width: double.infinity),
+                      child: Image.asset(imgPath,
+                          fit: BoxFit.cover, width: double.infinity),
                     );
                   },
                 );
@@ -81,7 +123,9 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Our featured services", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text("Our featured services",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   SizedBox(height: 10),
                   Wrap(
                     spacing: 20,
@@ -96,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                                 builder: (context) => YourDetailsClean(),
                               ),
                             );
-                          } else {
+                          } else if (service["title"] == "Cooks") {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -110,7 +154,8 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               radius: 35,
-                              backgroundImage: AssetImage(service["image"]!),
+                              backgroundImage:
+                                  AssetImage(service["image"]!),
                             ),
                             SizedBox(height: 5),
                             SizedBox(
@@ -133,7 +178,8 @@ class HomeScreen extends StatelessWidget {
             // Explore Broomees
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text("Explore Broomees", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              child: Text("Explore Broomees",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             ),
             SizedBox(height: 10),
             CarouselSlider(
@@ -164,16 +210,25 @@ class HomeScreen extends StatelessWidget {
                           alignment: Alignment.bottomLeft,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
                             children: [
-                              Text(item["title"]!, style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text(item["title"]!,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
                               SizedBox(height: 5),
-                              Text(item["subtitle"]!, style: TextStyle(color: Colors.white, fontSize: 12)),
+                              Text(item["subtitle"]!,
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 12)),
                               SizedBox(height: 10),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.amber,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
                                 ),
                                 onPressed: () {},
                                 child: Text("Book Now!"),
@@ -189,6 +244,19 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Placeholder for the ProfilesScreen
+class ProfilesScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Profile")),
+      body: Center(
+        child: Text("This is the Profile Screen"),
       ),
     );
   }

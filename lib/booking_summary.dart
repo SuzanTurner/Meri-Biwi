@@ -7,6 +7,7 @@ class ChefBookingSummaryPage extends StatefulWidget {
   final Map<String, dynamic> chef;
   final DateTime startDate;
   final TimeOfDay selectedTime;
+  final double totalPrice;
   
 
   const ChefBookingSummaryPage({
@@ -14,6 +15,7 @@ class ChefBookingSummaryPage extends StatefulWidget {
     required this.chef,
     required this.startDate,
     required this.selectedTime,
+    required this.totalPrice,
     }) : super(key: key);
 
   @override
@@ -35,6 +37,8 @@ class _ChefBookingSummaryPageState extends State<ChefBookingSummaryPage> {
 @override
 void initState() {
   super.initState();
+  baseAmount = widget.totalPrice;
+  finalAmount = baseAmount;
   _getCurrentLocation();
 }
 
@@ -63,7 +67,8 @@ Future<void> _getCurrentLocation() async {
   final TextEditingController noteController = TextEditingController();
   final TextEditingController couponController = TextEditingController();
   bool isCouponApplied = false;
-  double finalAmount = 1499.0;
+  late double finalAmount;
+  late double baseAmount;
   double discount = 0.0;
   
   
@@ -80,7 +85,7 @@ Future<void> _getCurrentLocation() async {
     if (couponController.text.toUpperCase() == "FIRSTORDER") {
       setState(() {
         discount = 150.0;
-        finalAmount = basePrice;
+        finalAmount = baseAmount - discount;
         isCouponApplied = true;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -521,99 +526,7 @@ ClipRRect(
             ),
 
             // Payment Summary
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Payment Summary",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Chef Service",
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        Text(
-                          "₹$finalAmount",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    if (discount > 0) ...[
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Discount",
-                            style: TextStyle(
-                              color: Colors.green.shade600,
-                            ),
-                          ),
-                          Text(
-                            "-₹$discount",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Colors.green.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Divider(),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          "Total Amount",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          "₹$finalAmount",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildPriceBreakup(),
 
             // Terms and Conditions
             Container(
@@ -688,6 +601,114 @@ ClipRRect(
               ),
             ),
             const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriceBreakup() {
+    // Start with the base amount from widget
+    baseAmount = widget.totalPrice;
+    finalAmount = baseAmount;
+    
+    print('[DEBUG] Base amount from widget: ${widget.totalPrice}');
+    print('[DEBUG] Community value: ${widget.chef['community']}');
+    print('[DEBUG] Community type: ${widget.chef['community']?.runtimeType}');
+    
+    // Add community surcharge only if a specific community is selected (not 'any')
+    if (widget.chef['community'] != null && 
+        widget.chef['community'].toString().toLowerCase() != 'any') {
+      print('[DEBUG] Community condition met - adding surcharge');
+      finalAmount = baseAmount + 1000.0; // Add community chef surcharge
+    } else {
+      print('[DEBUG] Community condition not met - no surcharge added');
+      finalAmount = baseAmount; // Keep original base amount
+    }
+    
+    print('[DEBUG] Final amount after community check: $finalAmount');
+    
+    // Apply discount if coupon is applied
+    if (isCouponApplied) {
+      finalAmount -= discount;
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Price Breakup",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Plan Price"),
+                Text("₹${(baseAmount - 1000).toStringAsFixed(2)}"),
+              ],
+
+            ),
+            if (widget.chef['community'] != null && 
+                widget.chef['community'].toString().toLowerCase() != 'any')
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Community Chef Surcharge"),
+                    Text("₹1000.00"),
+                  ],
+                ),
+              ),
+            if (isCouponApplied) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Discount"),
+                  Text("₹${(baseAmount).toStringAsFixed(2)}"),
+                ],
+              ),
+            ],
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Total Amount",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  "₹${finalAmount.toStringAsFixed(2)}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
