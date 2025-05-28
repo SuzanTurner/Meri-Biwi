@@ -74,21 +74,61 @@ export default function RegisterWorkerPage() {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form Data:", data);
-      console.log("ID Document:", idFile);
-      console.log("Photo:", photoFile);
+    try {
+      const formData = new FormData();
       
-      setIsSubmitting(false);
+      // Add all form fields
+      formData.append('name', data.name);
+      formData.append('email', data.email);
+      formData.append('phone', data.phone);
+      formData.append('address', data.address);
+      formData.append('city', data.city);
+      formData.append('gender', data.gender);
+      formData.append('dob', data.dob.toISOString().split('T')[0]);
+      formData.append('service', data.serviceType);
+      formData.append('exp', data.experience.toString());
+      formData.append('availability', data.availability);
+      formData.append('id_proof', data.idType);
+      formData.append('id_proof_number', data.idNumber);
+      formData.append('about', data.bio);
+      
+      // Add files
+      if (idFile) {
+        formData.append('id_document', idFile);
+      }
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+      
+      const response = await fetch('http://localhost:8000/api/register-worker', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+      
+      const result = await response.json();
+      
       setIsSuccess(true);
-      
       toast({
         title: "Registration Submitted",
         description: "Your application has been received. We will contact you shortly.",
         variant: "default",
       });
-    }, 1500);
+      
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFileChange = (
