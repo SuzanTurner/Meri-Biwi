@@ -17,8 +17,10 @@ app.add_middleware(
     allow_origins=["*"],  # In production, replace with your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
+
+Base.metadata.create_all(bind=engine)
 
 # Create upload directories if they don't exist
 UPLOAD_DIR = "uploads"
@@ -84,7 +86,7 @@ async def search_workers(name: str = None):
 async def register_worker(
     name: str = Form(...),
     email: str = Form(...),
-    phone: int = Form(...),
+    phone: str = Form(..., description="Phone number can include country code and special characters (e.g. +91-9999999999)"),
     address: str = Form(...),
     city: str = Form(...),
     gender: str = Form(...),
@@ -158,9 +160,6 @@ async def register_worker(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Create database tables
-Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8081)
