@@ -24,7 +24,7 @@ There are **two database instances**:
 - One for **local dev**  
 - One that's **live on Render**  
 
-*Access? Yeah… only I got the keys. Y’all peasants just watch from the sidelines.*
+*Only I get access for the actual site*
 
 ## 🧪 Running Locally
 
