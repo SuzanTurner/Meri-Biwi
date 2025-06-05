@@ -1,10 +1,12 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from datetime import datetime
 import os
 import shutil
 from modals import User
+from typing import List
+import schemas
 from database import get_db, engine, Base
 import uvicorn
 from sqlalchemy import or_
@@ -160,6 +162,11 @@ async def register_worker(
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get('/all', response_model= List[schemas.showuser])
+async def get_user(db : Session = Depends(get_db)):
+    users = db.query(User).all()
+    return users
     
 
 if __name__ == "__main__":
