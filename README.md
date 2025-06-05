@@ -15,7 +15,8 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 | Method | Endpoint       | Description                        |
 |--------|----------------|------------------------------------|
 | POST   | `/register`    | Register a new worker              |
-| GET    | `/search`      | Search registered workers by name |
+| GET    | `/search`      | Search registered workers by name  |
+| GET    | `/all`         | Get all workers                    |  
 
 
 ## 💾 Database Setup
