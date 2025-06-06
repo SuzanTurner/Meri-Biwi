@@ -12,11 +12,11 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 
 ## 🌐 API Endpoints
 
-| Method | Endpoint       | Description                        |
-|--------|----------------|------------------------------------|
-| POST   | `/register`    | Register a new worker              |
-| GET    | `/search`      | Search registered workers by name  |
-| GET    | `/all`         | Get all workers                    |  
+| Method | Endpoint          | Description                        |
+|--------|-------------------|------------------------------------|
+| POST   | `/register-worker`| Register a new worker              |
+| GET    | `/search-workers` | Search registered workers by name  |
+| GET    | `/all`            | Get all workers                    |  
 
 
 ## 💾 Database Setup
