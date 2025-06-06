@@ -29,7 +29,6 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(nullable = False, default = "Pending")
     
-   
 
 
 class CategoryEnum(str, enum.Enum):
@@ -50,3 +49,11 @@ class Service(Base):
     price = Column(Float, nullable=False)
     duration = Column(String)  # e.g., "2 hours", "30 mins"
     is_popular = Column(Boolean, default=False)
+    
+    
+class User_Login(Base):
+    __tablename__ = "logins"
+    
+    id = Column(Integer, primary_key = True, index = True)
+    username = Column(String, nullable = False)
+    password = Column(String, nullable = False)

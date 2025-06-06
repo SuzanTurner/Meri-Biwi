@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import uvicorn
-from routers import register_worker, update, db_check,service
+from routers import register_worker, update, db_check, user, login, service
 
 app = FastAPI( debug = True)
 
@@ -19,7 +19,10 @@ Base.metadata.create_all(bind=engine)
 app.include_router(register_worker.router)
 app.include_router(update.router)
 app.include_router(db_check.router)
+app.include_router(user.router)
+app.include_router(login.router)
 app.include_router(service.router)
+
 
 # Create upload directories if they don't exist
 # UPLOAD_DIR = "uploads"

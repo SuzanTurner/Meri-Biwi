@@ -41,6 +41,13 @@ class showuser(BaseModel):
 class UserCreate(UserBase):
     pass
 
+class User(BaseModel):
+    username : str
+    password : str
+
+class Login(BaseModel):
+    username : str
+    password : str
 
 class CategoryEnum(str, Enum):
     cleaning = "cleaning"
