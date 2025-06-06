@@ -3,3 +3,5 @@ test.py
 venv/
 uploads/
 __pycache__
+uploads/photos/*
+uploads/documents/*

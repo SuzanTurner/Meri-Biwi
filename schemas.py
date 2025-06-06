@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
+from enum import Enum
+from typing import List, Optional
 
 class UserBase(BaseModel):
     name: str
@@ -40,4 +42,25 @@ class UserCreate(UserBase):
     pass
 
 
-    
+class CategoryEnum(str, Enum):
+    cleaning = "cleaning"
+    cooking = "cooking"
+    baby_care = "Baby Care"
+    elder_care = "Elder Care"
+class ServiceBase(BaseModel):
+    name: str
+    category: CategoryEnum
+    features: List[str]
+    description: Optional[str] = None
+    price: float
+    duration: str
+    is_popular: bool = False
+
+class ServiceCreate(ServiceBase):
+    pass
+
+class ServiceOut(ServiceBase):
+    id: int
+
+    class Config:
+        orm_mode = True
