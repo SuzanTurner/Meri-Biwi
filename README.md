@@ -21,6 +21,7 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 | GET    | `/db_check`       | For checking db connection (Devs only |
 
 
+Please See /docs endpoint for More info
 
 ## 💾 Database Setup
 
