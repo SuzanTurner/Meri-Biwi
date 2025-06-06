@@ -17,6 +17,9 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 | POST   | `/register-worker`| Register a new worker              |
 | GET    | `/search-workers` | Search registered workers by name  |
 | GET    | `/all`            | Get all workers                    |  
+| PUT    | `/update/{id}`     | Update worker status by ID         |
+| GET    | `/db_check`       | For checking db connection (Devs only |
+
 
 
 ## 💾 Database Setup
