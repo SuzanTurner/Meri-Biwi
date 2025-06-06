@@ -2,3 +2,4 @@
 test.py
 venv/
 uploads/
+__pycache__
