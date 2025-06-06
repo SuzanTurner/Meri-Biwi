@@ -24,3 +24,7 @@ class User(Base):
     photo_path = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(nullable = False, default = "Pending")
+    
+   
+
