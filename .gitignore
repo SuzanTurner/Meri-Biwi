@@ -1,5 +1,4 @@
 .env
 test.py
-venv
-__pycache__
+venv/
 uploads/
