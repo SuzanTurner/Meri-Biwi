@@ -23,6 +23,8 @@ class UserBase(BaseModel):
     file_path: str
     created_at: datetime
     status : str
+    
+    religion : str
 
     class Config:
         orm_mode = True
@@ -54,6 +56,7 @@ class CategoryEnum(str, Enum):
     cooking = "cooking"
     baby_care = "Baby Care"
     elder_care = "Elder Care"
+    
 class ServiceBase(BaseModel):
     name: str
     category: CategoryEnum

@@ -29,6 +29,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(nullable = False, default = "Pending")
     
+    religion = Column(nullable = False, default = "God knows")
+    
 
 
 class CategoryEnum(str, enum.Enum):

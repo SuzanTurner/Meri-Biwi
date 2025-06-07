@@ -57,7 +57,8 @@ async def search_workers(name: str = None):
                 "about": worker.about,
                 "photo_path": worker.photo_path,
                 "created_at": worker.created_at.isoformat() if worker.created_at else None,
-                "status" : worker.status
+                "status" : worker.status,
+                "religion" : worker.religion
             }
             worker_list.append(worker_dict)
         
@@ -89,7 +90,8 @@ async def register_worker(
     about: str = Form(...),
     photo: UploadFile = File(...),
     id_document: UploadFile = File(...),
-    status : str = "Pending"
+    status : str = "Pending",
+    religion : str = "God knows"
 ):
     try:
         # Generate unique filenames
@@ -127,7 +129,8 @@ async def register_worker(
                 about=about,
                 photo_path=photo_path,
                 file_path=doc_path,
-                status = status
+                status = status,
+                religion = religion,
             )
             db.add(worker)
             db.commit()
@@ -152,7 +155,7 @@ async def register_worker(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get('/all', response_model= List[schemas.showuser])
+@router.get('/all')
 async def get_user(db : Session = Depends(get_db)):
     users = db.query(User).all()
     return users
