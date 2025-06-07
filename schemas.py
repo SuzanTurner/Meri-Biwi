@@ -29,6 +29,16 @@ class UserBase(BaseModel):
     class Config:
         orm_mode = True
         
+        
+class UserUpdate(BaseModel):
+    status: Optional[str] = None
+    religion: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    service: Optional[str] = None
+    availability: Optional[str] = None
+    
 # class showuser(BaseModel):
 #     name : str
 #     phone : str
