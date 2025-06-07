@@ -32,12 +32,26 @@ class UserBase(BaseModel):
         
 class UserUpdate(BaseModel):
     status: Optional[str] = None
-    religion: Optional[str] = None
-    phone: Optional[str] = None
+    name: Optional[str] = None
     email: Optional[str] = None
+    phone: Optional[str] = None
     address: Optional[str] = None
+    city: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[str] = None
+
     service: Optional[str] = None
+    exp: Optional[int] = None
     availability: Optional[str] = None
+    id_proof: Optional[str] = None
+    id_proof_number: Optional[int] = None
+    about: Optional[str] = None
+
+    photo_path: Optional[str] = None
+    file_path: Optional[str] = None
+    status : Optional[str] = None
+    
+    religion : Optional[str] = None
     
 # class showuser(BaseModel):
 #     name : str

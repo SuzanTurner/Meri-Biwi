@@ -2,10 +2,8 @@ from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Depends
 from datetime import datetime
 from database import get_db
 from modals import User
-from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-import schemas
 import shutil
 import os
 
