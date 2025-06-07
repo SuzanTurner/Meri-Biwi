@@ -4,7 +4,7 @@ from modals import User
 from database import get_db
 
 router = APIRouter(
-    tags = ["Update Worker"]
+    tags = ["Update Worker Status"]
 )
 
 @router.put("/update/{user_id}")

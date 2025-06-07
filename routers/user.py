@@ -8,12 +8,12 @@ import schemas
 import modals
 
 router = APIRouter(
-    tags = ["Users"]
+    tags = [" Create User"]
 )
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated = "auto")
 
-@router.post('/user')
+@router.post('/create-user')
 async def create_user(request : schemas.User, db : Session = Depends(get_db)):
     # hashed_password = pwd_context.hash(request.password)
     new_user = modals.User_Login(username = request.username, password = hashing.hash.bcrypt(request.password))
@@ -22,7 +22,7 @@ async def create_user(request : schemas.User, db : Session = Depends(get_db)):
     db.refresh(new_user)
     return {"message" : "User Created ", "User" : new_user.username}
 
-@router.get('/user/{id}')
+@router.get('/create-user/{id}')
 async def get_user(id : int, db : Session = Depends(get_db)):
     user = db.query(modals.User_Login).filter(modals.User_Login.id == id).first()
     if not user:

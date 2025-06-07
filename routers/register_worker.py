@@ -9,7 +9,9 @@ import schemas
 import shutil
 import os
 
-router = APIRouter()
+router = APIRouter(
+    tags = ["Workers"]
+)
 
 UPLOAD_DIR = "uploads"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
@@ -18,7 +20,7 @@ DOCS_DIR = os.path.join(UPLOAD_DIR, "documents")
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
 
-@router.get("/api/search-workers", tags = ["register worker"])
+@router.get("/search-workers")
 async def search_workers(name: str = None):
     try:
         db = next(get_db())
@@ -70,7 +72,7 @@ async def search_workers(name: str = None):
     finally:
         db.close()
 
-@router.post("/api/register-worker", tags = ["register worker"])
+@router.post("/register-worker")
 async def register_worker(
     name: str = Form(...),
     email: str = Form(...),
@@ -150,7 +152,7 @@ async def register_worker(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get('/all', response_model= List[schemas.showuser], tags = ["register worker"])
+@router.get('/all', response_model= List[schemas.showuser])
 async def get_user(db : Session = Depends(get_db)):
     users = db.query(User).all()
     return users
