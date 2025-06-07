@@ -159,3 +159,14 @@ async def register_worker(
 async def get_user(db : Session = Depends(get_db)):
     users = db.query(User).all()
     return users
+
+@router.delete('/delete-worker/{id}')
+async def delete_worker(id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"No user found with ID {id}")
+    
+    db.delete(user)
+    db.commit()
+    return {"message": f"Deleted user with ID {id}"}
+
