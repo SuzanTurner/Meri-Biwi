@@ -8,17 +8,31 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 - **Database**: PostgreSQL  
 - **Hosting**: Both backend and database are deployed on **Render**  
 - **Frontend**: The official Meri-Didi website lives on **Vercel**  
-- **Author**: Yadhnika Wakde (aka the backend baddie 😎)
+- **Author**: Yadhnika Wakde (ThE_CrUd_LaDy 😎) and Ritesh Singh
 
 ## 🌐 API Endpoints
 
 | Method | Endpoint          | Description                        |
 |--------|-------------------|------------------------------------|
+`register-worker.py `
 | POST   | `/register-worker`| Register a new worker              |
 | GET    | `/search-workers` | Search registered workers by name  |
 | GET    | `/all`            | Get all workers                    |  
-| PUT    | `/update/{id}`     | Update worker status by ID         |
-| GET    | `/db_check`       | For checking db connection (Devs only |
+`update.py`
+| PUT    | `/update/{id}`     | Update worker status and religion by ID         |
+`db_check.py`
+| GET    | `/db_check`       | For checking db connection (Devs only) |
+`service.py`
+| POST | `/services` | Create a service |
+| GET | `/services` | Get all serivces |
+| GET | `/services` | Get services by id |
+| PUT | `/services` | Update service by id |
+`user.py`
+| POST | `/create-user` | Create a new user | 
+| GET | `/create-user/{id}` | Get a user by id |
+`login.py`
+| POST | `/login` | Log in user through username and password |
+
 
 
 Please See /docs endpoint for More info

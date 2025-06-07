@@ -29,15 +29,15 @@ class UserBase(BaseModel):
     class Config:
         orm_mode = True
         
-class showuser(BaseModel):
-    name : str
-    phone : str
-    gender : str
-    service : str
-    status : str
+# class showuser(BaseModel):
+#     name : str
+#     phone : str
+#     gender : str
+#     service : str
+#     status : str
     
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True
     
 
 class UserCreate(UserBase):
