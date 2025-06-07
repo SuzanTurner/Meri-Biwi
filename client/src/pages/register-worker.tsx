@@ -100,7 +100,7 @@ export default function RegisterWorkerPage() {
         formData.append('photo', photoFile);
       }
       
-      const response = await fetch('http://localhost:8000/api/register-worker', {
+      const response = await fetch('https://meri-biwi-1.onrender.com/register-worker', {
         method: 'POST',
         body: formData,
       });
