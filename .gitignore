@@ -3,6 +3,8 @@ test.py
 venv/
 uploads/
 __pycache__
+routers/__pycache__/
 uploads/photos/
+
 
 
