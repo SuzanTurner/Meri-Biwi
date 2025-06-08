@@ -90,4 +90,19 @@ async def update_user_status(id: int,
     db.refresh(user)
 
     return {"msg": "User updated successfully", "user_details": user}
+
+@router.get('/{id}')
+async def get_user_by_id(id : int, db : Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail= f"User with id {id} does not exist")
+    return user
     
+@router.delete('/{id}')
+async def delete_user(id : int, db : Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail=f"User with id {id} does not exist")
+    db.delete(user)
+    db.commit()
+    return {"message" : "User Deleted"}
