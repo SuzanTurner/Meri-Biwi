@@ -3,8 +3,6 @@
 A FastAPI backend for **Meri Didi**, a service-based application designed to handle user and worker data efficiently.  
 Built with **FastAPI**, **SQLAlchemy**, and **MySQL**
 
----
-
 ## 🚀 Features
 
 - User CRUD operations
@@ -16,8 +14,6 @@ Built with **FastAPI**, **SQLAlchemy**, and **MySQL**
 - Secure password + UID generation
 - Fully async & production-ready 🍃
 
----
-
 ## 🛠️ Tech Stack
 
 - **FastAPI**
@@ -27,8 +23,6 @@ Built with **FastAPI**, **SQLAlchemy**, and **MySQL**
 - **Pydantic**
 - **dotenv**
 - **pytz** (for timezone handling)
-
----
 
 ## 📁 Project Structure
 ```
