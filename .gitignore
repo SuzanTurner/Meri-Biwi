@@ -5,6 +5,8 @@ uploads/
 __pycache__
 routers/__pycache__/
 uploads/photos/
+veg_dump.sql
+veg_mysql.sql
 
 
 

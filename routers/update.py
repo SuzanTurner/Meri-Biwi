@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from schemas import UserUpdate
-from modals import User
+from schemas import WorkerUpdate
+from modals import Worker
 from database import get_db
 
 router = APIRouter(
@@ -54,10 +54,10 @@ router = APIRouter(
 
 @router.put("/update/{user_id}")
 async def update_user_status(user_id: int,
-                             update_data: UserUpdate,
+                             update_data: WorkerUpdate,
                              db: Session = Depends(get_db)):
 
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(Worker).filter(Worker.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

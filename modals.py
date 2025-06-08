@@ -5,8 +5,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 import enum
 
-class User(Base):
-    __tablename__ = "users"
+class Worker(Base):
+    __tablename__ = "workers"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
@@ -53,9 +53,9 @@ class Service(Base):
     is_popular = Column(Boolean, default=False)
     
     
-class User_Login(Base):
-    __tablename__ = "logins"
+# class User_Login(Base):
+#     __tablename__ = "logins"
     
-    id = Column(Integer, primary_key = True, index = True)
-    username = Column(String, nullable = False)
-    password = Column(String, nullable = False)
+#     id = Column(Integer, primary_key = True, index = True)
+#     username = Column(String, nullable = False)
+#     password = Column(String, nullable = False)

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Depends
 from datetime import datetime
 from database import get_db
-from modals import User
+from modals import Worker
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 import shutil
@@ -24,16 +24,16 @@ async def search_workers(name: str = None):
         db = next(get_db())
         
         if name:
-            workers = db.query(User).filter(
+            workers = db.query(Worker).filter(
                 or_(
-                    User.name.ilike(f"%{name}%"),
-                    User.email.ilike(f"%{name}%"),
-                    User.city.ilike(f"%{name}%")
+                    Worker.name.ilike(f"%{name}%"),
+                    Worker.email.ilike(f"%{name}%"),
+                    Worker.city.ilike(f"%{name}%")
                 )
             ).all()
         else:
             # If no search term provided, return all workers
-            workers = db.query(User).all()
+            workers = db.query(Worker).all()
         
         # Convert workers to dictionary format
         worker_list = []
@@ -111,7 +111,7 @@ async def register_worker(
         
         try:
             # Create new worker record
-            worker = User(
+            worker = Worker(
                 name=name,
                 email=email,
                 phone=phone,
@@ -155,12 +155,12 @@ async def register_worker(
     
 @router.get('/all')
 async def get_user(db : Session = Depends(get_db)):
-    users = db.query(User).all()
+    users = db.query(Worker).all()
     return users
 
 @router.delete('/delete-worker/{id}')
 async def delete_worker(id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == id).first()
+    user = db.query(Worker).filter(Worker.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail=f"No user found with ID {id}")
     

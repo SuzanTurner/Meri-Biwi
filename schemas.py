@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
-class UserBase(BaseModel):
+class WorkerBase(BaseModel):
     name: str
     email: str
     phone: str
@@ -30,7 +30,7 @@ class UserBase(BaseModel):
         orm_mode = True
         
         
-class UserUpdate(BaseModel):
+class WorkerUpdate(BaseModel):
     status: Optional[str] = None
     name: Optional[str] = None
     email: Optional[str] = None
@@ -64,16 +64,16 @@ class UserUpdate(BaseModel):
 #         orm_mode = True
     
 
-class UserCreate(UserBase):
-    pass
+# class UserCreate(UserBase):
+#     pass
 
-class User(BaseModel):
-    username : str
-    password : str
+# class User(BaseModel):
+#     username : str
+#     password : str
 
-class Login(BaseModel):
-    username : str
-    password : str
+# class Login(BaseModel):
+#     username : str
+#     password : str
 
 class CategoryEnum(str, Enum):
     cleaning = "cleaning"

@@ -7,7 +7,12 @@ router = APIRouter(
     tags = ["Check Database"]
 )
 
+# @router.get("/db-check")
+# def get_current_db(db: Session = Depends(get_db)):
+#     result = db.execute(text("SELECT current_database();"))
+#     return {"connected_database": list(result)[0][0]}
+
 @router.get("/db-check")
 def get_current_db(db: Session = Depends(get_db)):
-    result = db.execute(text("SELECT current_database();"))
+    result = db.execute(text("SELECT DATABASE();"))
     return {"connected_database": list(result)[0][0]}
