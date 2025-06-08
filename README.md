@@ -1,7 +1,7 @@
 # 💍 Meri Didi Backend API
 
 A FastAPI backend for **Meri Didi**, a service-based application designed to handle user and worker data efficiently.  
-Built with **FastAPI**, **SQLAlchemy**, and **MySQL**, and sprinkled with just the right amount of backend badassery.  
+Built with **FastAPI**, **SQLAlchemy**, and **MySQL**
 
 ---
 
@@ -31,7 +31,7 @@ Built with **FastAPI**, **SQLAlchemy**, and **MySQL**, and sprinkled with just t
 ---
 
 ## 📁 Project Structure
-`
+```
 backend-app/
 ├── main.py
 ├── database.py
@@ -43,7 +43,7 @@ backend-app/
 │ └── user.py
 ├── .env
 ├── requirements.txt
-`
+```
 
 ## 🧪 Setup & Run (Local)
 
@@ -79,9 +79,8 @@ uvicorn main:app --reload
 All timestamps (created_at, updated_at) are stored in Indian Standard Time (Asia/Kolkata) using pytz.
 
 ## 🧠 UID Generation
-User UID is a random alphanumeric string generated using Python's uuid or secrets library — guaranteed unique, like your code.
+User UID is a random alphanumeric string generated using uuid.
 
 
-I deserve a Cold Coffee
-- The_CrUd_LaDy
+I deserve a Cold Coffee - The_CrUd_LaDy
 
