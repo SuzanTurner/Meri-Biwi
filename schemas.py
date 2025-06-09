@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import  Optional
 
 class User(BaseModel):
     uid : str
@@ -18,6 +18,10 @@ class User(BaseModel):
     latitude : str
     created_at : str
     updated_at : str
+    
+class UserLogin(BaseModel):
+    email : str
+    password : str
     
 class UpdateUser(BaseModel):
     phone: Optional[str] = None

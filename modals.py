@@ -11,7 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index = True)
     uid = Column(String, unique = True, nullable = False)
     phone = Column(String(15), unique=True, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, unique = True, nullable=False)
     password = Column(String, nullable = False)
     avatar = Column(String(15), default = "avatar", nullable=False)
     otp_verified = Column(Boolean, nullable = False)
@@ -25,3 +25,12 @@ class User(Base):
     latitude = Column(String, default = "longitude" ,nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
     updated_at = Column(DateTime, default=lambda: datetime.now(ist))
+    
+class UserLogin(Base):
+    __tablename__ = "user_logins"
+    
+    id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
+    email = Column(String, nullable = False)
+    password = Column(String, nullable = False)
+    created_at = Column(DateTime, default=lambda : datetime.now(ist))
+    
