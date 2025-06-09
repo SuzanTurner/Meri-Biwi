@@ -14,3 +14,8 @@ the code works because I made it work.
 
 sincerely,  
 ~ ThE_CrUd_LadY
+
+yo
+I have to change somethings. pls dont mind :)
+Why there is token.py .env?
+~ Code Dog

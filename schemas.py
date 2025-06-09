@@ -75,26 +75,84 @@ class Login(BaseModel):
     username : str
     password : str
 
+class FoodTypeEnum(str, Enum):
+    veg = "Veg"
+    non_veg = "Non-veg"
+
+
+class PlanTypeEnum(str, Enum):
+    basic = "basic"
+    standard = "standard"
+    premium = "premium"
+
+
 class CategoryEnum(str, Enum):
     cleaning = "cleaning"
     cooking = "cooking"
-    baby_care = "Baby Care"
-    elder_care = "Elder Care"
-    
-class ServiceBase(BaseModel):
+    baby_care = "baby_care"
+    elder_care = "elder_care"
+
+
+class ServiceCreate(BaseModel):
     name: str
+    food_type: FoodTypeEnum
     category: CategoryEnum
-    features: List[str]
+    plan_type: PlanTypeEnum
+    number_of_people: int
+    basic_details: List[str]
     description: Optional[str] = None
-    price: float
-    duration: str
-    is_popular: bool = False
+    frequency: int
+    duration: int
+    is_popular: Optional[bool] = False
+    basic_price: float
+    additional_feature_ids: Optional[List[int]] = None
 
-class ServiceCreate(ServiceBase):
-    pass
 
-class ServiceOut(ServiceBase):
+
+
+class ServiceUpdate(BaseModel):
+    name: Optional[str]
+    food_type: Optional[FoodTypeEnum]
+    category: Optional[CategoryEnum]
+    plan_type: Optional[PlanTypeEnum]
+    number_of_people: Optional[int]
+    basic_details: Optional[List[str]]
+    description: Optional[str]
+    frequency: Optional[int]
+    duration: Optional[int]
+    is_popular: Optional[bool]
+    basic_price: Optional[float]
+    additional_feature_ids: Optional[List[int]] = None
+
+
+class ServiceOut(BaseModel):
     id: int
+    name: str
+    food_type: FoodTypeEnum
+    category: CategoryEnum
+    plan_type: PlanTypeEnum
+    number_of_people: int
+    basic_details: List[str]
+    description: Optional[str]
+    frequency: int
+    duration: int
+    is_popular: bool
+    basic_price: float
+    additional_feature_ids: List[int] = []
 
     class Config:
         orm_mode = True
+class AdditionalFeatureCreate(BaseModel):
+    name: str
+    price: int
+    comments: Optional[str] = None
+
+
+class AdditionalFeatureOut(BaseModel):
+    id: int
+    name: str
+    price: float
+    comments: Optional[str] = None
+
+    class Config:
+        from_attributes = True  # Pydantic v2+ equivalent of orm_mode = True

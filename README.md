@@ -8,7 +8,7 @@ This is the backend for the [**Meri-Didi**](https://meri-didi.vercel.app) websit
 - **Database**: PostgreSQL  
 - **Hosting**: Both backend and database are deployed on **Render**  
 - **Frontend**: The official Meri-Didi website lives on **Vercel**  
-- **Author**: Yadhnika Wakde (ThE_CrUd_LaDy 😎) and Ritesh Singh
+- **Author**: Yadhnika Wakde (ThE_CrUd_LaDy 😎) and Code_dog
 
 ## 🌐 API Endpoints
 
