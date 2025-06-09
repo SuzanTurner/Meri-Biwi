@@ -52,15 +52,6 @@ class WorkerUpdate(BaseModel):
     status : Optional[str] = None
     
     religion : Optional[str] = None
-    
-
-# class User(BaseModel):
-#     username : str
-#     password : str
-
-# class Login(BaseModel):
-#     username : str
-#     password : str
 
 class CategoryEnum(str, Enum):
     cleaning = "cleaning"
@@ -121,4 +112,27 @@ class UpdateUser(BaseModel):
     city : Optional[str] = None
     latitude : Optional[str] = None
     longitude : Optional[str] = None
+    
+class Admin(BaseModel):
+    username : str
+    email : str
+    password : str
+    full_name : str
+    profile_image : str
+    role : str
+    status : bool
+    created_at : str
+    
+class AdminLogin(BaseModel):
+    email : str
+    password : str
+    
+class UpdateAdmin(BaseModel):
+    username : Optional[str] = None
+    email : Optional[str] = None
+    password : Optional[str] = None
+    full_name : Optional[str] = None
+    role : Optional[str] = None
+    status : Optional[bool] = False
+    created_at : Optional[str] = None             
     

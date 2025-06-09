@@ -52,13 +52,6 @@ class Service(Base):
     duration = Column(String)  # e.g., "2 hours", "30 mins"
     is_popular = Column(Boolean, default=False)
     
-    
-# class User_Login(Base):
-#     __tablename__ = "logins"
-    
-#     id = Column(Integer, primary_key = True, index = True)
-#     username = Column(String, nullable = False)
-#     password = Column(String, nullable = False)
 
 ist = pytz.timezone("Asia/Kolkata")
 
@@ -89,5 +82,18 @@ class UserLogin(Base):
     id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
     email = Column(String, nullable = False)
     password = Column(String, nullable = False)
+    created_at = Column(DateTime, default=lambda : datetime.now(ist))
+    
+class Admin(Base):
+    __tablename__ = "admin"
+    
+    id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
+    username = Column(String, nullable=False)
+    email = Column(String, unique = True, nullable=False)
+    password = Column(String, unique = True, nullable=False)
+    full_name = Column(String, nullable=False)
+    profile_image = Column(String)
+    role = Column(String, default = "Admin", nullable=False)
+    status = Column(Boolean, default = False, nullable=False)
     created_at = Column(DateTime, default=lambda : datetime.now(ist))
     

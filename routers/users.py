@@ -7,7 +7,7 @@ from datetime import datetime
 import hashing
 import uuid
 import pytz
-
+import bcrypt
 
 router = APIRouter(
     tags = ["Users"],
@@ -42,6 +42,14 @@ async def create_user(
     while db.query(User).filter(User.uid == uid).first():
         uid = generate_unique_id()
 
+    all_users = db.query(User).all()
+    for user in all_users:
+        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            raise HTTPException(
+                status_code=400,
+                detail="This password is already used by another user"
+            )
+            
     hashed_password = hashing.Hash.bcrypt(password) 
     user = User(
         uid=uid,
