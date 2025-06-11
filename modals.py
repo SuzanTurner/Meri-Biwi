@@ -2,6 +2,8 @@ from database import Base
 from sqlalchemy import Column, Integer,Float, String, DateTime, Enum,Text,Boolean,Table,ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from sqlalchemy.dialects.postgresql import ARRAY
+import pytz
 from sqlalchemy.dialects.mysql import JSON
 
 import enum
@@ -18,10 +20,8 @@ service_additional_feature_link = Table(
         primary_key=True,
     ),  # Added primary_key=True
 )
-
-
-class User(Base):
-    __tablename__ = "users"
+class Worker(Base):
+    __tablename__ = "workers"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
@@ -88,6 +88,52 @@ class Service(Base):
     duration = Column(Integer, nullable=False)  # months or days?
     
     is_popular = Column(Boolean, default=False)
+    
+
+ist = pytz.timezone("Asia/Kolkata")
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index = True)
+    uid = Column(String, unique = True, nullable = False)
+    phone = Column(String(15), unique=True, nullable=False)
+    email = Column(String, unique = True, nullable=False)
+    password = Column(String, nullable = False)
+    avatar = Column(String(15), default = "avatar", nullable=False)
+    otp_verified = Column(Boolean, nullable = False)
+    fcm_token = Column(String, default = "fcm_token", nullable=False)
+    wallet = Column(Float, default = 0.00, nullable=False)
+    status = Column(Boolean, default = False, nullable=False)
+    address_line_1 = Column(String, nullable=False)
+    address_line_2 = Column(String, nullable=False)
+    city = Column(String, nullable=False)
+    longitude = Column(String, default = " latitude" ,nullable=False)
+    latitude = Column(String, default = "longitude" ,nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(ist))
+    updated_at = Column(DateTime, default=lambda: datetime.now(ist))
+    
+class UserLogin(Base):
+    __tablename__ = "user_logins"
+    
+    id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
+    email = Column(String, nullable = False)
+    password = Column(String, nullable = False)
+    created_at = Column(DateTime, default=lambda : datetime.now(ist))
+    
+class Admin(Base):
+    __tablename__ = "admin"
+    
+    id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
+    username = Column(String, nullable=False)
+    email = Column(String, unique = True, nullable=False)
+    password = Column(String, unique = True, nullable=False)
+    full_name = Column(String, nullable=False)
+    profile_image = Column(String)
+    role = Column(String, default = "Admin", nullable=False)
+    status = Column(Boolean, default = False, nullable=False)
+    created_at = Column(DateTime, default=lambda : datetime.now(ist))
+    
 
     basic_price = Column(Float, nullable=False)
     additional_features = relationship(

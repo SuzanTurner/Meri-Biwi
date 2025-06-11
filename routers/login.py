@@ -1,23 +1,38 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from database import get_db
 from sqlalchemy.orm import Session
-from . import hashing
-import schemas
-import modals
+from modals import User, Admin
+from schemas import UserLogin, AdminLogin
+from database import get_db
+from hashing import Hash
 
 router = APIRouter(
-    tags = ["Login"]
+    tags = ["User Login"],
+    prefix = '/login'
 )
 
-@router.post("/login")
-async def login(request : schemas.Login, db : Session = Depends(get_db)):
-    user = db.query(modals.User_Login).filter(modals.User_Login.username == request.username).first()
-    print(user)
+@router.post('/user')
+def user_login(request : UserLogin, db : Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    
     if not user:
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
-                            detail= "Invalid Credentials")
-    if not hashing.hash.verify(request.password, user.password):
-        raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
-                            detail= "Invalid Password")
+        raise HTTPException( status_code = status.HTTP_404_NOT_FOUND, detail= "User with this email is not found")
+    
+    if not Hash.verify(request.password, user.password):
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail = "Invalid Password")
+    
+    return {"message": " USER Logged in successfully", "email": user.email}
+
+@router.post('/admin')
+def admin_login(request : AdminLogin, db : Session = Depends(get_db)):
+    admin = db.query(Admin).filter(Admin.email == request.email).first()
+    
+    if not admin:
+        raise HTTPException( status_code = status.HTTP_404_NOT_FOUND, detail= "Admin with this email is not found")
+    
+    if not Hash.verify(request.password, admin.password):
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail = "Invalid Password")
+    
+    return {"message": " ADMIN Logged in successfully", "email": admin.email}
+    
         
-    return {"message": "Logged in successfully", "username": user.username}
