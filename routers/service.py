@@ -18,36 +18,20 @@ router = APIRouter(prefix="/services", tags=["Services"])
 
 @router.post("/", response_model=ServiceOut)
 def create_service(service: ServiceCreate, db: Session = Depends(get_db)):
-    features = []
-    if service.additional_feature_ids:
-        features = (
-            db.query(AdditionalFeature)
-            .filter(AdditionalFeature.id.in_(service.additional_feature_ids))
-            .all()
-        )
-        if len(features) != len(service.additional_feature_ids):
-            raise HTTPException(
-                status_code=400, detail="One or more additional features do not exist"
-            )
-
-    db_service = Service(
-        **service.dict(exclude={"additional_feature_ids"}), additional_features=features
-    )
-    db.add(db_service)
+    
+    service = Service(**service.model_dump())
+   
+    db.add(service)
     db.commit()
-    db.refresh(db_service)
+    db.refresh(service)
 
-    return {
-        **db_service.__dict__,
-        "additional_feature_ids": [f.id for f in db_service.additional_features],
-    }
+    return service
 
 
 @router.get("/", response_model=List[ServiceOut])
 def get_all_services(
     db: Session = Depends(get_db),
     category: Optional[CategoryEnum] = None,
-    is_popular: Optional[bool] = None,
 ):
     query = db.query(Service)
     if category:
@@ -55,13 +39,7 @@ def get_all_services(
 
 
     services = query.all()
-    return [
-        {
-            **service.__dict__,
-            "additional_feature_ids": [f.id for f in service.additional_features],
-        }
-        for service in services
-    ]
+    return services
 
 
 @router.get("/{service_id}", response_model=ServiceOut)
@@ -70,10 +48,7 @@ def get_service_by_id(service_id: int, db: Session = Depends(get_db)):
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    return {
-        **service.__dict__,
-        "additional_feature_ids": [f.id for f in service.additional_features],
-    }
+    return service
 
 
 @router.put("/{service_id}", response_model=ServiceOut)
@@ -86,31 +61,13 @@ def update_service(
 
     update_data = updated.dict(exclude_unset=True)
 
-    if "additional_feature_ids" in update_data:
-        features = (
-            db.query(AdditionalFeature)
-            .filter(AdditionalFeature.id.in_(update_data.pop("additional_feature_ids")))
-            .all()
-        )
-        if len(features) != len(update_data["additional_feature_ids"]):
-            raise HTTPException(
-                status_code=400, detail="One or more additional features do not exist"
-            )
-        service.additional_features = features
-        update_data.pop("additional_feature_ids")
-
-        service.additional_features = features
-
     for field, value in update_data.items():
         setattr(service, field, value)
 
     db.commit()
     db.refresh(service)
+    return service
 
-    return {
-        **service.__dict__,
-        "additional_feature_ids": [f.id for f in service.additional_features],
-    }
 
 
 @router.delete("/{service_id}")
@@ -132,6 +89,17 @@ def add_additional_feature(
     db.commit()
     db.refresh(db_feature)
     return db_feature
+
+@router.delete("/features/{feature_id}")
+def delete_feature(feature_id: int, db: Session = Depends(get_db)):
+    feature = (
+        db.query(AdditionalFeature).filter(AdditionalFeature.id == feature_id).first()
+    )
+    if not feature:
+        raise HTTPException(status_code=404, detail="AdditionalFeature not found")
+    db.delete(feature)
+    db.commit()
+    return {"detail": "feature deleted successfully"}
 
 @router.get("/features/", response_model=List[AdditionalFeatureOut])
 def get_all_additional_feature(
