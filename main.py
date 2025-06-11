@@ -4,7 +4,7 @@ from database import engine, Base
 import uvicorn
 from routers import register_worker, update, db_check, login, service, users, admin
 
-app = FastAPI( debug = True)
+app = FastAPI(debug = True)
 
 app.add_middleware(
     CORSMiddleware,

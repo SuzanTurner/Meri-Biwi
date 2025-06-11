@@ -14,5 +14,5 @@ router = APIRouter(
 
 @router.get("/db-check")
 def get_current_db(db: Session = Depends(get_db)):
-    result = db.execute(text("SELECT DATABASE();"))
+    result = db.execute(text("SELECT current_database();"))
     return {"connected_database": list(result)[0][0]}

@@ -6,12 +6,20 @@ from schemas import UpdateAdmin
 from datetime import datetime
 from database import get_db
 import bcrypt
+import shutil
 import pytz
+import os
 
 router = APIRouter(
     tags = ["Admin"],
     prefix = '/admin'
 )
+
+UPLOAD_DIR = "uploads-admin"
+PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
+
+os.makedirs(PHOTOS_DIR, exist_ok=True)
+
 
 @router.post('/')
 async def create_admin(
@@ -31,6 +39,13 @@ async def create_admin(
                 status_code=400,
                 detail="This password is already used by another admin"
             )
+            
+    photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{profile_image.filename}"
+    photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+    
+    with open(photo_path, "wb") as buffer:
+        shutil.copyfileobj(profile_image.file, buffer)
+
     
     hashed_password = Hash.bcrypt(password) 
     admin = Admin(
@@ -38,7 +53,7 @@ async def create_admin(
         email = email,
         password = hashed_password,
         full_name = full_name,
-        profile_image = profile_image,
+        profile_image = photo_path,
         role = role,
         status = status,
     )
