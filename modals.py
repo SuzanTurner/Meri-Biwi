@@ -1,10 +1,8 @@
 from database import Base
-from sqlalchemy import Column, Integer,Float, String, DateTime, Enum,Text,Boolean,Table,ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer,Float, String, DateTime, Enum,Text,Boolean
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 import pytz
-from sqlalchemy.dialects.mysql import JSON
 
 import enum
 

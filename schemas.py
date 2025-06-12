@@ -190,7 +190,7 @@ class AdditionalFeatureOut(BaseModel):
     name: str
     price: float
     category: CategoryEnum
-    comments: str
+    description: str
 
     class Config:
         from_attributes = True  # Pydantic v2+ equivalent of orm_mode = True
