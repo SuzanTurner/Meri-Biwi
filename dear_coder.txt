@@ -19,3 +19,7 @@ yo
 I have to change somethings. pls dont mind :)
 Why there is token.py .env?
 ~ Code Dog
+
+yo
+token.py is for the jwt tokens thingi which I haven't made yet. will do it soon man!
+~ ThE_CrUd_LadY
