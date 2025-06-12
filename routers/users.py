@@ -75,35 +75,6 @@ async def create_user(
         "user_uid" : user.uid
     }
 
-
-# @router.put("/{id}")
-# async def update_user_status(id: int,
-#                              update_data: UpdateUser,
-#                              db: Session = Depends(get_db)):
-
-#     user = db.query(User).filter(User.id == id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     update_dict = {
-#         key: value for key, value in update_data.dict(exclude_unset=True).items()
-#         if value not in ["string", "", None]  
-#     }
-
-#     for key, value in update_dict.items():
-#         setattr(user, key, value)
-        
-#     hashed_password = hashing.Hash.bcrypt(UpdateUser.password) 
-#     user.password = hashed_password
-    
-#     ist = pytz.timezone("Asia/Kolkata") 
-#     user.updated_at = datetime.now(ist)
-
-#     db.commit()
-#     db.refresh(user)
-
-#     return {"msg": "User updated successfully", "user_details": user}
-
 @router.put("/{id}")
 def update_user_status(id: int,
                        update_data: UpdateUser,

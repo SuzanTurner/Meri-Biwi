@@ -101,6 +101,9 @@ class User(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
     updated_at = Column(DateTime, default=lambda: datetime.now(ist))
     
+    otp = Column(String, nullable=True) 
+    otp_created_at = Column(DateTime, default=lambda : datetime.utcnow())
+    
 class UserLogin(Base):
     __tablename__ = "user_logins"
     
