@@ -1,57 +1,175 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 
-class WorkerBase(BaseModel):
-    name: str
-    email: str
-    phone: str
-    address: str
+# Base schemas for related models
+class AddressBase(BaseModel):
+    type: str
+    line1: str
     city: str
-    gender: str
-    dob: str
+    state: str
+    zip_code: str
 
-    service: str
-    exp: int
-    availability: str
-    id_proof: str
-    id_proof_number: str
-    about: str
+class EmergencyContactBase(BaseModel):
+    name: str
+    relation: str
+    phone: str
 
-    photo_path: str
-    file_path: str
-    created_at: datetime
-    status : str
-    
-    religion : str
+class BankDetailsBase(BaseModel):
+    ifsc_code: str
+    account_number: str
+    bank_name: str
+
+class PoliceVerificationBase(BaseModel):
+    status: str
+    document_url: str
+    verification_date: str
+    remarks: Optional[str] = None
+
+class LocalReferenceBase(BaseModel):
+    name: str
+    relation: str
+    phone: str
+
+class PreviousEmployerBase(BaseModel):
+    company_name: str
+    position: str
+    duration: str
+
+class EducationBase(BaseModel):
+    degree: str
+    institution: str
+    year_of_passing: str
+
+# Create schemas for related models
+class AddressCreate(AddressBase):
+    pass
+
+class EmergencyContactCreate(EmergencyContactBase):
+    pass
+
+class BankDetailsCreate(BankDetailsBase):
+    pass
+
+class PoliceVerificationCreate(PoliceVerificationBase):
+    pass
+
+class LocalReferenceCreate(LocalReferenceBase):
+    pass
+
+class PreviousEmployerCreate(PreviousEmployerBase):
+    pass
+
+class EducationCreate(EducationBase):
+    pass
+
+# Response schemas for related models
+class Address(AddressBase):
+    id: int
+    worker_id: int
 
     class Config:
-        orm_mode = True
-        
-        
-class WorkerUpdate(BaseModel):
-    status: Optional[str] = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    city: Optional[str] = None
-    gender: Optional[str] = None
-    dob: Optional[str] = None
+        from_attributes = True
 
-    service: Optional[str] = None
-    exp: Optional[int] = None
-    availability: Optional[str] = None
-    id_proof: Optional[str] = None
-    id_proof_number: Optional[int] = None
-    about: Optional[str] = None
+class EmergencyContact(EmergencyContactBase):
+    id: int
+    worker_id: int
 
-    photo_path: Optional[str] = None
-    file_path: Optional[str] = None
-    status : Optional[str] = None
+    class Config:
+        from_attributes = True
+
+class BankDetails(BankDetailsBase):
+    id: int
+    worker_id: int
+
+    class Config:
+        from_attributes = True
+
+class PoliceVerification(PoliceVerificationBase):
+    id: int
+    worker_id: int
+
+    class Config:
+        from_attributes = True
+
+class LocalReference(LocalReferenceBase):
+    id: int
+    worker_id: int
+
+    class Config:
+        from_attributes = True
+
+class PreviousEmployer(PreviousEmployerBase):
+    id: int
+    worker_id: int
+
+    class Config:
+        from_attributes = True
+
+class Education(EducationBase):
+    id: int
+    worker_id: int
+
+    class Config:
+        from_attributes = True
+
+# Worker schemas
+class WorkerBase(BaseModel):
+    full_name: str
+    gender: str
+    age: int
+    dob: str
+    phone: str
+    alternate_phone: Optional[str] = None
+    email: EmailStr
+    city: str
+    blood_group: Optional[str] = None
+    primary_service_category: str
+    experience_years: int
+    experience_months: int
+    aadhar_number: str
+    pan_number: str
+    status: str = "Pending"
+    religion: str = "God knows"
     
-    religion : Optional[str] = None
+    class Config:
+        orm_mode = True
+
+class WorkerCreate(WorkerBase):
+    pass
+
+class Worker(WorkerBase):
+    id: int
+    profile_photo_url: Optional[str] = None
+    electricity_bill_url: Optional[str] = None
+    created_at: datetime
+    addresses: List[Address] = []
+    emergency_contacts: List[EmergencyContact] = []
+    bank_details: Optional[BankDetails] = None
+    police_verification: Optional[PoliceVerification] = None
+    references: List[LocalReference] = []
+    employers: List[PreviousEmployer] = []
+    education: List[Education] = []
+
+    class Config:
+        from_attributes = True
+
+# Worker search response
+class WorkerSearchResponse(BaseModel):
+    status: str
+    count: int
+    workers: List[Worker]
+
+# Worker registration response
+class WorkerRegistrationResponse(BaseModel):
+    status: str
+    message: str
+    worker_id: int
+
+# Worker deletion response
+class WorkerDeletionResponse(BaseModel):
+    message: str
 
 class FoodTypeEnum(str, Enum):
     veg = "Veg"
