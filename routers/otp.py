@@ -15,10 +15,12 @@ router = APIRouter(
 
 @router.post('/send-otp/')
 async def send_otp(phone: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.phone == phone).first()
-    if user:
+    # user = db.query(User).filter(User.phone == phone).first()
+    # if User:
+    # Save this number Otp
+    if True:
         otp_value = otp()
-        user.otp = otp_value
+        # user.otp = otp_value
         db.commit()
         return {
             "status": "success",
