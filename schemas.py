@@ -317,4 +317,14 @@ class AdditionalFeatureOut(BaseModel):
     description: str
 
     class Config:
-        from_attributes = True  # Pydantic v2+ equivalent of orm_mode = True
+        from_attributes = True  
+        
+class Categories(BaseModel):
+    id: int
+    service_id: str
+    image: str
+    title: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

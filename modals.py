@@ -259,3 +259,13 @@ class AdditionalFeature(Base):
     category = Column(Enum(AdditionalCategoryEnum), nullable=False)
     price = Column(Integer, nullable=False)
     description = Column(String, nullable=True)
+    
+    
+class Categories(Base):
+    __tablename__ = "categories"
+    
+    id = Column(Integer, primary_key=True, nullable=False)
+    service_id = Column(String, nullable=False)
+    image = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(ist))
