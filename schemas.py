@@ -255,7 +255,13 @@ class User(BaseModel):
     updated_at : str
     
 class UserLogin(BaseModel):
-    email : str
+    phone : str
+    password : str
+class UserCreate(BaseModel):
+    name : str
+    phone : str
+    email: Optional[str]
+
     password : str
     
 class UpdateUser(BaseModel):

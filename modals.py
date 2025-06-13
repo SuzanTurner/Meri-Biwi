@@ -161,6 +161,11 @@ class CategoryEnum(str, enum.Enum):
     cooking = "cooking"
     baby_care = "baby_care"
     elder_care = "elder_care"
+class AdditionalCategoryEnum(str, enum.Enum):
+    cleaning = "cleaning"
+    cooking = "cooking"
+    baby_care = "baby_care"
+    elder_care = "elder_care"
 class FoodTypeEnum(str, enum.Enum):
     veg = "Veg"
     non_veg = "Non-veg"
@@ -201,6 +206,7 @@ class User(Base):
     
     id = Column(Integer, primary_key=True, index = True)
     uid = Column(String, unique = True, nullable = False)
+    name = Column(String, nullable=False)
     phone = Column(String(15), unique=True, nullable=False)
     email = Column(String, unique = True, nullable=False)
     password = Column(String, nullable = False)
@@ -250,6 +256,6 @@ class AdditionalFeature(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
-    category = Column(Enum(CategoryEnum), nullable=False)
+    category = Column(Enum(AdditionalCategoryEnum), nullable=False)
     price = Column(Integer, nullable=False)
     description = Column(String, nullable=True)

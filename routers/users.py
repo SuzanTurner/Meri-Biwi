@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, HTTPException
 from sqlalchemy.orm import Session
 from modals import User
-from schemas import UpdateUser
+from schemas import UpdateUser,UserCreate
 from database import get_db
 from datetime import datetime
 import hashing
@@ -24,44 +24,38 @@ def generate_unique_id():
     return uuid.uuid4().hex[:10]
 
 @router.post("/")
+
 async def create_user(
-    phone: str = Form(...),
-    email: str = Form(...),
-    password: str = Form(...),
-    otp_verified: bool = False,
-    # fcm_token : str,
-    wallet: float = 0.00,
-    status: bool = False,
-    address_line_1: str = Form(...),
-    address_line_2: str = Form(...),
-    city: str = Form(...),
+    UserData:UserCreate,
     db: Session = Depends(get_db)):
 
     uid = generate_unique_id()
 
     while db.query(User).filter(User.uid == uid).first():
         uid = generate_unique_id()
-
+    password = UserData.password
     all_users = db.query(User).all()
     for user in all_users:
         if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
             raise HTTPException(
                 status_code=400,
-                detail="This password is already used by another user"
+                detail="This password is already used by another user",  # 😂😂😂
             )
             
     hashed_password = hashing.Hash.bcrypt(password) 
+    # Add Pydantic Here
     user = User(
         uid=uid,
-        phone=phone,
-        email=email,
-        password= hashed_password,
-        otp_verified=otp_verified,
-        wallet=wallet,
-        status=status,
-        address_line_1=address_line_1,
-        address_line_2=address_line_2,
-        city=city,
+        name=UserData.name,
+        phone=UserData.phone,
+        email=UserData.email,
+        password=hashed_password,
+        otp_verified=False,
+        wallet=0.0,
+        status=False,
+        address_line_1="x",
+        address_line_2="x",
+        city="x",
     )
 
     db.add(user)
@@ -70,7 +64,7 @@ async def create_user(
 
     return {
         "status": "success",
-        "message": "Worker registration successful",
+        "message": "User registration successful",
         "user_id": user.id,
         "user_uid" : user.uid
     }
