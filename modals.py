@@ -278,3 +278,11 @@ class Otp(Base):
     phone = Column(String, nullable=False)
     otp = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.utcnow())
+
+class Testimonials(Base):
+    __tablename__ = "testimonials"
+    
+    id = Column(Integer, primary_key=True, nullable=False)
+    image_or_video = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(ist))

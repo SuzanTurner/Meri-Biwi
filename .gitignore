@@ -9,5 +9,7 @@ veg_dump.sql
 veg_mysql.sql
 uploads-admin/
 uploads-categores/
+uploads-testimonials/
+alembic/
 
 

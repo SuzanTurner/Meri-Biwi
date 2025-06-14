@@ -323,7 +323,6 @@ class AdditionalFeatureOut(BaseModel):
         from_attributes = True  
         
 class Categories(BaseModel):
-    id: int
     service_id: str
     image: str
     title: str
@@ -336,3 +335,12 @@ class otp(BaseModel):
     phone : str
     otp : str
     created_at : str
+    
+    
+class Testimonials(BaseModel):
+    image_or_video: str
+    title: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
