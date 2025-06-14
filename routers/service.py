@@ -74,9 +74,10 @@ def get_all_services(
 
     services = query.all()
     return services
-@router.get("/filter_services")
+@router.get("/filter_services", response_model=List[ServiceOut])
 def filter_services(
     plan_type: Optional[PlanTypeEnum] = Query(None),
+    food_type: Optional[FoodTypeEnum] = Query(None),
     category: Optional[CategoryEnum] = Query(None),
     frequency: Optional[int] = Query(None),
     number_of: Optional[int] = Query(None),
@@ -92,9 +93,14 @@ def filter_services(
         filters.append(Service.frequency == frequency)
     if number_of:
         filters.append(Service.number_of == number_of)
+    if food_type:
+        filters.append(Service.food_type == food_type)
 
-    results = db.query(Service.id, Service.basic_price).filter(and_(*filters)).all()
+    results = db.query(Service).filter(and_(*filters)).all()
+    print(results)
     return results
+
+
 
 @router.get("/{service_id}", response_model=ServiceOut)
 def get_service_by_id(service_id: int, db: Session = Depends(get_db)):
