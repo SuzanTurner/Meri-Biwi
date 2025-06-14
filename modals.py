@@ -230,7 +230,7 @@ class UserLogin(Base):
     __tablename__ = "user_logins"
     
     id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
-    email = Column(String)
+    email = Column(String, nullable = True)
     password = Column(String, nullable = False)
     created_at = Column(DateTime, default=lambda : datetime.now(ist))
     

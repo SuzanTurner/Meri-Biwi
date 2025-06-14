@@ -45,12 +45,13 @@ async def create_user(
         #         )
                 
         hashed_password = hashing.Hash.bcrypt(password) 
-        # Add Pydantic Here
+        email = UserData.email if UserData.email.strip() else None
+
         user = User(
             uid=uid,
             name=UserData.name,
             phone=UserData.phone,
-            email=UserData.email if UserData.email else None,
+            email=email,
             password=hashed_password,
             otp_verified=False,
             wallet=0.0,
