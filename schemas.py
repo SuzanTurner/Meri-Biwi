@@ -257,11 +257,11 @@ class User(BaseModel):
 class UserLogin(BaseModel):
     phone : str
     password : str
+    
 class UserCreate(BaseModel):
     name : str
     phone : str
     email: Optional[str]
-
     password : str
     
 class UpdateUser(BaseModel):

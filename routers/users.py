@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from sqlalchemy.orm import Session
 from modals import User
 from schemas import UpdateUser,UserCreate
@@ -28,46 +28,50 @@ def generate_unique_id():
 async def create_user(
     UserData:UserCreate,
     db: Session = Depends(get_db)):
+    
+    try:
 
-    uid = generate_unique_id()
-
-    while db.query(User).filter(User.uid == uid).first():
         uid = generate_unique_id()
-    password = UserData.password
-    all_users = db.query(User).all()
-    for user in all_users:
-        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-            raise HTTPException(
-                status_code=400,
-                detail="This password is already used by another user",  # 😂😂😂
-            )
-            
-    hashed_password = hashing.Hash.bcrypt(password) 
-    # Add Pydantic Here
-    user = User(
-        uid=uid,
-        name=UserData.name,
-        phone=UserData.phone,
-        email=UserData.email,
-        password=hashed_password,
-        otp_verified=False,
-        wallet=0.0,
-        status=False,
-        address_line_1="x",
-        address_line_2="x",
-        city="x",
-    )
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+        while db.query(User).filter(User.uid == uid).first():
+            uid = generate_unique_id()
+        password = UserData.password
+        # all_users = db.query(User).all()
+        # for user in all_users:
+        #     if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+        #         raise HTTPException(
+        #             status_code=400,
+        #             detail="This password is already used by another user",  # 😂😂😂
+        #         )
+                
+        hashed_password = hashing.Hash.bcrypt(password) 
+        # Add Pydantic Here
+        user = User(
+            uid=uid,
+            name=UserData.name,
+            phone=UserData.phone,
+            email=UserData.email,
+            password=hashed_password,
+            otp_verified=False,
+            wallet=0.0,
+            status=False,
+            address_line_1="x",
+            address_line_2="x",
+            city="x",
+        )
 
-    return {
-        "status": "success",
-        "message": "User registration successful",
-        "user_id": user.id,
-        "user_uid" : user.uid
-    }
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        return {
+            "status": "success",
+            "message": "User registration successful",
+            "user_id": user.id,
+            "user_uid" : user.uid
+        }
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail= "User Creation failed")
 
 @router.put("/{id}")
 def update_user_status(id: int,
