@@ -207,7 +207,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index = True)
     uid = Column(String, unique = True, nullable = False)
     name = Column(String, nullable=False)
-    phone = Column(String(15), nullable=False)
+    phone = Column(String(15), nullable=False, unique=True)
     email = Column(String, nullable = True)
     password = Column(String, nullable = False)
     avatar = Column(String(15), default = "avatar", nullable=False)
