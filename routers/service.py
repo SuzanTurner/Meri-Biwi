@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,UploadFile, File,Form,Query
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from typing import List, Optional
+import os
 
-from modals import Service, AdditionalFeature
+from modals import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServiceCreate,
     ServiceOut,
@@ -15,17 +17,49 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
+UPLOAD_DIR = "uploads"
+SERVICE_PHOTOS_DIR = os.path.join(UPLOAD_DIR, "servicePhoto")
 
 @router.post("/", response_model=ServiceOut)
-def create_service(service: ServiceCreate, db: Session = Depends(get_db)):
-    
-    service = Service(**service.model_dump())
-   
-    db.add(service)
+def create_service(
+    name: str = Form(...),
+    category: CategoryEnum = Form(...),
+    plan_type: PlanTypeEnum = Form(...),
+    frequency: int = Form(...),
+    number_of: int = Form(...),
+    basic_price: float = Form(...),
+    basic_details: list[str] = Form(...),  # Will need to send this as comma-separated
+    duration: float = Form(...),
+    food_type: Optional[FoodTypeEnum] = Form(None),
+    is_popular: bool = Form(False),
+    description: Optional[str] = Form(None),
+    image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    # Store the image or get its path
+    service_image_path = os.path.join(SERVICE_PHOTOS_DIR, image.filename)
+        
+    with open(service_image_path, "wb") as f:
+        f.write(image.file.read())
+        
+    new_service = Service(
+        name=name,
+        category=category,
+        plan_type=plan_type,
+        frequency=frequency,
+        number_of=number_of,
+        basic_price=basic_price,
+        basic_details=basic_details,
+        duration=duration,
+        food_type=food_type,
+        is_popular=is_popular,
+        description=description,
+        image=service_image_path,  # Save path to DB
+    )
+    db.add(new_service)
     db.commit()
-    db.refresh(service)
-
-    return service
+    db.refresh(new_service)
+    return new_service
 
 
 @router.get("/", response_model=List[ServiceOut])
@@ -40,7 +74,27 @@ def get_all_services(
 
     services = query.all()
     return services
+@router.get("/filter_services")
+def filter_services(
+    plan_type: Optional[PlanTypeEnum] = Query(None),
+    category: Optional[CategoryEnum] = Query(None),
+    frequency: Optional[int] = Query(None),
+    number_of: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    filters = []
 
+    if plan_type:
+        filters.append(Service.plan_type == plan_type)
+    if category:
+        filters.append(Service.category == category)
+    if frequency:
+        filters.append(Service.frequency == frequency)
+    if number_of:
+        filters.append(Service.number_of == number_of)
+
+    results = db.query(Service.id, Service.basic_price).filter(and_(*filters)).all()
+    return results
 
 @router.get("/{service_id}", response_model=ServiceOut)
 def get_service_by_id(service_id: int, db: Session = Depends(get_db)):
