@@ -208,7 +208,7 @@ class User(Base):
     uid = Column(String, unique = True, nullable = False)
     name = Column(String, nullable=False)
     phone = Column(String(15), nullable=False)
-    email = Column(String)
+    email = Column(String, nullable = True)
     password = Column(String, nullable = False)
     avatar = Column(String(15), default = "avatar", nullable=False)
     otp_verified = Column(Boolean, nullable = False)
@@ -230,7 +230,7 @@ class UserLogin(Base):
     __tablename__ = "user_logins"
     
     id = Column(Integer, primary_key=True, autoincrement= True, index = True, nullable = False)
-    email = Column(String, nullable = False)
+    email = Column(String)
     password = Column(String, nullable = False)
     created_at = Column(DateTime, default=lambda : datetime.now(ist))
     

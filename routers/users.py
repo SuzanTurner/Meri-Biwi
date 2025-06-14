@@ -50,7 +50,7 @@ async def create_user(
             uid=uid,
             name=UserData.name,
             phone=UserData.phone,
-            email=UserData.email,
+            email=UserData.email if UserData.email else None,
             password=hashed_password,
             otp_verified=False,
             wallet=0.0,
