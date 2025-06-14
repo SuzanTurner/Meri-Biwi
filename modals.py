@@ -189,6 +189,7 @@ class Service(Base):
     basic_price=Column(Float,nullable=False)
     basic_details = Column(ARRAY(String), nullable=False)
     description = Column(Text)
+    image = Column(String, nullable=True)
 
     
     # Can store comma-separated features or JSON string

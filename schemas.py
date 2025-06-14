@@ -196,6 +196,7 @@ class ServiceCreate(BaseModel):
     number_of: int
     basic_details: List[str]
     description: Optional[str] = None
+    image: Optional[str] = None
     frequency: int
     duration: int
     is_popular: Optional[bool] = False
@@ -216,6 +217,7 @@ class ServiceUpdate(BaseModel):
     duration: Optional[int]
     is_popular: Optional[bool]
     basic_price: Optional[float]
+    image: Optional[str]
 
     food_type: Optional[FoodTypeEnum]
 
@@ -231,6 +233,7 @@ class ServiceOut(BaseModel):
     duration: int
     is_popular: bool
     basic_price: float
+    image: Optional[str]
 
     food_type: Optional[FoodTypeEnum]
     class Config:
