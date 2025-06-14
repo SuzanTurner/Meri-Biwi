@@ -6,7 +6,7 @@ from database import get_db
 import random
 
 def generate_otp():
-    return random.randint(100000, 999999)
+    return random.randint(1000, 9999)
 
 router = APIRouter(
     tags = ["OTP"],
