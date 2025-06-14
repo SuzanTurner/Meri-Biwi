@@ -207,8 +207,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index = True)
     uid = Column(String, unique = True, nullable = False)
     name = Column(String, nullable=False)
-    phone = Column(String(15), unique=True, nullable=False)
-    email = Column(String, unique = True, nullable=False)
+    phone = Column(String(15), nullable=False)
+    email = Column(String)
     password = Column(String, nullable = False)
     avatar = Column(String(15), default = "avatar", nullable=False)
     otp_verified = Column(Boolean, nullable = False)
@@ -269,3 +269,11 @@ class Categories(Base):
     image = Column(String, nullable=False)
     title = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
+    
+class Otp(Base):
+    __tablename__ = "otps"
+    
+    id = Column(Integer, primary_key=True)
+    phone = Column(String, nullable=False)
+    otp = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.utcnow())

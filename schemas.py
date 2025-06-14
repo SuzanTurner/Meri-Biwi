@@ -328,3 +328,8 @@ class Categories(BaseModel):
 
     class Config:
         from_attributes = True
+
+class otp(BaseModel):
+    phone : str
+    otp : str
+    created_at : str

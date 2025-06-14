@@ -71,6 +71,7 @@ async def create_user(
             "user_uid" : user.uid
         }
     except Exception as e:
+        print("User creation error:", str(e))
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail= "User Creation failed")
 
 @router.put("/{id}")
