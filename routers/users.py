@@ -73,7 +73,7 @@ async def create_user(
         }
     except Exception as e:
         print("User creation error:", str(e))
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail= {"status": "error", "message" : "Invalid Phone or Password"})
+        return {"status" : "error", "message" : "Invalid or missing phone number"}
 
 @router.put("/{id}")
 def update_user_status(id: int,
