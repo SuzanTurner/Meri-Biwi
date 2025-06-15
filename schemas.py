@@ -236,8 +236,10 @@ class ServiceOut(BaseModel):
     image: Optional[str]
 
     food_type: Optional[FoodTypeEnum]
+    
     class Config:
         orm_mode = True
+
 
 class User(BaseModel):
     uid : str
@@ -344,3 +346,25 @@ class Testimonials(BaseModel):
 
     class Config:
         from_attributes = True
+class ServicePriceOut(BaseModel):
+    id: int
+    name: str
+    category: CategoryEnum
+    plan_type: PlanTypeEnum
+    number_of: int
+    basic_details: List[str]
+    description: Optional[str]
+    frequency: int
+    duration: int
+    is_popular: bool
+    basic_price: float
+    image: Optional[str]
+
+    food_type: Optional[FoodTypeEnum]
+    additional_service: list[AdditionalFeatureOut]
+    service_price: int
+    additional_service_price: int
+    total_price: int
+
+    class Config:
+        orm_mode = True

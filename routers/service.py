@@ -9,6 +9,7 @@ import os
 from modals import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServiceCreate,
+    ServicePriceOut,
     ServiceOut,
     CategoryEnum,
     AdditionalFeatureCreate,
@@ -82,7 +83,7 @@ def get_all_services(
 
     services = query.all()
     return services
-@router.get("/filter_services", response_model=List[ServiceOut])
+@router.get("/filter_services", response_model=ServicePriceOut)
 def filter_services(
     plan_type: Optional[PlanTypeEnum] = Query(None),
     food_type: Optional[FoodTypeEnum] = Query(None),
@@ -90,6 +91,7 @@ def filter_services(
     frequency: Optional[int] = Query(None),
     number_of: Optional[int] = Query(None),
     meals_per_day:list[str]=Query(None),
+    add_service:list[int]=Query(None),
     db: Session = Depends(get_db),
 ):
     filters = []
@@ -109,10 +111,38 @@ def filter_services(
             meal=meal.strip().lower()
             filters.append(Service.basic_details.any(meal)) 
         
+    service = db.query(Service).filter(and_(*filters)).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="No matching service found")
+    additional_services = []
+    additional_price=0
+    if add_service:
+        additional_services = db.query(AdditionalFeature).filter(
+            AdditionalFeature.id.in_(add_service)
+        ).all()
+        additional_price = sum([a.price for a in additional_services])
 
-    results = db.query(Service).filter(and_(*filters)).all()
-    print(results)
-    return results
+    total_price = service.basic_price + additional_price
+
+    return {
+        "id": service.id,
+        "name": service.name,
+        "category": service.category,
+        "plan_type": service.plan_type,
+        "number_of": service.number_of,
+        "basic_details": service.basic_details,
+        "description": service.description,
+        "frequency": service.frequency,
+        "duration": service.duration,
+        "is_popular": service.is_popular,
+        "basic_price": service.basic_price,
+        "image": service.image,
+        "food_type": service.food_type,
+        "additional_service": additional_services,
+        "service_price": service.basic_price,
+        "additional_service_price": additional_price,
+        "total_price": total_price,
+    }
 
 
 
