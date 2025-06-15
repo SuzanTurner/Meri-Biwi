@@ -44,7 +44,12 @@ def create_service(
         
     with open(service_image_path, "wb") as f:
         f.write(image.file.read())
-        
+
+
+    cleaned_details = []
+    for item in basic_details:
+        parts = item.split(",")  # Split "1 Meal,Dinner"
+        cleaned_details.extend([p.strip().lower() for p in parts])
     new_service = Service(
         name=name,
         category=category,
@@ -52,7 +57,7 @@ def create_service(
         frequency=frequency,
         number_of=number_of,
         basic_price=basic_price,
-        basic_details=basic_details,
+        basic_details=cleaned_details,
         duration=duration,
         food_type=food_type,
         is_popular=is_popular,
@@ -84,6 +89,7 @@ def filter_services(
     category: Optional[CategoryEnum] = Query(None),
     frequency: Optional[int] = Query(None),
     number_of: Optional[int] = Query(None),
+    meals_per_day:list[str]=Query(None),
     db: Session = Depends(get_db),
 ):
     filters = []
@@ -98,6 +104,11 @@ def filter_services(
         filters.append(Service.number_of == number_of)
     if food_type:
         filters.append(Service.food_type == food_type)
+    if meals_per_day:
+        for meal in meals_per_day:
+            meal=meal.strip().lower()
+            filters.append(Service.basic_details.any(meal)) 
+        
 
     results = db.query(Service).filter(and_(*filters)).all()
     print(results)
