@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import uvicorn
-from routers import register_worker, db_check, login, service, testimonials, users, admin, otp, categories
+from routers import db_check, login, service, testimonials, users, admin, otp, categories, workers
 
 app = FastAPI(debug = True)
 
@@ -16,7 +16,7 @@ app.add_middleware(
 
 Base.metadata.create_all(bind=engine)
 
-app.include_router(register_worker.router)
+app.include_router(workers.router)
 app.include_router(db_check.router)
 app.include_router(users.router)
 app.include_router(login.router)
