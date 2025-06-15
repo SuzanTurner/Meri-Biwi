@@ -23,6 +23,7 @@ os.makedirs(PHOTOS_DIR, exist_ok=True)
 @router.post('/')
 async def create_testimonial(image_or_video : UploadFile = File(...),
                              title: str = Form(...),
+                             description : str = Form(...),
                              db: Session = Depends(get_db)):
     
     photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image_or_video.filename}"
@@ -31,12 +32,12 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image_or_video.file, buffer)
     
-    testimony = Testimonials(image_or_video=photo_path, title=title)
+    testimony = Testimonials(image_or_video=photo_path, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)
     
-    return {"status" : "success", "message" : f" {id} Testimony succesfully created!"}
+    return {"status" : "success", "message" : f"Testimony with id {testimony.id} succesfully created!"}
 
 @router.get('/')
 async def get_testimonials(db : Session = Depends(get_db)):

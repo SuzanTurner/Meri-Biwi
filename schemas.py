@@ -328,6 +328,7 @@ class Categories(BaseModel):
     service_id: str
     image: str
     title: str
+    categories : str
     created_at: datetime
 
     class Config:
@@ -342,6 +343,7 @@ class otp(BaseModel):
 class Testimonials(BaseModel):
     image_or_video: str
     title: str
+    desciption : str
     created_at: datetime
 
     class Config:
