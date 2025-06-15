@@ -355,6 +355,4 @@ class ServicePriceOut(BaseModel):
     additional_service_price: int
     total_price: int
 
-    class Config:
-        orm_mode = True
     model_config = ConfigDict(from_attributes=True)
