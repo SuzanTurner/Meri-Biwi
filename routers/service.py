@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException,UploadFile, File,Form,Quer
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
+from pathlib import Path
+
 import os
 
 from modals import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
@@ -17,8 +19,9 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
-UPLOAD_DIR = "uploads"
-SERVICE_PHOTOS_DIR = os.path.join(UPLOAD_DIR, "servicePhoto")
+UPLOAD_DIR = Path("uploads-categories")
+SERVICE_PHOTOS_DIR = UPLOAD_DIR / "photos"
+SERVICE_PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/", response_model=ServiceOut)
 def create_service(
