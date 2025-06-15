@@ -285,4 +285,5 @@ class Testimonials(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     image_or_video = Column(String, nullable=False)
     title = Column(String, nullable=False)
+    description = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
