@@ -3,12 +3,10 @@ from database import get_db
 from sqlalchemy.orm import Session
 from modals import Categories
 from datetime import datetime
-from typing import List
-from schemas import Categories as CategoryResponse
 import shutil
 import os
 
-UPLOAD_DIR = "uploads-categores"
+UPLOAD_DIR = "uploads-categories"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
@@ -24,6 +22,7 @@ async def create_category(
     service_id: str = Form(...),
     image: UploadFile = File(...),
     title: str = Form(...),
+    categories : str = Form(...),
     db: Session = Depends(get_db)
 ):
     
@@ -33,13 +32,13 @@ async def create_category(
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
         
-    category = Categories(service_id=service_id, image=photo_path, title=title)
+    category = Categories(service_id=service_id, image=photo_path, categories = categories, title=title)
     db.add(category)
     db.commit()
     db.refresh(category)
     return {"message": f"Category {category.id} added!", "Category": category}
 
-@router.get('/', response_model=List[CategoryResponse])
+@router.get('/')
 async def get_all_categories(db: Session = Depends(get_db)):
     categories = db.query(Categories).all()
     return categories

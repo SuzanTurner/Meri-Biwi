@@ -4,8 +4,8 @@ from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 import pytz
-
 import enum
+
 
 # class Worker(Base):
 #     __tablename__ = "workers"
@@ -269,6 +269,7 @@ class Categories(Base):
     service_id = Column(String, nullable=False)
     image = Column(String, nullable=False)
     title = Column(String, nullable=False)
+    categories = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
     
 class Otp(Base):

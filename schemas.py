@@ -326,6 +326,7 @@ class Categories(BaseModel):
     service_id: str
     image: str
     title: str
+    categories : str
     created_at: datetime
 
     class Config:
