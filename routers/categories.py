@@ -40,6 +40,7 @@ async def create_category(
 
 @router.get('/')
 async def get_all_categories(db: Session = Depends(get_db)):
+    print("HIT: /categories") 
     categories = db.query(Categories).all()
     return categories
     

@@ -12,4 +12,6 @@ uploads-categories/
 uploads-testimonials/
 alembic/
 alembic.ini
-
+.pytest_cache/
+tests/
+load_tests/

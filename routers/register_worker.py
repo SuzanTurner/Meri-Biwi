@@ -9,7 +9,8 @@ import shutil
 import os
 
 router = APIRouter(
-    tags = ["Workers"]
+    tags = ["Workers"],
+    prefix = '/workers'
 )
 
 UPLOAD_DIR = "uploads"
@@ -19,7 +20,7 @@ DOCS_DIR = os.path.join(UPLOAD_DIR, "documents")
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
 
-@router.get("/search-workers")
+@router.get("/{name}")
 async def search_workers(name: str = None):
     try:
         db = next(get_db())
@@ -28,8 +29,8 @@ async def search_workers(name: str = None):
             workers = db.query(Worker).filter(
                 or_(
                     Worker.full_name.ilike(f"%{name}%"),
-                    Worker.email.ilike(f"%{name}%"),
-                    Worker.city.ilike(f"%{name}%")
+                    # Worker.email.ilike(f"%{name}%"),
+                    # Worker.city.ilike(f"%{name}%")
                 )
             ).all()
         else:
@@ -72,7 +73,7 @@ async def search_workers(name: str = None):
     finally:
         db.close()
 
-@router.post("/register-worker")
+@router.post("/")
 async def register_worker(
     full_name: str = Form(...),
     gender: str = Form(...),
@@ -156,8 +157,8 @@ async def register_worker(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get('/all')
-async def get_user(db: Session = Depends(get_db)):
+@router.get('/')
+async def get_worker(db: Session = Depends(get_db)):
     try:
         workers = db.query(Worker).all()
         worker_list = []
@@ -191,7 +192,7 @@ async def get_user(db: Session = Depends(get_db)):
     finally:
         db.close()
 
-@router.put("/update-worker/{worker_id}")
+@router.put("/{worker_id}")
 async def update_worker(
     worker_id: int,
     worker_update: WorkerCreate,
@@ -312,7 +313,7 @@ async def update_worker(
     finally:
         db.close()
 
-@router.delete('/delete-worker/{id}')
+@router.delete('/{id}')
 async def delete_worker(id: int, db: Session = Depends(get_db)):
     user = db.query(Worker).filter(Worker.id == id).first()
     if not user:

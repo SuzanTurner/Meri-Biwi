@@ -7,7 +7,7 @@ from database import get_db
 from hashing import Hash
 
 router = APIRouter(
-    tags = ["User Login"],
+    tags = ["Login"],
     prefix = '/login'
 )
 
@@ -21,7 +21,7 @@ def user_login(request : UserLogin, db : Session = Depends(get_db)):
     if not Hash.verify(request.password, user.password):
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail = "Invalid Password")
     
-    return {"message": " USER Logged in successfully", "email": user.email,"token":"acbd1234"}
+    return {"status": "success", "message": "login successful", "token":"acbd1234"}
 
 @router.post('/admin')
 def admin_login(request : AdminLogin, db : Session = Depends(get_db)):
@@ -33,6 +33,6 @@ def admin_login(request : AdminLogin, db : Session = Depends(get_db)):
     if not Hash.verify(request.password, admin.password):
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail = "Invalid Password")
     
-    return {"message": " ADMIN Logged in successfully", "email": admin.email}
+    return {"status": "success", "message": "login successful", "token":"acbd1234"}
     
         
