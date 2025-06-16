@@ -76,9 +76,9 @@ async def create_user(
         return {"status" : "error", "message" : "Invalid or missing phone number"}
 
 @router.put("/{id}")
-def update_user_status(id: int,
-                       update_data: UpdateUser,
-                       db: Session = Depends(get_db)):
+def update_user_(id: int,
+                update_data: UpdateUser,
+                db: Session = Depends(get_db)):
 
     user = db.query(User).filter(User.id == id).first()
     if not user:
@@ -106,7 +106,7 @@ def update_user_status(id: int,
     db.commit()
     db.refresh(user)
 
-    return {"msg": "User updated successfully", "user_details": user}
+    return {"status": "success", "user_details": user}
 
 
 @router.get('/{id}')

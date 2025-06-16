@@ -279,6 +279,7 @@ class UserCreate(BaseModel):
     password : str
     
 class UpdateUser(BaseModel):
+    name : Optional[str] = None
     phone: Optional[str] = None
     email : Optional[str] = None
     password : Optional[str] = None
