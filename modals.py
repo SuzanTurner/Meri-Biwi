@@ -50,6 +50,9 @@ class Worker(Base):
     primary_service_category = Column(String)
     experience_years = Column(Integer)
     experience_months = Column(Integer)
+    languages_spoken = Column(ARRAY(String))
+    availability = Column(ARRAY(String))
+    preferred_community = Column(ARRAY(String))
 
     aadhar_number = Column(String)
     pan_number = Column(String)
@@ -68,9 +71,6 @@ class Worker(Base):
     education = relationship("Education", back_populates="worker", cascade="all, delete-orphan")
     bank_details = relationship("BankDetails", back_populates="worker", uselist=False, cascade="all, delete-orphan")
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
-    references = relationship("LocalReference", back_populates="worker", cascade="all, delete-orphan")
-    employers = relationship("PreviousEmployer", back_populates="worker", cascade="all, delete-orphan")
-    education = relationship("Education", back_populates="worker", cascade="all, delete-orphan")
 
 
 class Address(Base):

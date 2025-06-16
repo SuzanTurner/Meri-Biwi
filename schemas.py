@@ -2,9 +2,10 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
+from fastapi import UploadFile
 
 class AddressBase(BaseModel):
-    type: str
+    type: str  # 'permanent' or 'current'
     line1: str
     city: str
     state: str
@@ -61,6 +62,13 @@ class PreviousEmployerCreate(PreviousEmployerBase):
     pass
 
 class EducationCreate(EducationBase):
+    pass
+
+class WorkExperienceBase(BaseModel):
+    years: int
+    months: int
+
+class WorkExperienceCreate(WorkExperienceBase):
     pass
 
 # Response schemas for related models
@@ -120,6 +128,9 @@ class WorkerBase(BaseModel):
     primary_service_category: str
     experience_years: int
     experience_months: int
+    languages_spoken: List[str]
+    availability: List[str]
+    preferred_community: List[str]
     aadhar_number: str
     pan_number: str
     status: str = "Pending"
@@ -128,7 +139,16 @@ class WorkerBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class WorkerCreate(WorkerBase):
-    pass
+    profile_photo: Optional[UploadFile] = None
+    electricity_bill: Optional[UploadFile] = None
+    permanent_address: Optional[AddressCreate] = None
+    current_address: Optional[AddressCreate] = None
+    emergency_contacts: Optional[List[EmergencyContactCreate]] = None
+    bank_details: Optional[BankDetailsCreate] = None
+    police_verification: Optional[PoliceVerificationCreate] = None
+    local_references: Optional[List[LocalReferenceCreate]] = None
+    previous_employers: Optional[List[PreviousEmployerCreate]] = None
+    education: Optional[List[EducationCreate]] = None
 
 class Worker(WorkerBase):
     id: int
@@ -139,8 +159,8 @@ class Worker(WorkerBase):
     emergency_contacts: List[EmergencyContact] = []
     bank_details: Optional[BankDetails] = None
     police_verification: Optional[PoliceVerification] = None
-    references: List[LocalReference] = []
-    employers: List[PreviousEmployer] = []
+    local_references: List[LocalReference] = []
+    previous_employers: List[PreviousEmployer] = []
     education: List[Education] = []
 
     model_config = ConfigDict(from_attributes=True)

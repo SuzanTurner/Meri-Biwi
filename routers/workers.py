@@ -75,66 +75,124 @@ async def search_workers(name: str = None):
 
 @router.post("/")
 async def register_worker(
-    full_name: str = Form(...),
-    gender: str = Form(...),
-    age: int = Form(...),
-    dob: str = Form(...),
-    phone: str = Form(...),
-    alternate_phone: str = Form(None),
-    email: str = Form(...),
-    city: str = Form(...),
-    blood_group: str = Form(None),
-    primary_service_category: str = Form(...),
-    experience_years: int = Form(...),
-    experience_months: int = Form(...),
-    aadhar_number: str = Form(...),
-    pan_number: str = Form(...),
-    profile_photo: UploadFile = File(...),
-    electricity_bill: UploadFile = File(...),
-    status: str = "Pending",
-    religion: str = "God knows"
+    worker_data: WorkerCreate,
+    db: Session = Depends(get_db)
 ):
     try:
-        # Generate unique filenames
-        photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{profile_photo.filename}"
-        bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{electricity_bill.filename}"
+        # Generate unique filenames for uploaded files
+        photo_filename = None
+        bill_filename = None
         
-        # Save files
-        photo_path = os.path.join(PHOTOS_DIR, photo_filename)
-        bill_path = os.path.join(DOCS_DIR, bill_filename)
+        if worker_data.profile_photo:
+            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_data.profile_photo.filename}"
+            photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+            with open(photo_path, "wb") as buffer:
+                shutil.copyfileobj(worker_data.profile_photo.file, buffer)
         
-        with open(photo_path, "wb") as buffer:
-            shutil.copyfileobj(profile_photo.file, buffer)
-        
-        with open(bill_path, "wb") as buffer:
-            shutil.copyfileobj(electricity_bill.file, buffer)
-        
-        # Create database session
-        db = next(get_db())
+        if worker_data.electricity_bill:
+            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_data.electricity_bill.filename}"
+            bill_path = os.path.join(DOCS_DIR, bill_filename)
+            with open(bill_path, "wb") as buffer:
+                shutil.copyfileobj(worker_data.electricity_bill.file, buffer)
         
         try:
             # Create new worker record
             worker = Worker(
-                full_name=full_name,
-                gender=gender,
-                age=age,
-                dob=dob,
-                phone=phone,
-                alternate_phone=alternate_phone,
-                email=email,
-                city=city,
-                blood_group=blood_group,
-                primary_service_category=primary_service_category,
-                experience_years=experience_years,
-                experience_months=experience_months,
-                aadhar_number=aadhar_number,
-                pan_number=pan_number,
-                profile_photo_url=photo_path,
-                electricity_bill_url=bill_path,
-                status=status,
-                religion=religion
+                full_name=worker_data.full_name,
+                gender=worker_data.gender,
+                age=worker_data.age,
+                dob=worker_data.dob,
+                phone=worker_data.phone,
+                alternate_phone=worker_data.alternate_phone,
+                email=worker_data.email,
+                city=worker_data.city,
+                blood_group=worker_data.blood_group,
+                primary_service_category=worker_data.primary_service_category,
+                experience_years=worker_data.experience_years,
+                experience_months=worker_data.experience_months,
+                languages_spoken=worker_data.languages_spoken,
+                availability=worker_data.availability,
+                preferred_community=worker_data.preferred_community,
+                aadhar_number=worker_data.aadhar_number,
+                pan_number=worker_data.pan_number,
+                profile_photo_url=photo_path if photo_filename else None,
+                electricity_bill_url=bill_path if bill_filename else None,
+                status=worker_data.status,
+                religion=worker_data.religion
             )
             db.add(worker)
+            db.flush()  # Flush to get the worker ID
+            
+            # Add permanent address
+            if worker_data.permanent_address:
+                permanent_address = Address(
+                    worker_id=worker.id,
+                    type="permanent",
+                    **worker_data.permanent_address.dict()
+                )
+                db.add(permanent_address)
+            
+            # Add current address
+            if worker_data.current_address:
+                current_address = Address(
+                    worker_id=worker.id,
+                    type="current",
+                    **worker_data.current_address.dict()
+                )
+                db.add(current_address)
+            
+            # Add emergency contacts
+            if worker_data.emergency_contacts:
+                for contact in worker_data.emergency_contacts:
+                    emergency_contact = EmergencyContact(
+                        worker_id=worker.id,
+                        **contact.dict()
+                    )
+                    db.add(emergency_contact)
+            
+            # Add bank details
+            if worker_data.bank_details:
+                bank_details = BankDetails(
+                    worker_id=worker.id,
+                    **worker_data.bank_details.dict()
+                )
+                db.add(bank_details)
+            
+            # Add police verification
+            if worker_data.police_verification:
+                police_verification = PoliceVerification(
+                    worker_id=worker.id,
+                    **worker_data.police_verification.dict()
+                )
+                db.add(police_verification)
+            
+            # Add local references
+            if worker_data.local_references:
+                for reference in worker_data.local_references:
+                    local_reference = LocalReference(
+                        worker_id=worker.id,
+                        **reference.dict()
+                    )
+                    db.add(local_reference)
+            
+            # Add previous employers
+            if worker_data.previous_employers:
+                for employer in worker_data.previous_employers:
+                    previous_employer = PreviousEmployer(
+                        worker_id=worker.id,
+                        **employer.dict()
+                    )
+                    db.add(previous_employer)
+            
+            # Add education records
+            if worker_data.education:
+                for edu in worker_data.education:
+                    education = Education(
+                        worker_id=worker.id,
+                        **edu.dict()
+                    )
+                    db.add(education)
+            
             db.commit()
             db.refresh(worker)
             
@@ -148,15 +206,15 @@ async def register_worker(
             # Rollback in case of error
             db.rollback()
             # Clean up uploaded files
-            if os.path.exists(photo_path):
+            if photo_filename and os.path.exists(photo_path):
                 os.remove(photo_path)
-            if os.path.exists(bill_path):
+            if bill_filename and os.path.exists(bill_path):
                 os.remove(bill_path)
             raise HTTPException(status_code=500, detail=str(e))
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @router.get('/')
 async def get_worker(db: Session = Depends(get_db)):
     try:
@@ -207,71 +265,13 @@ async def update_worker(
         # Update basic worker information
         update_data = worker_update.dict(exclude_unset=True)
         for key, value in update_data.items():
-            if hasattr(worker, key):
+            if hasattr(worker, key) and key not in ['profile_photo', 'electricity_bill', 'permanent_address', 
+                                                   'current_address', 'emergency_contacts', 'bank_details', 
+                                                   'police_verification', 'local_references', 'previous_employers', 
+                                                   'education']:
                 setattr(worker, key, value)
 
-        # Handle related models if provided
-        if worker_update.addresses:
-            # Delete existing addresses
-            db.query(Address).filter(Address.worker_id == worker_id).delete()
-            # Add new addresses
-            for address in worker_update.addresses:
-                new_address = Address(**address.dict(), worker_id=worker_id)
-                db.add(new_address)
-
-        if worker_update.emergency_contacts:
-            # Delete existing emergency contacts
-            db.query(EmergencyContact).filter(EmergencyContact.worker_id == worker_id).delete()
-            # Add new emergency contacts
-            for contact in worker_update.emergency_contacts:
-                new_contact = EmergencyContact(**contact.dict(), worker_id=worker_id)
-                db.add(new_contact)
-
-        if worker_update.bank_details:
-            # Update or create bank details
-            existing_bank = db.query(BankDetails).filter(BankDetails.worker_id == worker_id).first()
-            if existing_bank:
-                for key, value in worker_update.bank_details.dict(exclude_unset=True).items():
-                    setattr(existing_bank, key, value)
-            else:
-                new_bank = BankDetails(**worker_update.bank_details.dict(), worker_id=worker_id)
-                db.add(new_bank)
-
-        if worker_update.police_verification:
-            # Update or create police verification
-            existing_verification = db.query(PoliceVerification).filter(PoliceVerification.worker_id == worker_id).first()
-            if existing_verification:
-                for key, value in worker_update.police_verification.dict(exclude_unset=True).items():
-                    setattr(existing_verification, key, value)
-            else:
-                new_verification = PoliceVerification(**worker_update.police_verification.dict(), worker_id=worker_id)
-                db.add(new_verification)
-
-        if worker_update.references:
-            # Delete existing references
-            db.query(LocalReference).filter(LocalReference.worker_id == worker_id).delete()
-            # Add new references
-            for reference in worker_update.references:
-                new_reference = LocalReference(**reference.dict(), worker_id=worker_id)
-                db.add(new_reference)
-
-        if worker_update.employers:
-            # Delete existing employers
-            db.query(PreviousEmployer).filter(PreviousEmployer.worker_id == worker_id).delete()
-            # Add new employers
-            for employer in worker_update.employers:
-                new_employer = PreviousEmployer(**employer.dict(), worker_id=worker_id)
-                db.add(new_employer)
-
-        if worker_update.education:
-            # Delete existing education records
-            db.query(Education).filter(Education.worker_id == worker_id).delete()
-            # Add new education records
-            for edu in worker_update.education:
-                new_edu = Education(**edu.dict(), worker_id=worker_id)
-                db.add(new_edu)
-
-        # Handle file uploads if provided
+        # Handle file uploads
         if worker_update.profile_photo:
             # Delete old photo if exists
             if worker.profile_photo_url and os.path.exists(worker.profile_photo_url):
@@ -295,6 +295,105 @@ async def update_worker(
             with open(bill_path, "wb") as buffer:
                 shutil.copyfileobj(worker_update.electricity_bill.file, buffer)
             worker.electricity_bill_url = bill_path
+
+        # Handle addresses
+        if worker_update.permanent_address:
+            # Delete existing permanent address
+            db.query(Address).filter(Address.worker_id == worker_id, Address.type == "permanent").delete()
+            # Add new permanent address
+            permanent_address = Address(
+                worker_id=worker_id,
+                type="permanent",
+                **worker_update.permanent_address.dict()
+            )
+            db.add(permanent_address)
+
+        if worker_update.current_address:
+            # Delete existing current address
+            db.query(Address).filter(Address.worker_id == worker_id, Address.type == "current").delete()
+            # Add new current address
+            current_address = Address(
+                worker_id=worker_id,
+                type="current",
+                **worker_update.current_address.dict()
+            )
+            db.add(current_address)
+
+        # Handle emergency contacts
+        if worker_update.emergency_contacts:
+            # Delete existing emergency contacts
+            db.query(EmergencyContact).filter(EmergencyContact.worker_id == worker_id).delete()
+            # Add new emergency contacts
+            for contact in worker_update.emergency_contacts:
+                new_contact = EmergencyContact(
+                    worker_id=worker_id,
+                    **contact.dict()
+                )
+                db.add(new_contact)
+
+        # Handle bank details
+        if worker_update.bank_details:
+            # Update or create bank details
+            existing_bank = db.query(BankDetails).filter(BankDetails.worker_id == worker_id).first()
+            if existing_bank:
+                for key, value in worker_update.bank_details.dict(exclude_unset=True).items():
+                    setattr(existing_bank, key, value)
+            else:
+                new_bank = BankDetails(
+                    worker_id=worker_id,
+                    **worker_update.bank_details.dict()
+                )
+                db.add(new_bank)
+
+        # Handle police verification
+        if worker_update.police_verification:
+            # Update or create police verification
+            existing_verification = db.query(PoliceVerification).filter(PoliceVerification.worker_id == worker_id).first()
+            if existing_verification:
+                for key, value in worker_update.police_verification.dict(exclude_unset=True).items():
+                    setattr(existing_verification, key, value)
+            else:
+                new_verification = PoliceVerification(
+                    worker_id=worker_id,
+                    **worker_update.police_verification.dict()
+                )
+                db.add(new_verification)
+
+        # Handle local references
+        if worker_update.local_references:
+            # Delete existing references
+            db.query(LocalReference).filter(LocalReference.worker_id == worker_id).delete()
+            # Add new references
+            for reference in worker_update.local_references:
+                new_reference = LocalReference(
+                    worker_id=worker_id,
+                    **reference.dict()
+                )
+                db.add(new_reference)
+
+        # Handle previous employers
+        if worker_update.previous_employers:
+            # Delete existing employers
+            db.query(PreviousEmployer).filter(PreviousEmployer.worker_id == worker_id).delete()
+            # Add new employers
+            for employer in worker_update.previous_employers:
+                new_employer = PreviousEmployer(
+                    worker_id=worker_id,
+                    **employer.dict()
+                )
+                db.add(new_employer)
+
+        # Handle education records
+        if worker_update.education:
+            # Delete existing education records
+            db.query(Education).filter(Education.worker_id == worker_id).delete()
+            # Add new education records
+            for edu in worker_update.education:
+                new_edu = Education(
+                    worker_id=worker_id,
+                    **edu.dict()
+                )
+                db.add(new_edu)
 
         try:
             db.commit()

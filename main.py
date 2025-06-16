@@ -1,8 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-import uvicorn
 from routers import db_check, login, service, testimonials, users, admin, otp, categories, workers
+import uvicorn
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(debug = True)
 
