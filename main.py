@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(debug = True)
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads-workers", StaticFiles(directory="uploads-workers"), name="uploads-workers")
 app.mount("/uploads-admin", StaticFiles(directory="uploads-admin"), name="uploads-admin")
 app.mount("/uploads-categories", StaticFiles(directory="uploads-categories"), name="uploads-categories")
 app.mount("/uploads-testimonials", StaticFiles(directory="uploads-testimonials"), name="uploads-testimonials")
