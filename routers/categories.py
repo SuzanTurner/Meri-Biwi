@@ -3,9 +3,12 @@ from database import get_db
 from sqlalchemy.orm import Session
 from modals import Categories
 from datetime import datetime
+from urllib.parse import quote
 import shutil
 import os
 import logging
+import dotenv
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,8 @@ PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
+dotenv.load_dotenv()
+BASE_URL = os.getenv('BASE_URL')
 
 router = APIRouter(
     tags = ["Categories"],
@@ -29,7 +34,9 @@ async def create_category(
     db: Session = Depends(get_db)
 ):
     try:
-        photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image.filename}"
+        
+        safe_orig = re.sub(r'\s+', '_', image.filename)
+        photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
         photo_path = os.path.join(PHOTOS_DIR, photo_filename)
         
         logger.info(f"Saving image to: {photo_path}")
@@ -37,10 +44,13 @@ async def create_category(
         with open(photo_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
             
+        # encoded_filename = quote(photo_filename)
         public_url = f"/uploads-categories/photos/{photo_filename}"
+        # full_url = BASE_URL + public_url
+        full_url = "http://127.0.0.1:8000" + public_url
         logger.info(f"Image saved successfully. Public URL: {public_url}")
             
-        category = Categories(service_id=service_id, image=public_url, categories = categories, title=title)
+        category = Categories(service_id=service_id, image=full_url, categories = categories, title=title)
         db.add(category)
         db.commit()
         db.refresh(category)

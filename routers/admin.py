@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from hashing import Hash
 from modals import Admin
+from routers.categories import BASE_URL
 from schemas import UpdateAdmin
 from datetime import datetime
 from database import get_db
@@ -9,6 +10,11 @@ import bcrypt
 import shutil
 import pytz
 import os
+import re
+import dotenv
+
+dotenv.load_dotenv()
+BASE_URL = os.getenv('BASE_URL')
 
 router = APIRouter(
     tags = ["Admin"],
@@ -40,11 +46,18 @@ async def create_admin(
                 detail="This password is already used by another admin"
             )
             
-    photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{profile_image.filename}"
+    safe_orig = re.sub(r'\s+', '_', profile_image.filename)
+    photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            
+    # photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{profile_image.filename}"
     photo_path = os.path.join(PHOTOS_DIR, photo_filename)
     
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(profile_image.file, buffer)
+        
+    public_url = f"/uploads-categories/photos/{photo_filename}"
+    full_url = BASE_URL + public_url
+    # full_url = "http://127.0.0.1:8000" + public_url
 
     
     hashed_password = Hash.bcrypt(password) 
@@ -53,7 +66,7 @@ async def create_admin(
         email = email,
         password = hashed_password,
         full_name = full_name,
-        profile_image = photo_path,
+        profile_image = full_url,
         role = role,
         status = status,
     )

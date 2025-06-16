@@ -5,6 +5,11 @@ from datetime import datetime
 from schemas import Testimonials as TestSchema
 import shutil
 import os
+import dotenv
+import re
+
+dotenv.load_dotenv()
+BASE_URL = os.getenv('BASE_URL')
 
 from modals import Testimonials
 
@@ -26,13 +31,20 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
                              description : str = Form(...),
                              db: Session = Depends(get_db)):
     
-    photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{image_or_video.filename}"
+    
+    safe_orig = re.sub(r'\s+', '_', image_or_video.filename)
+    photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
     photo_path = os.path.join(PHOTOS_DIR, photo_filename)
     
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image_or_video.file, buffer)
+        
+    public_url = f"/uploads-categories/photos/{photo_filename}"
+    full_url = BASE_URL + public_url
+    # full_url = "http://127.0.0.1:8000" + public_url
     
-    testimony = Testimonials(image_or_video=photo_path, title=title, description = description)
+    
+    testimony = Testimonials(image_or_video=full_url, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)
