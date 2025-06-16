@@ -2,10 +2,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routers import db_check, login, service, testimonials, users, admin, otp, categories, workers
+from routers import db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning
 import uvicorn
 import logging
-import os
 
 
 logging.basicConfig(
@@ -40,6 +39,8 @@ app.include_router(admin.router)
 app.include_router(otp.router)
 app.include_router(categories.router)
 app.include_router(testimonials.router)
+app.include_router(cooking.router)
+app.include_router(cleaning.router)
 
 
 if __name__ == "__main__":

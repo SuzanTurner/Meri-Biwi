@@ -43,8 +43,9 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
     
+    datatype = image_or_video.content_type
     
-    testimony = Testimonials(image_or_video=full_url, title=title, description = description)
+    testimony = Testimonials(image_or_video=full_url, datatype = datatype, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)

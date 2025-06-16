@@ -350,6 +350,7 @@ class otp(BaseModel):
     
 class Testimonials(BaseModel):
     image_or_video: str
+    datatype : str
     title: str
     desciption : str
     created_at: datetime
