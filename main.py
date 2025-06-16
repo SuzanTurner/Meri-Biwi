@@ -1,9 +1,12 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from routers import db_check, login, service, testimonials, users, admin, otp, categories, workers
 import uvicorn
 import logging
+import os
+
 
 logging.basicConfig(
     level=logging.INFO,  
@@ -12,6 +15,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(debug = True)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads-admin", StaticFiles(directory="uploads-admin"), name="uploads-admin")
+app.mount("/uploads-categories", StaticFiles(directory="uploads-categories"), name="uploads-categories")
+app.mount("/uploads-testimonials", StaticFiles(directory="uploads-testimonials"), name="uploads-testimonials")
 
 app.add_middleware(
     CORSMiddleware,

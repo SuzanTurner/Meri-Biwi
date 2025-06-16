@@ -32,7 +32,9 @@ async def create_category(
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
         
-    category = Categories(service_id=service_id, image=photo_path, categories = categories, title=title)
+    public_url = f"/uploads-categories/photos/{photo_filename}"
+        
+    category = Categories(service_id=service_id, image=public_url, categories = categories, title=title)
     db.add(category)
     db.commit()
     db.refresh(category)
