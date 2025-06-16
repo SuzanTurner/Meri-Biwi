@@ -3,6 +3,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from datetime import datetime
 from schemas import Testimonials as TestSchema
+from modals import Testimonials
 import shutil
 import os
 import dotenv
@@ -10,8 +11,6 @@ import re
 
 dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
-
-from modals import Testimonials
 
 
 router = APIRouter(
@@ -39,7 +38,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image_or_video.file, buffer)
         
-    public_url = f"/uploads-categories/photos/{photo_filename}"
+    public_url = f"/uploads-testimonials/photos/{photo_filename}"
     full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
     

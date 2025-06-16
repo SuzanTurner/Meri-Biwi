@@ -7,13 +7,19 @@ from schemas import WorkerCreate, AddressCreate, EmergencyContactCreate, BankDet
 from sqlalchemy import or_
 import shutil
 import os
+import dotenv
+import re
+
+dotenv.load_dotenv()
+BASE_URL = os.getenv('BASE_URL')
+
 
 router = APIRouter(
     tags = ["Workers"],
     prefix = '/workers'
 )
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "uploads-workers"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 DOCS_DIR = os.path.join(UPLOAD_DIR, "documents")
 
@@ -82,18 +88,33 @@ async def register_worker(
         # Generate unique filenames for uploaded files
         photo_filename = None
         bill_filename = None
+        full_url_photo = None
+        full_url_bill = None
         
         if worker_data.profile_photo:
-            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_data.profile_photo.filename}"
+            
+            safe_orig = re.sub(r'\s+', '_', worker_data.profile_photo.filename)
+            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
             photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+            
             with open(photo_path, "wb") as buffer:
                 shutil.copyfileobj(worker_data.profile_photo.file, buffer)
+                
+            public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+            full_url_photo = BASE_URL + public_url_photo
+            # full_url = "http://127.0.0.1:8000" + public_url
         
         if worker_data.electricity_bill:
-            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_data.electricity_bill.filename}"
+            safe_orig = re.sub(r'\s+', '_', worker_data.profile_photo.filename)
+            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
             bill_path = os.path.join(DOCS_DIR, bill_filename)
+            
             with open(bill_path, "wb") as buffer:
                 shutil.copyfileobj(worker_data.electricity_bill.file, buffer)
+            
+            public_url_bill = f"/uploads-workers/documents/{bill_filename}"
+            full_url_bill = BASE_URL + public_url_bill
+            # full_url = "http://127.0.0.1:8000" + public_url
         
         try:
             # Create new worker record
@@ -115,8 +136,8 @@ async def register_worker(
                 preferred_community=worker_data.preferred_community,
                 aadhar_number=worker_data.aadhar_number,
                 pan_number=worker_data.pan_number,
-                profile_photo_url=photo_path if photo_filename else None,
-                electricity_bill_url=bill_path if bill_filename else None,
+                profile_photo_url=full_url_photo if photo_filename else None,
+                electricity_bill_url=full_url_bill if bill_filename else None,
                 status=worker_data.status,
                 religion=worker_data.religion
             )
@@ -276,25 +297,40 @@ async def update_worker(
             # Delete old photo if exists
             if worker.profile_photo_url and os.path.exists(worker.profile_photo_url):
                 os.remove(worker.profile_photo_url)
+                
+            safe_orig = re.sub(r'\s+', '_', worker_update.profile_photo.filename)
+            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
             
-            # Save new photo
-            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_update.profile_photo.filename}"
+            # photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_update.profile_photo.filename}"
             photo_path = os.path.join(PHOTOS_DIR, photo_filename)
             with open(photo_path, "wb") as buffer:
                 shutil.copyfileobj(worker_update.profile_photo.file, buffer)
-            worker.profile_photo_url = photo_path
+                
+            public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+            full_url_photo = BASE_URL + public_url_photo
+            # full_url = "http://127.0.0.1:8000" + public_url
+            
+            worker.profile_photo_url = full_url_photo
 
         if worker_update.electricity_bill:
             # Delete old bill if exists
+            
             if worker.electricity_bill_url and os.path.exists(worker.electricity_bill_url):
                 os.remove(worker.electricity_bill_url)
             
-            # Save new bill
-            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_update.electricity_bill.filename}"
+            safe_orig = re.sub(r'\s+', '_', worker_update.electricity_bill.filename)
+            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            
+            # bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{worker_update.electricity_bill.filename}"
             bill_path = os.path.join(DOCS_DIR, bill_filename)
             with open(bill_path, "wb") as buffer:
                 shutil.copyfileobj(worker_update.electricity_bill.file, buffer)
-            worker.electricity_bill_url = bill_path
+                
+            public_url_bill = f"/uploads-workers/documents/{bill_filename}"
+            full_url_bill = BASE_URL + public_url_bill
+            # full_url = "http://127.0.0.1:8000" + public_url
+            
+            worker.electricity_bill_url = full_url_bill
 
         # Handle addresses
         if worker_update.permanent_address:

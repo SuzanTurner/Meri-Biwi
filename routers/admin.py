@@ -55,7 +55,7 @@ async def create_admin(
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(profile_image.file, buffer)
         
-    public_url = f"/uploads-categories/photos/{photo_filename}"
+    public_url = f"/uploads-admin/photos/{photo_filename}"
     full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
 
