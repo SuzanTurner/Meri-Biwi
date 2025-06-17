@@ -20,6 +20,7 @@ app.mount("/uploads-admin", StaticFiles(directory="uploads-admin"), name="upload
 app.mount("/uploads-categories", StaticFiles(directory="uploads-categories"), name="uploads-categories")
 app.mount("/uploads-testimonials", StaticFiles(directory="uploads-testimonials"), name="uploads-testimonials")
 app.mount("/uploads-banners", StaticFiles(directory="uploads-banners"), name="uploads-banners")
+app.mount("/uploads-users", StaticFiles(directory="uploads-users"), name = "uploads-users")
 
 app.add_middleware(
     CORSMiddleware,

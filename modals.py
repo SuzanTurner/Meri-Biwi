@@ -224,7 +224,7 @@ class User(Base):
     phone = Column(String(15), nullable=False, unique=True)
     email = Column(String, nullable = True)
     password = Column(String, nullable = False)
-    avatar = Column(String(15), default = "avatar", nullable=False)
+    avatar = Column(String(100), default = "avatar", nullable=False)
     otp_verified = Column(Boolean, nullable = False)
     fcm_token = Column(String, default = "fcm_token", nullable=False)
     wallet = Column(Float, default = 0.00, nullable=False)
