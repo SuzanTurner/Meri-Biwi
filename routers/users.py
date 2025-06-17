@@ -75,12 +75,12 @@ async def create_user(
         print("User creation error:", str(e))
         return {"status" : "error", "message" : "Invalid or missing phone number"}
 
-@router.put("/{id}")
-def update_user_(id: int,
+@router.put("/{uid}")
+def update_user_(uid: str,
                 update_data: UpdateUser,
                 db: Session = Depends(get_db)):
 
-    user = db.query(User).filter(User.id == id).first()
+    user = db.query(User).filter(User.uid == uid).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
