@@ -378,3 +378,9 @@ class ServicePriceOut(BaseModel):
     total_price: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class Banner(BaseModel):
+    image : str
+    key : str
+    url : str
+    

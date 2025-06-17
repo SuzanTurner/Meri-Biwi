@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import List
 from decimal import Decimal
+# from sqlalchemy import func, or_
+# from modals import Meal, AdditionalService
 import logging
 import json
 
@@ -30,8 +32,15 @@ def calculate_total_cooking(
         logger.info("=== Request Details ===")
         logger.info(f"Query Parameters: food_type={food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}")
         
-        # Convert food type to match database format
-        db_food_type = food_type
+        
+        food_type = food_type.strip().lower().replace(" ", "")
+        if "veg" in food_type and "non" not in food_type:
+            db_food_type = "Veg"
+        elif "non" in food_type:
+            db_food_type = "Non - Veg"
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported food type")
+        
         logger.info(f"Converted food_type to: {db_food_type}")
         
         # Get base price
@@ -55,10 +64,11 @@ def calculate_total_cooking(
         
         if not base_result:
             logger.error("No matching meal plan found")
-            raise HTTPException(
-                status_code=404,
-                detail=f"No meal plan found for food_type={db_food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}"
-            )
+            # raise HTTPException(
+            #     status_code=404,
+            #     detail=f"No meal plan found for food_type={db_food_type}, plan_type={plan_type}, num_people={num_people}, meal_type={meal_type}"
+            # )
+            return {"status" : "error", "message" : "missing or invalid parameters"}
         
         base_price = base_result[0]
         total = Decimal(str(base_price))
@@ -131,11 +141,23 @@ def calculate_total_cooking(
             "services": services
         }
         
+        formatted_response = {
+            "status" : "success",
+            "message" : "packages fetched succesfully",
+            "packages" : {"package_type" : plan_type,
+                          "icon" : "Some icon bro",
+                          "package_id" : "STD6969",
+                          "price" : float(total)},
+            "features" : response   
+        }
+        
         logger.info("=== Response ===")
         logger.info(json.dumps(response, indent=2))
         
-        return response
+        return formatted_response
         
     except Exception as e:
         logger.error(f"Error in calculate_total: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"status" : "error", "message" : "missing or invalid parameters"}
+
+

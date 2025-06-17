@@ -109,12 +109,13 @@ def update_user_(id: int,
     return {"status": "success", "user_details": user}
 
 
-@router.get('/{id}')
-async def get_user_by_id(id : int, db : Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == id).first()
+@router.get('/{uid}')
+async def get_user_by_id(uid : int, db : Session = Depends(get_db)):
+    user = db.query(User).filter(User.uid == uid).first()
     if not user:
-        raise HTTPException(status_code=404, detail= f"User with id {id} does not exist")
+        raise HTTPException(status_code=404, detail= f"User with id {uid} does not exist")
     return user
+    
     
 @router.delete('/{id}')
 async def delete_user(id : int, db : Session = Depends(get_db)):

@@ -10,6 +10,8 @@ from sqlalchemy import (
     Text,
     Boolean,
     ForeignKey,
+    Numeric,
+    Table,
 )
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
@@ -300,3 +302,13 @@ class Testimonials(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
+
+
+class Banner(Base):
+    __tablename__ = "banners"
+    
+    id = Column(Integer, primary_key= True, index = True)
+    image = Column(String, nullable = False)
+    key = Column(String, nullable = True)
+    url = Column(String, nullable = True)
+    

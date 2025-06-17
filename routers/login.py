@@ -21,7 +21,7 @@ def user_login(request : UserLogin, db : Session = Depends(get_db)):
     if not Hash.verify(request.password, user.password):
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail = "Invalid Password")
     
-    return {"status": "success", "message": "login successful", "token":"acbd1234"}
+    return {"status": "success", "message": "login successful", "id" : user.id, "phone" : user.phone, "uid" : user.uid, "token":"acbd1234"}
 
 @router.post('/admin')
 def admin_login(request : AdminLogin, db : Session = Depends(get_db)):
