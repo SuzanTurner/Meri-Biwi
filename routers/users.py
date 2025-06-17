@@ -110,7 +110,7 @@ def update_user_(id: int,
 
 
 @router.get('/{uid}')
-async def get_user_by_id(uid : int, db : Session = Depends(get_db)):
+async def get_user_by_id(uid : str, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.uid == uid).first()
     if not user:
         raise HTTPException(status_code=404, detail= f"User with id {uid} does not exist")
