@@ -2,10 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException,UploadFile, File,Form,Quer
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import List, Optional
-from pathlib import Path
 
-import os
 
+import base64
 from modals import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServiceCreate,
@@ -20,9 +19,9 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
-UPLOAD_DIR = Path("uploads-categories")
-SERVICE_PHOTOS_DIR = UPLOAD_DIR / "photos"
-SERVICE_PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
+# UPLOAD_DIR = Path("uploads-categories")
+# SERVICE_PHOTOS_DIR = UPLOAD_DIR / "photos"
+# SERVICE_PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/", response_model=ServiceOut)
 def create_service(
@@ -41,11 +40,10 @@ def create_service(
     db: Session = Depends(get_db),
 ):
     # Store the image or get its path
-    service_image_path = os.path.join(SERVICE_PHOTOS_DIR, image.filename)
+    # service_image_path = os.path.join(SERVICE_PHOTOS_DIR, image.filename)
         
-    with open(service_image_path, "wb") as f:
-        f.write(image.file.read())
-
+    image_data=image.file.read()
+    image_base64 = base64.b64encode(image_data).decode("utf-8")
 
     cleaned_details = []
     for item in basic_details:
@@ -63,7 +61,7 @@ def create_service(
         food_type=food_type,
         is_popular=is_popular,
         description=description,
-        image=service_image_path,  # Save path to DB
+        image=image_base64,  # Save path to DB
     )
     db.add(new_service)
     db.commit()

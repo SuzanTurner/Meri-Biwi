@@ -1,5 +1,16 @@
 from database import Base
-from sqlalchemy import Column, Integer,Float, String, DateTime, Enum,Text,Boolean, ForeignKey
+from sqlalchemy import (
+    Column,
+    LargeBinary,
+    Integer,
+    Float,
+    String,
+    DateTime,
+    Enum,
+    Text,
+    Boolean,
+    ForeignKey,
+)
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
@@ -189,7 +200,7 @@ class Service(Base):
     basic_price=Column(Float,nullable=False)
     basic_details = Column(ARRAY(String), nullable=False)
     description = Column(Text)
-    image = Column(String, nullable=True)
+    image = Column(Text, nullable=True)
 
     
     # Can store comma-separated features or JSON string
