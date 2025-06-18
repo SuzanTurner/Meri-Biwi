@@ -22,7 +22,7 @@ router = APIRouter(
 
 
 UPLOAD_DIR = "uploads-testimonials"
-PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos/videos")
+PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
