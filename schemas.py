@@ -6,186 +6,186 @@ from fastapi import UploadFile
 
 from routers import categories
 
-class AddressBase(BaseModel):
-    type: str  # 'permanent' or 'current'
-    line1: str
-    city: str
-    state: str
-    zip_code: str
+# class AddressBase(BaseModel):
+#     type: str  # 'permanent' or 'current'
+#     line1: str
+#     city: str
+#     state: str
+#     zip_code: str
 
-class EmergencyContactBase(BaseModel):
-    name: str
-    relation: str
-    phone: str
+# class EmergencyContactBase(BaseModel):
+#     name: str
+#     relation: str
+#     phone: str
 
-class BankDetailsBase(BaseModel):
-    ifsc_code: str
-    account_number: str
-    bank_name: str
+# class BankDetailsBase(BaseModel):
+#     ifsc_code: str
+#     account_number: str
+#     bank_name: str
 
-class PoliceVerificationBase(BaseModel):
-    status: str
-    document_url: str
-    verification_date: str
-    remarks: Optional[str] = None
+# class PoliceVerificationBase(BaseModel):
+#     status: str
+#     document_url: str
+#     verification_date: str
+#     remarks: Optional[str] = None
 
-class LocalReferenceBase(BaseModel):
-    name: str
-    relation: str
-    phone: str
+# class LocalReferenceBase(BaseModel):
+#     name: str
+#     relation: str
+#     phone: str
 
-class PreviousEmployerBase(BaseModel):
-    company_name: str
-    position: str
-    duration: str
+# class PreviousEmployerBase(BaseModel):
+#     company_name: str
+#     position: str
+#     duration: str
 
-class EducationBase(BaseModel):
-    degree: str
-    institution: str
-    year_of_passing: str
+# class EducationBase(BaseModel):
+#     degree: str
+#     institution: str
+#     year_of_passing: str
 
-# Create schemas for related models
-class AddressCreate(AddressBase):
-    pass
+# # Create schemas for related models
+# class AddressCreate(AddressBase):
+#     pass
 
-class EmergencyContactCreate(EmergencyContactBase):
-    pass
+# class EmergencyContactCreate(EmergencyContactBase):
+#     pass
 
-class BankDetailsCreate(BankDetailsBase):
-    pass
+# class BankDetailsCreate(BankDetailsBase):
+#     pass
 
-class PoliceVerificationCreate(PoliceVerificationBase):
-    pass
+# class PoliceVerificationCreate(PoliceVerificationBase):
+#     pass
 
-class LocalReferenceCreate(LocalReferenceBase):
-    pass
+# class LocalReferenceCreate(LocalReferenceBase):
+#     pass
 
-class PreviousEmployerCreate(PreviousEmployerBase):
-    pass
+# class PreviousEmployerCreate(PreviousEmployerBase):
+#     pass
 
-class EducationCreate(EducationBase):
-    pass
+# class EducationCreate(EducationBase):
+#     pass
 
-class WorkExperienceBase(BaseModel):
-    years: int
-    months: int
+# class WorkExperienceBase(BaseModel):
+#     years: int
+#     months: int
 
-class WorkExperienceCreate(WorkExperienceBase):
-    pass
+# class WorkExperienceCreate(WorkExperienceBase):
+#     pass
 
-# Response schemas for related models
-class Address(AddressBase):
-    id: int
-    worker_id: int
+# # Response schemas for related models
+# class Address(AddressBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class EmergencyContact(EmergencyContactBase):
-    id: int
-    worker_id: int
+# class EmergencyContact(EmergencyContactBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class BankDetails(BankDetailsBase):
-    id: int
-    worker_id: int
+# class BankDetails(BankDetailsBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class PoliceVerification(PoliceVerificationBase):
-    id: int
-    worker_id: int
+# class PoliceVerification(PoliceVerificationBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class LocalReference(LocalReferenceBase):
-    id: int
-    worker_id: int
+# class LocalReference(LocalReferenceBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class PreviousEmployer(PreviousEmployerBase):
-    id: int
-    worker_id: int
+# class PreviousEmployer(PreviousEmployerBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class Education(EducationBase):
-    id: int
-    worker_id: int
+# class Education(EducationBase):
+#     id: int
+#     worker_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-# Worker schemas
-class WorkerBase(BaseModel):
-    full_name: str
-    gender: str
-    age: int
-    dob: str
-    phone: str
-    alternate_phone: Optional[str] = None
-    email: EmailStr
-    city: str
-    blood_group: Optional[str] = None
-    primary_service_category: str
-    experience_years: int
-    experience_months: int
-    languages_spoken: List[str]
-    availability: List[str]
-    preferred_community: List[str]
-    aadhar_number: str
-    pan_number: str
-    status: str = "Pending"
-    religion: str = "God knows"
+# # Worker schemas
+# class WorkerBase(BaseModel):
+#     full_name: str
+#     gender: str
+#     age: int
+#     dob: str
+#     phone: str
+#     alternate_phone: Optional[str] = None
+#     email: EmailStr
+#     city: str
+#     blood_group: Optional[str] = None
+#     primary_service_category: str
+#     experience_years: int
+#     experience_months: int
+#     languages_spoken: List[str]
+#     availability: List[str]
+#     preferred_community: List[str]
+#     aadhar_number: str
+#     pan_number: str
+#     status: str = "Pending"
+#     religion: str = "God knows"
     
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-class WorkerCreate(WorkerBase):
-    profile_photo: Optional[UploadFile] = None
-    electricity_bill: Optional[UploadFile] = None
-    live_capture: Optional[UploadFile] = None
-    photoshoot: Optional[UploadFile] = None
-    permanent_address: Optional[AddressCreate] = None
-    current_address: Optional[AddressCreate] = None
-    emergency_contacts: Optional[List[EmergencyContactCreate]] = None
-    bank_details: Optional[BankDetailsCreate] = None
-    police_verification: Optional[PoliceVerificationCreate] = None
-    local_references: Optional[List[LocalReferenceCreate]] = None
-    previous_employers: Optional[List[PreviousEmployerCreate]] = None
-    education: Optional[List[EducationCreate]] = None
+# class WorkerCreate(WorkerBase):
+#     profile_photo: Optional[UploadFile] = None
+#     electricity_bill: Optional[UploadFile] = None
+#     live_capture: Optional[UploadFile] = None
+#     photoshoot: Optional[UploadFile] = None
+#     permanent_address: Optional[AddressCreate] = None
+#     current_address: Optional[AddressCreate] = None
+#     emergency_contacts: Optional[List[EmergencyContactCreate]] = None
+#     bank_details: Optional[BankDetailsCreate] = None
+#     police_verification: Optional[PoliceVerificationCreate] = None
+#     local_references: Optional[List[LocalReferenceCreate]] = None
+#     previous_employers: Optional[List[PreviousEmployerCreate]] = None
+#     education: Optional[List[EducationCreate]] = None
 
-class Worker(WorkerBase):
-    id: int
-    profile_photo_url: Optional[str] = None
-    electricity_bill_url: Optional[str] = None
-    live_capture_url: Optional[str] = None
-    photoshoot_url: Optional[str] = None
-    created_at: datetime
-    addresses: List[Address] = []
-    emergency_contacts: List[EmergencyContact] = []
-    bank_details: Optional[BankDetails] = None
-    police_verification: Optional[PoliceVerification] = None
-    local_references: List[LocalReference] = []
-    previous_employers: List[PreviousEmployer] = []
-    education: List[Education] = []
+# class Worker(WorkerBase):
+#     id: int
+#     profile_photo_url: Optional[str] = None
+#     electricity_bill_url: Optional[str] = None
+#     live_capture_url: Optional[str] = None
+#     photoshoot_url: Optional[str] = None
+#     created_at: datetime
+#     addresses: List[Address] = []
+#     emergency_contacts: List[EmergencyContact] = []
+#     bank_details: Optional[BankDetails] = None
+#     police_verification: Optional[PoliceVerification] = None
+#     local_references: List[LocalReference] = []
+#     previous_employers: List[PreviousEmployer] = []
+#     education: List[Education] = []
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
 # Worker search response
-class WorkerSearchResponse(BaseModel):
-    status: str
-    count: int
-    workers: List[Worker]
+# class WorkerSearchResponse(BaseModel):
+#     status: str
+#     count: int
+#     workers: List[Worker]
 
-# Worker registration response
-class WorkerRegistrationResponse(BaseModel):
-    status: str
-    message: str
-    worker_id: int
+# # Worker registration response
+# class WorkerRegistrationResponse(BaseModel):
+#     status: str
+#     message: str
+#     worker_id: int
 
-# Worker deletion response
-class WorkerDeletionResponse(BaseModel):
-    message: str
+# # Worker deletion response
+# class WorkerDeletionResponse(BaseModel):
+#     message: str
 
 class FoodTypeEnum(str, Enum):
     veg = "Veg"
@@ -391,4 +391,43 @@ class Banner(BaseModel):
     image : str
     key : str
     url : str
+    
+# # Multipart Form Data Schemas for Worker Registration
+# class WorkerMultipartForm(BaseModel):
+#     # Basic worker information
+#     full_name: str
+#     gender: str
+#     age: int
+#     dob: str
+#     phone: str
+#     alternate_phone: Optional[str] = None
+#     email: str
+#     city: str
+#     blood_group: Optional[str] = None
+#     primary_service_category: str
+#     experience_years: int
+#     experience_months: int
+#     languages_spoken: str  # JSON string
+#     availability: str  # JSON string
+#     preferred_community: str  # JSON string
+#     aadhar_number: str
+#     pan_number: str
+#     status: str = "Pending"
+#     religion: str = "God knows"
+    
+#     # File uploads
+#     profile_photo: Optional[UploadFile] = None
+#     electricity_bill: Optional[UploadFile] = None
+#     live_capture: Optional[UploadFile] = None
+#     photoshoot: Optional[UploadFile] = None
+    
+#     # Nested data as JSON strings
+#     permanent_address: Optional[str] = None  # JSON string
+#     current_address: Optional[str] = None  # JSON string
+#     emergency_contacts: Optional[str] = None  # JSON string
+#     bank_details: Optional[str] = None  # JSON string
+#     police_verification: Optional[str] = None  # JSON string
+#     local_references: Optional[str] = None  # JSON string
+#     previous_employers: Optional[str] = None  # JSON string
+#     education: Optional[str] = None  # JSON string
     

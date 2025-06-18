@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 @router.get('/')
-async def get_chef(date : str,
+async def get_worker(date : str,
                    time : str,
                    gender: str,
                    community: str,

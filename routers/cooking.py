@@ -433,20 +433,29 @@ def calculate_total_cooking(
                 "package_type": level,
                 "icon": "Some icon bro",
                 "package_id": f"{level[:3].upper()}6969",
-                "price": float(total)
-            }
-
-            features = {
+                "description" : "Essential Cleaninf for your home",
+                "duration" : "2",
                 "base_price": float(base_price),
                 "total_price": float(total),
                 "num_people": num_people,
                 "food_type": db_food_type,
                 "plan_type": level,
                 "meal_type": meal_type,
-                "services": services
+                "services": services,
+                "features" : ["features", "very cool features", "more cool features"]
             }
 
-            package_results.append({"package": package, "features": features})
+            # features = {
+            #     "base_price": float(base_price),
+            #     "total_price": float(total),
+            #     "num_people": num_people,
+            #     "food_type": db_food_type,
+            #     "plan_type": level,
+            #     "meal_type": meal_type,
+            #     "services": services
+            # }
+
+            package_results.append({"package": package})
 
         return {
             "status": "success",

@@ -44,6 +44,7 @@ app.include_router(testimonials.router)
 app.include_router(cooking.router)
 app.include_router(cleaning.router)
 app.include_router(banners.router)
+app.include_router(preference.router)
 
 
 if __name__ == "__main__":
