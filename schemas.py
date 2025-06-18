@@ -141,6 +141,8 @@ class WorkerBase(BaseModel):
 class WorkerCreate(WorkerBase):
     profile_photo: Optional[UploadFile] = None
     electricity_bill: Optional[UploadFile] = None
+    live_capture: Optional[UploadFile] = None
+    photoshoot: Optional[UploadFile] = None
     permanent_address: Optional[AddressCreate] = None
     current_address: Optional[AddressCreate] = None
     emergency_contacts: Optional[List[EmergencyContactCreate]] = None
@@ -154,6 +156,8 @@ class Worker(WorkerBase):
     id: int
     profile_photo_url: Optional[str] = None
     electricity_bill_url: Optional[str] = None
+    live_capture_url: Optional[str] = None
+    photoshoot_url: Optional[str] = None
     created_at: datetime
     addresses: List[Address] = []
     emergency_contacts: List[EmergencyContact] = []
@@ -353,6 +357,7 @@ class Testimonials(BaseModel):
     datatype : str
     title: str
     desciption : str
+    base_64 : str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

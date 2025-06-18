@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routers import banners, db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning
+from routers import banners, db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning, preference
 import uvicorn
 import logging
 

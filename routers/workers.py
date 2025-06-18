@@ -22,9 +22,13 @@ router = APIRouter(
 UPLOAD_DIR = "uploads-workers"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 DOCS_DIR = os.path.join(UPLOAD_DIR, "documents")
+LIVE_CAPTURE_DIR = os.path.join(PHOTOS_DIR, "live-capture")
+PHOTOSHOOT_DIR = os.path.join(PHOTOS_DIR, "photoshoot")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
+os.makedirs(LIVE_CAPTURE_DIR, exist_ok=True)
+os.makedirs(PHOTOSHOOT_DIR, exist_ok=True)
 
 @router.get("/{name}")
 async def search_workers(name: str = None):
@@ -62,6 +66,8 @@ async def search_workers(name: str = None):
                 "pan_number": worker.pan_number,
                 "electricity_bill_url": worker.electricity_bill_url,
                 "profile_photo_url": worker.profile_photo_url,
+                "live_capture_url": worker.live_capture_url,
+                "photoshoot_url": worker.photoshoot_url,
                 "created_at": worker.created_at.isoformat() if worker.created_at else None,
                 "status": worker.status,
                 "religion": worker.religion
@@ -88,8 +94,12 @@ async def register_worker(
         # Generate unique filenames for uploaded files
         photo_filename = None
         bill_filename = None
+        live_capture_filename = None
+        photoshoot_filename = None
         full_url_photo = None
         full_url_bill = None
+        full_url_live_capture = None
+        full_url_photoshoot = None
         
         if worker_data.profile_photo:
             
@@ -116,6 +126,28 @@ async def register_worker(
             full_url_bill = BASE_URL + public_url_bill
             # full_url = "http://127.0.0.1:8000" + public_url
         
+        if worker_data.live_capture:
+            safe_orig = re.sub(r'\s+', '_', worker_data.live_capture.filename)
+            live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
+            
+            with open(live_capture_path, "wb") as buffer:
+                shutil.copyfileobj(worker_data.live_capture.file, buffer)
+            
+            public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
+            full_url_live_capture = BASE_URL + public_url_live_capture
+        
+        if worker_data.photoshoot:
+            safe_orig = re.sub(r'\s+', '_', worker_data.photoshoot.filename)
+            photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
+            
+            with open(photoshoot_path, "wb") as buffer:
+                shutil.copyfileobj(worker_data.photoshoot.file, buffer)
+            
+            public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+            full_url_photoshoot = BASE_URL + public_url_photoshoot
+        
         try:
             # Create new worker record
             worker = Worker(
@@ -138,6 +170,8 @@ async def register_worker(
                 pan_number=worker_data.pan_number,
                 profile_photo_url=full_url_photo if photo_filename else None,
                 electricity_bill_url=full_url_bill if bill_filename else None,
+                live_capture_url=full_url_live_capture if live_capture_filename else None,
+                photoshoot_url=full_url_photoshoot if photoshoot_filename else None,
                 status=worker_data.status,
                 religion=worker_data.religion
             )
@@ -231,6 +265,10 @@ async def register_worker(
                 os.remove(photo_path)
             if bill_filename and os.path.exists(bill_path):
                 os.remove(bill_path)
+            if live_capture_filename and os.path.exists(live_capture_path):
+                os.remove(live_capture_path)
+            if photoshoot_filename and os.path.exists(photoshoot_path):
+                os.remove(photoshoot_path)
             raise HTTPException(status_code=500, detail=str(e))
             
     except Exception as e:
@@ -260,6 +298,8 @@ async def get_worker(db: Session = Depends(get_db)):
                 "pan_number": worker.pan_number,
                 "profile_photo_url": worker.profile_photo_url,
                 "electricity_bill_url": worker.electricity_bill_url,
+                "live_capture_url": worker.live_capture_url,
+                "photoshoot_url": worker.photoshoot_url,
                 "created_at": worker.created_at.isoformat() if worker.created_at else None,
                 "status": worker.status,
                 "religion": worker.religion
@@ -286,7 +326,7 @@ async def update_worker(
         # Update basic worker information
         update_data = worker_update.dict(exclude_unset=True)
         for key, value in update_data.items():
-            if hasattr(worker, key) and key not in ['profile_photo', 'electricity_bill', 'permanent_address', 
+            if hasattr(worker, key) and key not in ['profile_photo', 'electricity_bill', 'live_capture', 'photoshoot', 'permanent_address', 
                                                    'current_address', 'emergency_contacts', 'bank_details', 
                                                    'police_verification', 'local_references', 'previous_employers', 
                                                    'education']:
@@ -331,6 +371,42 @@ async def update_worker(
             # full_url = "http://127.0.0.1:8000" + public_url
             
             worker.electricity_bill_url = full_url_bill
+
+        # Handle live capture upload
+        if worker_update.live_capture:
+            # Delete old live capture if exists
+            if worker.live_capture_url and os.path.exists(worker.live_capture_url):
+                os.remove(worker.live_capture_url)
+            
+            safe_orig = re.sub(r'\s+', '_', worker_update.live_capture.filename)
+            live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
+            
+            with open(live_capture_path, "wb") as buffer:
+                shutil.copyfileobj(worker_update.live_capture.file, buffer)
+                
+            public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
+            full_url_live_capture = BASE_URL + public_url_live_capture
+            
+            worker.live_capture_url = full_url_live_capture
+
+        # Handle photoshoot upload
+        if worker_update.photoshoot:
+            # Delete old photoshoot if exists
+            if worker.photoshoot_url and os.path.exists(worker.photoshoot_url):
+                os.remove(worker.photoshoot_url)
+            
+            safe_orig = re.sub(r'\s+', '_', worker_update.photoshoot.filename)
+            photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
+            
+            with open(photoshoot_path, "wb") as buffer:
+                shutil.copyfileobj(worker_update.photoshoot.file, buffer)
+                
+            public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+            full_url_photoshoot = BASE_URL + public_url_photoshoot
+            
+            worker.photoshoot_url = full_url_photoshoot
 
         # Handle addresses
         if worker_update.permanent_address:
@@ -430,7 +506,7 @@ async def update_worker(
                     **edu.dict()
                 )
                 db.add(new_edu)
-
+            
         try:
             db.commit()
             db.refresh(worker)

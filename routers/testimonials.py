@@ -8,6 +8,7 @@ import shutil
 import os
 import dotenv
 import re
+import base64
 
 dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
@@ -30,10 +31,11 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
                              description : str = Form(...),
                              db: Session = Depends(get_db)):
     
-    
     safe_orig = re.sub(r'\s+', '_', image_or_video.filename)
     photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
     photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+    
+    image_data = await image_or_video.read()
     
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image_or_video.file, buffer)
@@ -44,7 +46,9 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     
     datatype = image_or_video.content_type
     
-    testimony = Testimonials(image_or_video=full_url, datatype = datatype, title=title, description = description)
+    image_base64 = base64.b64encode(image_data).decode("utf-8")
+    
+    testimony = Testimonials(image_or_video=full_url, datatype = datatype, base_64 = image_base64, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)

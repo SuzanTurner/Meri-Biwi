@@ -69,8 +69,10 @@ class Worker(Base):
 
     aadhar_number = Column(String)
     pan_number = Column(String)
-    electricity_bill_url = Column(String)
-    profile_photo_url = Column(String)
+    electricity_bill_url = Column(String, nullable = True)
+    profile_photo_url = Column(String, nullable = True)
+    live_capture_url = Column(String, nullable = True)
+    photoshoot_url = Column(String, nullable = True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="Pending")
@@ -301,6 +303,7 @@ class Testimonials(Base):
     datatype = Column(String, nullable = False)
     title = Column(String, nullable=False)
     description = Column(String)
+    base_64 = Column(Text, nullable = False)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
 
 
