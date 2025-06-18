@@ -37,18 +37,28 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
     photo_path = os.path.join(PHOTOS_DIR, photo_filename)
     
-    image_data = await image_or_video.read()
+    # image_data = await image_or_video.read()
     
-    with open(photo_path, "wb") as buffer:
-        shutil.copyfileobj(image_or_video.file, buffer)
+    # with open(photo_path, "wb") as buffer:
+    #     shutil.copyfileobj(image_or_video.file, buffer)
         
-    photo_filename = quote(photo_filename)
-    public_url = f"/uploads-testimonials/photos/{photo_filename}"
+    # photo_filename = quote(photo_filename)
+    # public_url = f"/uploads-testimonials/photos/{photo_filename}"
+    # full_url = BASE_URL + public_url
+    # # full_url = "http://127.0.0.1:8000" + public_url
+    
+    image_data = await image_or_video.read()
+
+    # ✅ Save to disk using that same data
+    with open(photo_path, "wb") as buffer:
+        buffer.write(image_data)
+
+    # ✅ Build the URL safely
+    photo_filename_enc = quote(photo_filename, safe="")
+    public_url = f"/uploads-testimonials/photos/{photo_filename_enc}"
     full_url = BASE_URL + public_url
-    # full_url = "http://127.0.0.1:8000" + public_url
     
     datatype = image_or_video.content_type
-    
     image_base64 = base64.b64encode(image_data).decode("utf-8")
     
     testimony = Testimonials(image_or_video=full_url, datatype = datatype, base_64 = image_base64, categories = categories, title=title, description = description)
