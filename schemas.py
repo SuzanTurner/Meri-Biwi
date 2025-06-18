@@ -2,9 +2,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-from fastapi import UploadFile
 
-from routers import categories
 
 # class AddressBase(BaseModel):
 #     type: str  # 'permanent' or 'current'
