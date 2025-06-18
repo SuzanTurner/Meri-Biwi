@@ -5,6 +5,7 @@ from schemas import UpdateUser,UserCreate
 from database import get_db
 from datetime import datetime
 from typing import Optional
+from urllib.parse import quote
 import re
 import os
 import dotenv
@@ -177,6 +178,7 @@ def update_user_(
         filepath = os.path.join(UPLOAD_DIR, filename)
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(avatar.file, buffer)
+        filename = quote(filename)
         user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
 
     ist = pytz.timezone("Asia/Kolkata")

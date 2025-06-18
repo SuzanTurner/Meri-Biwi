@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from schemas import Testimonials as TestSchema
 from modals import Testimonials
+from urllib.parse import quote
 import shutil
 import os
 import dotenv
@@ -40,6 +41,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     with open(photo_path, "wb") as buffer:
         shutil.copyfileobj(image_or_video.file, buffer)
         
+    photo_filename = quote(photo_filename)
     public_url = f"/uploads-testimonials/photos/{photo_filename}"
     full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url

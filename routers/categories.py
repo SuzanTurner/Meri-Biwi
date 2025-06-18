@@ -44,7 +44,7 @@ async def create_category(
         with open(photo_path, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
             
-        # encoded_filename = quote(photo_filename)
+        photo_filename = quote(photo_filename)
         public_url = f"/uploads-categories/photos/{photo_filename}"
         # full_url = BASE_URL + public_url
         full_url = "http://127.0.0.1:8000" + public_url

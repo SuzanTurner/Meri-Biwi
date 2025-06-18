@@ -3,6 +3,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from modals import Banner
 from datetime import datetime
+from urllib.parse import quote
 import os
 import dotenv
 import shutil
@@ -40,6 +41,7 @@ async def create_banners(image : UploadFile = File(...),
     with open(image_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
         
+    image_filename = quote(image_filename)
     public_url = f"/uploads-banners/photos/{image_filename}"
     full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
