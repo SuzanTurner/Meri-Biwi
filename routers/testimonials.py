@@ -3,7 +3,7 @@ from database import get_db
 from sqlalchemy.orm import Session
 from datetime import datetime
 from schemas import Testimonials as TestSchema
-from modals import Testimonials
+from modals.pics import Testimonials
 from urllib.parse import quote
 import shutil
 import os

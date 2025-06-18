@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, File, UploadFile, Form
 from database import get_db
 from sqlalchemy.orm import Session
-from modals import Banner
+from modals.pics import Banner
 from datetime import datetime
 from urllib.parse import quote
 import os

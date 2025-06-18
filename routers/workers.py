@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Depends
 from datetime import datetime
 from database import get_db
-from modals import Worker, Address, EmergencyContact, BankDetails, PoliceVerification, LocalReference, PreviousEmployer, Education
+from modals.workers import Worker, Address, EmergencyContact, BankDetails, PoliceVerification, LocalReference, PreviousEmployer, Education
 from sqlalchemy.orm import Session
 # from schemas import WorkerCreate, AddressCreate, EmergencyContactCreate, BankDetailsCreate, PoliceVerificationCreate, LocalReferenceCreate, PreviousEmployerCreate, EducationCreate, WorkerMultipartForm
 from sqlalchemy import or_

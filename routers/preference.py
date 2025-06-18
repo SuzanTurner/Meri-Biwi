@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.orm import Session
-from modals import Worker
+from modals.workers import Worker
 from sqlalchemy import and_
 
 router = APIRouter(

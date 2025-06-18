@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from hashing import Hash
-from modals import Admin
+from modals.admin import Admin
 from routers.categories import BASE_URL
 from schemas import UpdateAdmin
 from datetime import datetime

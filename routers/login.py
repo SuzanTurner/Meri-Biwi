@@ -1,7 +1,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from modals import User, Admin
+from modals.users import User
+from modals.admin import Admin
 from schemas import UserLogin, AdminLogin
 from database import get_db
 from hashing import Hash

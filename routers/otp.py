@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from modals import Otp, User
+from modals.otp import Otp
+from modals.users import User
 from database import get_db
 import random
 

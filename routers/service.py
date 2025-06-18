@@ -5,7 +5,7 @@ from typing import List, Optional
 
 
 import base64
-from modals import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
+from modals.services import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServiceCreate,
     ServicePriceOut,

@@ -1,18 +1,16 @@
 from fastapi import APIRouter, Depends, Form, HTTPException, status,UploadFile, File
 from sqlalchemy.orm import Session
-from modals import User
-from schemas import UpdateUser,UserCreate
+from modals.users import User
+from schemas import UserCreate
 from database import get_db
 from datetime import datetime
 from typing import Optional
 from urllib.parse import quote
-import re
 import os
 import dotenv
 import hashing
 import uuid
 import pytz
-import bcrypt
 import shutil
 
 router = APIRouter(
