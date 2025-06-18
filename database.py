@@ -10,7 +10,7 @@ print(DATABASE_URL)
 
 engine = create_engine(DATABASE_URL, 
                        connect_args={"sslmode": "require"}, 
-                       connect_args={"sslmode": "disable"}, 
+                       # connect_args={"sslmode": "disable"}, 
                        pool_pre_ping=True)
 
 Base = declarative_base()
