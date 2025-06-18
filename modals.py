@@ -20,6 +20,7 @@ import pytz
 import enum
 
 
+
 # class Worker(Base):
 #     __tablename__ = "workers"
 
@@ -303,6 +304,7 @@ class Testimonials(Base):
     datatype = Column(String, nullable = False)
     title = Column(String, nullable=False)
     description = Column(String)
+    categories = Column(String)
     base_64 = Column(Text, nullable = False)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
 

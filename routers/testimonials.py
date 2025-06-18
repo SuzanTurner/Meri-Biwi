@@ -29,6 +29,7 @@ os.makedirs(PHOTOS_DIR, exist_ok=True)
 @router.post('/')
 async def create_testimonial(image_or_video : UploadFile = File(...),
                              title: str = Form(...),
+                             categories : str = Form(...),
                              description : str = Form(...),
                              db: Session = Depends(get_db)):
     
@@ -50,7 +51,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     
     image_base64 = base64.b64encode(image_data).decode("utf-8")
     
-    testimony = Testimonials(image_or_video=full_url, datatype = datatype, base_64 = image_base64, title=title, description = description)
+    testimony = Testimonials(image_or_video=full_url, datatype = datatype, base_64 = image_base64, categories = categories, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)
@@ -58,10 +59,10 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     return {"status" : "success", "message" : f"Testimony with id {testimony.id} succesfully created!"}
 
 @router.get('/')
-async def get_testimonials(db : Session = Depends(get_db)):
+async def get_testimonials(db: Session = Depends(get_db)):
     testimonies = db.query(Testimonials).all()
-    return testimonies
-
+    results = [{"id": t.id, "title" : t.title ,"datatype" : t.datatype,"categories" : t.categories ,"url": t.image_or_video} for t in testimonies]
+    return {"testimonials": results}
 
 @router.put("/{id}", response_model=TestSchema)
 def update_testimonial(

@@ -4,6 +4,8 @@ from enum import Enum
 from typing import List, Optional
 from fastapi import UploadFile
 
+from routers import categories
+
 class AddressBase(BaseModel):
     type: str  # 'permanent' or 'current'
     line1: str
@@ -357,6 +359,7 @@ class Testimonials(BaseModel):
     datatype : str
     title: str
     desciption : str
+    categories : str
     base_64 : str
     created_at: datetime
 
