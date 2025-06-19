@@ -14,7 +14,7 @@ dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
 
 router = APIRouter(
-    tags = ['banners'],
+    tags = ['Banners'],
     prefix = '/banners'
 )
 

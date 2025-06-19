@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
+from datetime import date, time
 
 
 # class AddressBase(BaseModel):
@@ -428,4 +429,22 @@ class Banner(BaseModel):
 #     local_references: Optional[str] = None  # JSON string
 #     previous_employers: Optional[str] = None  # JSON string
 #     education: Optional[str] = None  # JSON string
-    
+
+
+class Booking(BaseModel):
+    customer_id : Optional[int] = None
+    service_purpose: Optional[str] = None
+    meals_per_day: Optional[int] = None
+    end_time: Optional[str] = None
+    start_time: Optional[str] = None
+    no_of_people: Optional[int] = None
+    worker_id_1: Optional[int] = None
+    worker_id_2: Optional[int] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    dietary_preference: Optional[str] = None
+    package_id: Optional[int] = None
+    basic_price: Optional[float] = None
+    total_price: Optional[float] = None
+    kitchen_platform_cleaning: Optional[bool] = None
+    status: Optional[str] = "ongoing"
