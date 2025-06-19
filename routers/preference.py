@@ -20,7 +20,9 @@ async def get_worker(date : str,
                                         Worker.religion == community)).all()
     return {
     "data": [
-        {"id": worker.id, "name": worker.full_name, "profile_image" : worker.profile_photo_url, 
+        {"id": worker.id, 
+         "name": worker.full_name, 
+         "profile_image" : worker.profile_photo_url, 
          "rating" : "5 stars",
          "experience" : worker.experience_years,
          "bio" : "bro is the best (trust me bro)",
