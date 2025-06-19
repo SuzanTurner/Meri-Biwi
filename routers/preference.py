@@ -18,4 +18,15 @@ async def get_worker(date : str,
     workers = db.query(Worker).filter(and_(
                                         Worker.gender == gender,
                                         Worker.religion == community)).all()
-    return workers
+    return {
+    "data": [
+        {"id": worker.id, "name": worker.full_name, "profile_image" : worker.profile_photo_url, 
+         "rating" : "5 stars",
+         "experience" : worker.experience_years,
+         "bio" : "bro is the best (trust me bro)",
+         "languages" : worker.languages_spoken,
+         "comminity" : worker.religion,
+         "gender" : worker.gender}
+        for worker in workers
+    ]
+}
