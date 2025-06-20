@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Optional
 from datetime import date, time
+from decimal import Decimal
 
 
 # class AddressBase(BaseModel):
@@ -431,20 +432,48 @@ class Banner(BaseModel):
 #     education: Optional[str] = None  # JSON string
 
 
-class Booking(BaseModel):
+class CookingBooking(BaseModel):
     customer_id : Optional[int] = None
+    
     service_purpose: Optional[str] = None
     meals_per_day: Optional[int] = None
-    end_time: Optional[str] = None
-    start_time: Optional[str] = None
     no_of_people: Optional[int] = None
-    worker_id_1: Optional[int] = None
-    worker_id_2: Optional[int] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
     dietary_preference: Optional[str] = None
+    kitchen_platform_cleaning: Optional[bool] = None
+    
     package_id: Optional[int] = None
     basic_price: Optional[float] = None
     total_price: Optional[float] = None
-    kitchen_platform_cleaning: Optional[bool] = None
+    
+    worker_id_1: Optional[int] = None
+    worker_id_2: Optional[int] = None
+    
+    end_time: Optional[str] = None
+    start_time: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    
+    status: Optional[str] = "ongoing"
+
+class CleaningBooking(BaseModel):
+    customer_id: Optional[int]
+    
+    no_of_floors: Optional[int]
+    no_of_bathrooms: Optional[int]
+    bhk: Optional[int]
+    plan: Optional[str]  # daily, weekly, occasionally
+    services: Optional[bool]
+
+    start_date: Optional[str]
+    end_date: Optional[str]
+    start_time: Optional[str]
+    end_time: Optional[str]
+
+    worker_id_1: Optional[int]
+    worker_id_2: Optional[int]
+
+    package_id: Optional[str]
+    basic_price: Optional[Decimal]
+    total_price: Optional[Decimal]
+
     status: Optional[str] = "ongoing"
