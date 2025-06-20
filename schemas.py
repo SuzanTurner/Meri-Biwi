@@ -435,7 +435,7 @@ class Banner(BaseModel):
 class CookingBooking(BaseModel):
     customer_id : Optional[int] = None
     
-    service_purpose: Optional[str] = None
+    service_purpose: Optional[str] = "cooking"
     meals_per_day: Optional[int] = None
     no_of_people: Optional[int] = None
     dietary_preference: Optional[str] = None
@@ -457,6 +457,7 @@ class CookingBooking(BaseModel):
 
 class CleaningBooking(BaseModel):
     customer_id: Optional[int]
+    service_purpose: Optional[str] = "cleaning"
     
     no_of_floors: Optional[int]
     no_of_bathrooms: Optional[int]
