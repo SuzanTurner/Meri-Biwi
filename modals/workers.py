@@ -39,7 +39,7 @@ class Worker(Base):
     experience_months = Column(Integer)
     languages_spoken = Column(ARRAY(String))
     availability = Column(ARRAY(String))
-    preferred_community = Column(ARRAY(String))
+    work_type = Column(ARRAY(String))
 
     aadhar_number = Column(String)
     pan_number = Column(String)
@@ -50,7 +50,9 @@ class Worker(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="Pending")
-    religion = Column(String, default="God knows")
+    religion = Column(String, default="Any")
+    
+    bio = Column(Text, nullable = True)
 
     # Relationships
     addresses = relationship("Address", back_populates="worker", cascade="all, delete-orphan")

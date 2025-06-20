@@ -5,11 +5,13 @@ from modals.workers import Worker, Address, EmergencyContact, BankDetails, Polic
 from sqlalchemy.orm import Session
 # from schemas import WorkerCreate, AddressCreate, EmergencyContactCreate, BankDetailsCreate, PoliceVerificationCreate, LocalReferenceCreate, PreviousEmployerCreate, EducationCreate, WorkerMultipartForm
 from sqlalchemy import or_
+from urllib.parse import quote
 import shutil
 import os
 import dotenv
 import re
 import json
+
 
 dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
@@ -102,11 +104,12 @@ async def register_worker(
     experience_months: int = Form(...),
     languages_spoken: str = Form(...),  # JSON string
     availability: str = Form(...),  # JSON string
-    preferred_community: str = Form(...),  # JSON string
+    work_type: str = Form(...),  # JSON string
     aadhar_number: str = Form(...),
     pan_number: str = Form(...),
     status: str = Form("Pending"),
-    religion: str = Form("God knows"),
+    religion: str = Form("Any"),
+    bio : str = Form(...),
     profile_photo: UploadFile = File(None),
     electricity_bill: UploadFile = File(None),
     live_capture: UploadFile = File(None),
@@ -134,7 +137,7 @@ async def register_worker(
         # Parse JSON strings to Python objects with safe parsing
         languages_spoken_list = safe_json_parse(languages_spoken, [])
         availability_list = safe_json_parse(availability, [])
-        preferred_community_list = safe_json_parse(preferred_community, [])
+        work_type_list = safe_json_parse(work_type, [])
         
         permanent_address_data = safe_json_parse(permanent_address, None)
         current_address_data = safe_json_parse(current_address, None)
@@ -158,17 +161,21 @@ async def register_worker(
         if profile_photo:
             safe_orig = re.sub(r'\s+', '_', profile_photo.filename)
             photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            photo_filename = quote(photo_filename)
+            
             photo_path = os.path.join(PHOTOS_DIR, photo_filename)
             
             with open(photo_path, "wb") as buffer:
                 shutil.copyfileobj(profile_photo.file, buffer)
                 
             public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+            
             full_url_photo = BASE_URL + public_url_photo
         
         if electricity_bill:
             safe_orig = re.sub(r'\s+', '_', electricity_bill.filename)
             bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            bill_filename = quote(bill_filename)
             bill_path = os.path.join(DOCS_DIR, bill_filename)
             
             with open(bill_path, "wb") as buffer:
@@ -180,6 +187,7 @@ async def register_worker(
         if live_capture:
             safe_orig = re.sub(r'\s+', '_', live_capture.filename)
             live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            live_capture_filename = quote(live_capture_filename)
             live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
             
             with open(live_capture_path, "wb") as buffer:
@@ -191,6 +199,7 @@ async def register_worker(
         if photoshoot:
             safe_orig = re.sub(r'\s+', '_', photoshoot.filename)
             photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+            photoshoot_filename = quote(photoshoot_filename)
             photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
             
             with open(photoshoot_path, "wb") as buffer:
@@ -203,7 +212,7 @@ async def register_worker(
             # Create new worker record
             worker = Worker(
                 full_name=full_name,
-                gender=gender,
+                gender=gender.lower(),
                 age=age,
                 dob=dob,
                 phone=phone,
@@ -216,7 +225,8 @@ async def register_worker(
                 experience_months=experience_months,
                 languages_spoken=languages_spoken_list,
                 availability=availability_list,
-                preferred_community=preferred_community_list,
+                work_type=work_type_list,
+                bio = bio,
                 aadhar_number=aadhar_number,
                 pan_number=pan_number,
                 profile_photo_url=full_url_photo if photo_filename else None,
@@ -224,7 +234,7 @@ async def register_worker(
                 live_capture_url=full_url_live_capture if live_capture_filename else None,
                 photoshoot_url=full_url_photoshoot if photoshoot_filename else None,
                 status=status,
-                religion=religion
+                religion=religion.lower()
             )
             db.add(worker)
             db.flush()  # Flush to get the worker ID
