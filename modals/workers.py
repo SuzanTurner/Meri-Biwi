@@ -34,11 +34,11 @@ class Worker(Base):
     city = Column(String, nullable=False)
     blood_group = Column(String)
 
-    primary_service_category = Column(String)
+    primary_service_category = Column(ARRAY(String))
     experience_years = Column(Integer)
     experience_months = Column(Integer)
-    languages_spoken = Column(String)
-    availability = Column(String)
+    languages_spoken = Column(ARRAY(String))
+    availability = Column(ARRAY(String))
 
     aadhar_number = Column(String)
     pan_number = Column(String)

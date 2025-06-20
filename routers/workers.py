@@ -138,8 +138,25 @@ async def register_worker(
                 return default_value
 
         # Parse JSON strings to Python objects with safe parsing
-        languages_spoken_list = safe_json_parse(languages_spoken, [])
-        availability_list = safe_json_parse(availability, [])
+        def parse_list_field(field_str):
+            if not field_str or field_str.strip() == "" or field_str.lower() == "string":
+                return []
+            field_str = field_str.strip()
+            # Try JSON first
+            if (field_str.startswith('[') and field_str.endswith(']')):
+                try:
+                    return json.loads(field_str)
+                except Exception:
+                    pass
+            # If comma present, split by comma
+            if ',' in field_str:
+                return [item.strip() for item in field_str.split(',') if item.strip()]
+            # Otherwise, split by whitespace
+            return [item.strip() for item in field_str.split() if item.strip()]
+
+        langs_list = parse_list_field(languages_spoken)
+        avail_list = parse_list_field(availability)
+        service_list = parse_list_field(primary_service_category)
         
         permanent_address_data = safe_json_parse(permanent_address, None)
         current_address_data = safe_json_parse(current_address, None)
@@ -222,11 +239,11 @@ async def register_worker(
                 email=email,
                 city=city,
                 blood_group=blood_group,
-                primary_service_category=primary_service_category,
+                primary_service_category=service_list,
                 experience_years=experience_years,
                 experience_months=experience_months,
-                languages_spoken=languages_spoken_list,
-                availability=availability_list,
+                languages_spoken=langs_list,
+                availability=avail_list,
                 bio = bio,
                 aadhar_number=aadhar_number,
                 pan_number=pan_number,
