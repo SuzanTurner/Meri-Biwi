@@ -37,9 +37,8 @@ class Worker(Base):
     primary_service_category = Column(String)
     experience_years = Column(Integer)
     experience_months = Column(Integer)
-    languages_spoken = Column(ARRAY(String))
-    availability = Column(ARRAY(String))
-    work_type = Column(ARRAY(String))
+    languages_spoken = Column(String)
+    availability = Column(String)
 
     aadhar_number = Column(String)
     pan_number = Column(String)

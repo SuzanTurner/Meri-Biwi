@@ -13,6 +13,7 @@ router = APIRouter(
 async def get_worker(date : str,
                    time : str,
                    gender: str,
+                   service_type : str,
                    community: str,
                    db : Session = Depends(get_db)):
     

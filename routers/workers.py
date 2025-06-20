@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Form, UploadFile, File, Depends
+from fastapi import APIRouter, HTTPException, Form, Query, UploadFile, File, Depends, Query
+from typing import List
 from datetime import datetime
 from database import get_db
 from modals.workers import Worker, Address, EmergencyContact, BankDetails, PoliceVerification, LocalReference, PreviousEmployer, Education
@@ -88,6 +89,9 @@ async def search_workers(name: str = None):
     finally:
         db.close()
 
+# List[str] = Query([]
+
+
 @router.post("/")
 async def register_worker(
     full_name: str = Form(...),
@@ -104,7 +108,6 @@ async def register_worker(
     experience_months: int = Form(...),
     languages_spoken: str = Form(...),  # JSON string
     availability: str = Form(...),  # JSON string
-    work_type: str = Form(...),  # JSON string
     aadhar_number: str = Form(...),
     pan_number: str = Form(...),
     status: str = Form("Pending"),
@@ -137,7 +140,6 @@ async def register_worker(
         # Parse JSON strings to Python objects with safe parsing
         languages_spoken_list = safe_json_parse(languages_spoken, [])
         availability_list = safe_json_parse(availability, [])
-        work_type_list = safe_json_parse(work_type, [])
         
         permanent_address_data = safe_json_parse(permanent_address, None)
         current_address_data = safe_json_parse(current_address, None)
@@ -225,7 +227,6 @@ async def register_worker(
                 experience_months=experience_months,
                 languages_spoken=languages_spoken_list,
                 availability=availability_list,
-                work_type=work_type_list,
                 bio = bio,
                 aadhar_number=aadhar_number,
                 pan_number=pan_number,
@@ -478,7 +479,6 @@ async def get_worker_details(worker_id: int, db: Session = Depends(get_db)):
             "experience_months": worker.experience_months,
             "languages_spoken": worker.languages_spoken,
             "availability": worker.availability,
-            "preferred_community": worker.preferred_community,
             "aadhar_number": worker.aadhar_number,
             "pan_number": worker.pan_number,
             "profile_photo_url": worker.profile_photo_url,
@@ -525,18 +525,17 @@ async def update_worker(
     experience_years: int = Form(None),
     experience_months: int = Form(None),
     languages_spoken: str = Form(None),  # JSON string
-    availability: str = Form(None),  # JSON string
-    preferred_community: str = Form(None),  # JSON string
+    availability: str = Form(None),  # JSON string 
     aadhar_number: str = Form(None),
     pan_number: str = Form(None),
     status: str = Form(None),
     religion: str = Form(None),
     
     # File uploads
-    profile_photo: UploadFile = File(None),
-    electricity_bill: UploadFile = File(None),
-    live_capture: UploadFile = File(None),
-    photoshoot: UploadFile = File(None),
+    # profile_photo: UploadFile = File(None),
+    # electricity_bill: UploadFile = File(None),
+    # live_capture: UploadFile = File(None),
+    # photoshoot: UploadFile = File(None),
     
     # Address fields (individual fields for permanent address)
     permanent_address_line1: str = Form(None),
@@ -594,7 +593,6 @@ async def update_worker(
 
             languages_spoken_list = safe_json_parse(languages_spoken, None)
             availability_list = safe_json_parse(availability, None)
-            preferred_community_list = safe_json_parse(preferred_community, None)
             
             emergency_contacts_data = safe_json_parse(emergency_contacts, None)
             local_references_data = safe_json_parse(local_references, None)
@@ -603,110 +601,111 @@ async def update_worker(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error parsing form data: {str(e)}")
 
-        # Update basic worker information
-        if full_name is not None:
+        # Update basic worker information with defensive checks
+        def is_valid_update(val):
+            return val is not None and (not isinstance(val, str) or (val.strip() != '' and val.lower() != 'string'))
+
+        if is_valid_update(full_name):
             worker.full_name = full_name
-        if gender is not None:
+        if is_valid_update(gender):
             worker.gender = gender
-        if age is not None:
+        if is_valid_update(age):
             worker.age = age
-        if dob is not None:
+        if is_valid_update(dob):
             worker.dob = dob
-        if phone is not None:
+        if is_valid_update(phone):
             worker.phone = phone
-        if alternate_phone is not None:
+        if is_valid_update(alternate_phone):
             worker.alternate_phone = alternate_phone
-        if email is not None:
+        if is_valid_update(email):
             worker.email = email
-        if city is not None:
+        if is_valid_update(city):
             worker.city = city
-        if blood_group is not None:
+        if is_valid_update(blood_group):
             worker.blood_group = blood_group
-        if primary_service_category is not None:
+        if is_valid_update(primary_service_category):
             worker.primary_service_category = primary_service_category
-        if experience_years is not None:
+        if is_valid_update(experience_years):
             worker.experience_years = experience_years
-        if experience_months is not None:
+        if is_valid_update(experience_months):
             worker.experience_months = experience_months
         if languages_spoken_list is not None:
             worker.languages_spoken = languages_spoken_list
         if availability_list is not None:
             worker.availability = availability_list
-        if preferred_community_list is not None:
-            worker.preferred_community = preferred_community_list
-        if aadhar_number is not None:
+        if is_valid_update(aadhar_number):
             worker.aadhar_number = aadhar_number
-        if pan_number is not None:
+        if is_valid_update(pan_number):
             worker.pan_number = pan_number
-        if status is not None:
+        if is_valid_update(status):
             worker.status = status
-        if religion is not None:
+        if is_valid_update(religion):
             worker.religion = religion
 
         # Handle file uploads
-        if profile_photo:
-            # Delete old photo if exists
-            if worker.profile_photo_url and os.path.exists(worker.profile_photo_url):
-                os.remove(worker.profile_photo_url)
+        # if profile_photo:
+        #     # Delete old photo if exists
+        #     if worker.profile_photo_url and os.path.exists(worker.profile_photo_url):
+        #         os.remove(worker.profile_photo_url)
                 
-            safe_orig = re.sub(r'\s+', '_', profile_photo.filename)
-            photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
-            photo_path = os.path.join(PHOTOS_DIR, photo_filename)
-            with open(photo_path, "wb") as buffer:
-                shutil.copyfileobj(profile_photo.file, buffer)
+        #     safe_orig = re.sub(r'\s+', '_', profile_photo.filename)
+        #     photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        #     photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+        #     with open(photo_path, "wb") as buffer:
+        #         shutil.copyfileobj(profile_photo.file, buffer)
                 
-            public_url_photo = f"/uploads-workers/photos/{photo_filename}"
-            full_url_photo = BASE_URL + public_url_photo
-            worker.profile_photo_url = full_url_photo
+        #     public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+        #     full_url_photo = BASE_URL + public_url_photo
+        #     worker.profile_photo_url = full_url_photo
 
-        if electricity_bill:
-            # Delete old bill if exists
-            if worker.electricity_bill_url and os.path.exists(worker.electricity_bill_url):
-                os.remove(worker.electricity_bill_url)
+        # if electricity_bill:
+        #     # Delete old bill if exists
+        #     if worker.electricity_bill_url and os.path.exists(worker.electricity_bill_url):
+        #         os.remove(worker.electricity_bill_url)
             
-            safe_orig = re.sub(r'\s+', '_', electricity_bill.filename)
-            bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
-            bill_path = os.path.join(DOCS_DIR, bill_filename)
-            with open(bill_path, "wb") as buffer:
-                shutil.copyfileobj(electricity_bill.file, buffer)
+        #     safe_orig = re.sub(r'\s+', '_', electricity_bill.filename)
+        #     bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        #     bill_path = os.path.join(DOCS_DIR, bill_filename)
+        #     with open(bill_path, "wb") as buffer:
+        #         shutil.copyfileobj(electricity_bill.file, buffer)
                 
-            public_url_bill = f"/uploads-workers/documents/{bill_filename}"
-            full_url_bill = BASE_URL + public_url_bill
-            worker.electricity_bill_url = full_url_bill
+        #     public_url_bill = f"/uploads-workers/documents/{bill_filename}"
+        #     full_url_bill = BASE_URL + public_url_bill
+        #     worker.electricity_bill_url = full_url_bill
 
-        # Handle live capture upload
-        if live_capture:
-            # Delete old live capture if exists
-            if worker.live_capture_url and os.path.exists(worker.live_capture_url):
-                os.remove(worker.live_capture_url)
+        # # Handle live capture upload
+        # if live_capture:
+        #     # Delete old live capture if exists
+        #     if worker.live_capture_url and os.path.exists(worker.live_capture_url):
+        #         os.remove(worker.live_capture_url)
             
-            safe_orig = re.sub(r'\s+', '_', live_capture.filename)
-            live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
-            live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
+        #     safe_orig = re.sub(r'\s+', '_', live_capture.filename)
+        #     live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        #     live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
             
-            with open(live_capture_path, "wb") as buffer:
-                shutil.copyfileobj(live_capture.file, buffer)
+        #     with open(live_capture_path, "wb") as buffer:
+        #         shutil.copyfileobj(live_capture.file, buffer)
                 
-            public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
-            full_url_live_capture = BASE_URL + public_url_live_capture
-            worker.live_capture_url = full_url_live_capture
+        #     public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
+        #     full_url_live_capture = BASE_URL + public_url_live_capture
+        #     worker.live_capture_url = full_url_live_capture
 
-        # Handle photoshoot upload
-        if photoshoot:
-            # Delete old photoshoot if exists
-            if worker.photoshoot_url and os.path.exists(worker.photoshoot_url):
-                os.remove(worker.photoshoot_url)
+        # # Handle photoshoot upload
+        # if photoshoot:
+        #     # Delete old photoshoot if exists
+        #     if worker.photoshoot_url and os.path.exists(worker.photoshoot_url):
+        #         os.remove(worker.photoshoot_url)
             
-            safe_orig = re.sub(r'\s+', '_', photoshoot.filename)
-            photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
-            photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
+        #     safe_orig = re.sub(r'\s+', '_', photoshoot.filename)
+        #     photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        #     photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
             
-            with open(photoshoot_path, "wb") as buffer:
-                shutil.copyfileobj(photoshoot.file, buffer)
+        #     with open(photoshoot_path, "wb") as buffer:
+        #         shutil.copyfileobj(photoshoot.file, buffer)
                 
-            public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
-            full_url_photoshoot = BASE_URL + public_url_photoshoot
-            worker.photoshoot_url = full_url_photoshoot
+        #     public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+        #     full_url_photoshoot = BASE_URL + public_url_photoshoot
+        #     worker.photoshoot_url = full_url_photoshoot
 
         # Handle permanent address (individual fields)
         if any([permanent_address_line1, permanent_address_city, permanent_address_state, permanent_address_zip_code]):
@@ -867,6 +866,88 @@ async def update_worker(
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+        
+        
+@router.put('/{worker_id}/docs')
+async def update_worker_docs( worker_id : int,
+    # File uploads
+    profile_photo: UploadFile = File(None),
+    electricity_bill: UploadFile = File(None),
+    live_capture: UploadFile = File(None),
+    photoshoot: UploadFile = File(None),
+    db: Session = Depends(get_db)):
+    
+    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    if not worker:
+        raise HTTPException(status_code=404, detail=f"Worker with ID {worker_id} not found")
+    
+    if profile_photo:
+            # Delete old photo if exists
+        if worker.profile_photo_url and os.path.exists(worker.profile_photo_url):
+            os.remove(worker.profile_photo_url)
+            
+        safe_orig = re.sub(r'\s+', '_', profile_photo.filename)
+        photo_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        photo_path = os.path.join(PHOTOS_DIR, photo_filename)
+        with open(photo_path, "wb") as buffer:
+            shutil.copyfileobj(profile_photo.file, buffer)
+            
+        public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+        full_url_photo = BASE_URL + public_url_photo
+        worker.profile_photo_url = full_url_photo
+
+    if electricity_bill:
+        # Delete old bill if exists
+        if worker.electricity_bill_url and os.path.exists(worker.electricity_bill_url):
+            os.remove(worker.electricity_bill_url)
+        
+        safe_orig = re.sub(r'\s+', '_', electricity_bill.filename)
+        bill_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        bill_path = os.path.join(DOCS_DIR, bill_filename)
+        with open(bill_path, "wb") as buffer:
+            shutil.copyfileobj(electricity_bill.file, buffer)
+            
+        public_url_bill = f"/uploads-workers/documents/{bill_filename}"
+        full_url_bill = BASE_URL + public_url_bill
+        worker.electricity_bill_url = full_url_bill
+
+    # Handle live capture upload
+    if live_capture:
+        # Delete old live capture if exists
+        if worker.live_capture_url and os.path.exists(worker.live_capture_url):
+            os.remove(worker.live_capture_url)
+        
+        safe_orig = re.sub(r'\s+', '_', live_capture.filename)
+        live_capture_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        live_capture_path = os.path.join(LIVE_CAPTURE_DIR, live_capture_filename)
+        
+        with open(live_capture_path, "wb") as buffer:
+            shutil.copyfileobj(live_capture.file, buffer)
+            
+        public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
+        full_url_live_capture = BASE_URL + public_url_live_capture
+        worker.live_capture_url = full_url_live_capture
+
+    # Handle photoshoot upload
+    if photoshoot:
+        # Delete old photoshoot if exists
+        if worker.photoshoot_url and os.path.exists(worker.photoshoot_url):
+            os.remove(worker.photoshoot_url)
+        
+        safe_orig = re.sub(r'\s+', '_', photoshoot.filename)
+        photoshoot_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_orig}"
+        photoshoot_path = os.path.join(PHOTOSHOOT_DIR, photoshoot_filename)
+        
+        with open(photoshoot_path, "wb") as buffer:
+            shutil.copyfileobj(photoshoot.file, buffer)
+            
+        public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+        full_url_photoshoot = BASE_URL + public_url_photoshoot
+        worker.photoshoot_url = full_url_photoshoot
+    
+    return {"status" : "success", "message" : "worker docs updated"}
+    
+    
 
 @router.delete('/{id}')
 async def delete_worker(id: int, db: Session = Depends(get_db)):
