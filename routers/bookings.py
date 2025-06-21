@@ -128,7 +128,6 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
         "status": "success",
         "data": [
             {
-                "booking_id": booking.id,
                 "service_type": booking.service_type,
                 "customer_id": booking.customer_id,
                 "basic_price": float(booking.basic_price) if booking.basic_price else 0.0,

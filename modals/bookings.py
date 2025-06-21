@@ -7,7 +7,7 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    customer_id = Column(String, nullable=True, unique= True)
+    customer_id = Column(String, nullable=True)
 
     start_date = Column(String, nullable=True)
     end_date = Column(String, nullable=True)
@@ -39,7 +39,8 @@ class Cooking(Base):
     __tablename__ = "cooking_bookings"
     
     id = Column(Integer, primary_key=True, nullable = False)
-    customer_id = Column(String, ForeignKey("bookings.customer_id"))
+    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    customer_id = Column(String, nullable=True)
     
     dietary_preference = Column(String(10), nullable=True) 
     no_of_people = Column(Integer, nullable=True)
@@ -55,7 +56,8 @@ class Cleaning(Base):
     __tablename__ = "cleaning_bookings"
     
     id = Column(Integer, primary_key=True, nullable = False)
-    customer_id = Column(String, ForeignKey("bookings.customer_id"))
+    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    customer_id = Column(String, nullable=True)
         
     no_of_floors = Column(Integer, nullable=True) 
     no_of_bathrooms = Column(Integer, nullable=True)

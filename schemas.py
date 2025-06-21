@@ -441,7 +441,7 @@ class CookingBooking(BaseModel):
     dietary_preference: Optional[str] = None
     kitchen_platform_cleaning: Optional[bool] = None
     
-    package_id: Optional[int] = None
+    package_id: Optional[str] = None
     basic_price: Optional[float] = None
     total_price: Optional[float] = None
     
@@ -457,6 +457,7 @@ class CookingBooking(BaseModel):
 
 class CleaningBooking(BaseModel):
     customer_id: Optional[str]
+
     service_purpose: Optional[str] = "cleaning"
     
     no_of_floors: Optional[int]
