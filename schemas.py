@@ -453,6 +453,12 @@ class CookingBooking(BaseModel):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     
+    latitude: Optional[str]
+    longitude: Optional[str]
+    city: Optional[str]
+    address_line_1 : Optional[str]
+    address_line_2 : Optional[str]
+    
     status: Optional[str] = "ongoing"
 
 class CleaningBooking(BaseModel):
@@ -477,5 +483,11 @@ class CleaningBooking(BaseModel):
     package_id: Optional[str]
     basic_price: Optional[Decimal]
     total_price: Optional[Decimal]
+    
+    latitude: Optional[str]
+    longitude: Optional[str]
+    city: Optional[str]
+    address_line_1 : Optional[str]
+    address_line_2 : Optional[str]
 
     status: Optional[str] = "ongoing"

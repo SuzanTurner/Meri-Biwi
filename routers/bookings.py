@@ -25,6 +25,11 @@ async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(ge
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        latitude = request.latitude,
+        longitude = request.longitude,
+        city = request.city,
+        address_line_1 = request.address_line_1,
+        address_line_2 = request.address_line_2,
         status = getattr(request, 'status', 'ongoing')
     )
 
@@ -80,6 +85,11 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        latitude = request.latitude,
+        longitude = request.longitude,
+        city = request.city,
+        address_line_1 = request.address_line_1,
+        address_line_2 = request.address_line_2,
         status = getattr(request, 'status', 'ongoing')
     )
 
