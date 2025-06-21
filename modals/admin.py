@@ -35,5 +35,5 @@ class Admin(Base):
     created_at = Column(DateTime, default=lambda : datetime.now(ist))
     
 
-    basic_price = Column(Float, nullable=False)
+    # basic_price = Column(Float, nullable=False)
     

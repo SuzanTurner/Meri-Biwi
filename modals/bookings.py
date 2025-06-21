@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, Integer, Boolean, Text, Numeric, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, BigInteger, String, Integer, Boolean, Text, Numeric, TIMESTAMP, ForeignKey, lateral
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -24,6 +24,12 @@ class Booking(Base):
     package_id = Column(String(20), nullable=True)
     basic_price = Column(Numeric(10, 2), nullable=True)
     total_price = Column(Numeric(10, 2), nullable=True)
+    
+    latitude = Column(String, nullable = True)
+    longitude = Column(String, nullable = True)
+    city = Column(String, nullable = True)
+    address_line_1 = Column(String, nullable = True)
+    address_line_2 = Column(String, nullable = True)
 
     status = Column(String(20), nullable=True, default="ongoing")  # 'ongoing', 'completed', 'cancelled'
 
@@ -68,4 +74,3 @@ class Cleaning(Base):
     booking = relationship("Booking", back_populates="cleanings")
     
 
-    

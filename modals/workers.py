@@ -26,7 +26,7 @@ class Worker(Base):
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, nullable=False)
     gender = Column(String, nullable=False)
-    age = Column(Integer, nullable=False)
+    age = Column(Integer, nullable=True)
     dob = Column(String, nullable=False)
     phone = Column(String(15), unique=True, nullable=False)
     alternate_phone = Column(String(15))
