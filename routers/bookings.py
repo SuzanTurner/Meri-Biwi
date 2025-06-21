@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from database import get_db
 from sqlalchemy.orm import Session
 from modals.bookings import Booking, Cooking, Cleaning
-from datetime import datetime
 import schemas
 
 
@@ -122,7 +121,7 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
 
 
 @router.get('/')
-async def my_bookings(customer_id: int, db: Session = Depends(get_db)):
+async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
     bookings = db.query(Booking).filter(Booking.customer_id == customer_id).all()
     
     return {
@@ -167,3 +166,8 @@ async def my_bookings(customer_id: int, db: Session = Depends(get_db)):
             for booking in bookings
         ]
     }
+
+@router.get('/all/')
+async def get_all_bookings( db : Session = Depends(get_db)):
+    bookings = db.query(Booking).all()
+    return bookings
