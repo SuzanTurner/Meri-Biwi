@@ -151,6 +151,11 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
                 "package_id": booking.package_id,
+                "latitude" : booking.latitude,
+                "longitude" : booking.longitude,
+                "city" : booking.city,
+                "address_line_1" : booking.address_line_1,
+                "address_line_2" : booking.address_line_2,
                 "cooking_details": [
                     {
                         "dietary_preference": c.dietary_preference,
