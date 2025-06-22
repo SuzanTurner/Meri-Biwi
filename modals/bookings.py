@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, Integer, Boolean, Text, Numeric, TIMESTAMP, ForeignKey, lateral
+from sqlalchemy import Column, BigInteger, String, Integer, Boolean, Text, Numeric, TIMESTAMP, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -24,12 +24,6 @@ class Booking(Base):
     package_id = Column(String(20), nullable=True)
     basic_price = Column(Numeric(10, 2), nullable=True)
     total_price = Column(Numeric(10, 2), nullable=True)
-    
-    latitude = Column(String, nullable = True)
-    longitude = Column(String, nullable = True)
-    city = Column(String, nullable = True)
-    address_line_1 = Column(String, nullable = True)
-    address_line_2 = Column(String, nullable = True)
 
     status = Column(String(20), nullable=True, default="ongoing")  # 'ongoing', 'completed', 'cancelled'
 
@@ -38,6 +32,7 @@ class Booking(Base):
     
     cookings = relationship("Cooking", back_populates="booking", cascade="all, delete-orphan")
     cleanings = relationship("Cleaning", back_populates="booking", cascade="all, delete-orphan")
+    addresses = relationship("CustomerAddress", back_populates="booking", cascade="all, delete-orphan")
 
     
 class Cooking(Base):
@@ -74,3 +69,26 @@ class Cleaning(Base):
     booking = relationship("Booking", back_populates="cleanings")
     
 
+
+class CustomerAddress(Base):
+    __tablename__ = "customer_address"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=False)
+    customer_id = Column(String(100), nullable=False)
+
+    address_line1 = Column(String(255), nullable=True)
+    address_line2 = Column(String(255), nullable=True)
+    city = Column(String(100), nullable=True)
+    state = Column(String(100), nullable=True)
+    country = Column(String(100), nullable=True)
+    pincode = Column(String(10), nullable=True)
+    landmark = Column(String(255), nullable=True)
+
+    address_type = Column(String, nullable=True)
+    is_default = Column(Boolean, default=False)
+
+    created_at = Column(TIMESTAMP, nullable=True, server_default=func.now())
+    updated_at = Column(TIMESTAMP, nullable=True, server_default=func.now(), onupdate=func.now())
+    
+    booking = relationship("Booking", back_populates="addresses")

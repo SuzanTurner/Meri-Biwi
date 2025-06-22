@@ -433,7 +433,7 @@ class Banner(BaseModel):
 
 
 class CookingBooking(BaseModel):
-    customer_id : Optional[str] = None
+    customer_id : str
     
     service_purpose: Optional[str] = "cooking"
     meals_per_day: Optional[int] = None
@@ -453,16 +453,16 @@ class CookingBooking(BaseModel):
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     
-    latitude: Optional[str]
-    longitude: Optional[str]
-    city: Optional[str]
-    address_line_1 : Optional[str]
-    address_line_2 : Optional[str]
+    # latitude: Optional[str]
+    # longitude: Optional[str]
+    # city: Optional[str]
+    # address_line_1 : Optional[str]
+    # address_line_2 : Optional[str]
     
     status: Optional[str] = "ongoing"
 
 class CleaningBooking(BaseModel):
-    customer_id: Optional[str]
+    customer_id: str
 
     service_purpose: Optional[str] = "cleaning"
     
@@ -484,10 +484,25 @@ class CleaningBooking(BaseModel):
     basic_price: Optional[Decimal]
     total_price: Optional[Decimal]
     
-    latitude: Optional[str]
-    longitude: Optional[str]
-    city: Optional[str]
-    address_line_1 : Optional[str]
-    address_line_2 : Optional[str]
+    # latitude: Optional[str]
+    # longitude: Optional[str]
+    # city: Optional[str]
+    # address_line_1 : Optional[str]
+    # address_line_2 : Optional[str]
 
     status: Optional[str] = "ongoing"
+
+
+class CustomerAddress(BaseModel):
+    customer_id: str
+    
+    address_line1: Optional[str] = None
+    address_line2: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    pincode: Optional[str] = None
+    landmark: Optional[str] = None
+    address_type: Optional[str] = None
+    
+    is_default: Optional[bool] = False

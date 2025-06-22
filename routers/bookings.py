@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from database import get_db
 from sqlalchemy.orm import Session
-from modals.bookings import Booking, Cooking, Cleaning
+from modals.bookings import Booking, Cooking, Cleaning, CustomerAddress
 import schemas
 
 
@@ -25,11 +25,11 @@ async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(ge
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
-        latitude = request.latitude,
-        longitude = request.longitude,
-        city = request.city,
-        address_line_1 = request.address_line_1,
-        address_line_2 = request.address_line_2,
+        # latitude = request.latitude,
+        # longitude = request.longitude,
+        # city = request.city,
+        # address_line_1 = request.address_line_1,
+        # address_line_2 = request.address_line_2,
         status = getattr(request, 'status', 'ongoing')
     )
 
@@ -85,11 +85,11 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
-        latitude = request.latitude,
-        longitude = request.longitude,
-        city = request.city,
-        address_line_1 = request.address_line_1,
-        address_line_2 = request.address_line_2,
+        # latitude = request.latitude,
+        # longitude = request.longitude,
+        # city = request.city,
+        # address_line_1 = request.address_line_1,
+        # address_line_2 = request.address_line_2,
         status = getattr(request, 'status', 'ongoing')
     )
 
@@ -128,12 +128,65 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
             "message": "Failed to book Cleaning Service.",
             "details": str(e)
         }
+        
+@router.post('/address')
+async def address(request : schemas.CustomerAddress, db : Session = Depends(get_db)):
+    booking = Booking(
+        customer_id = request.customer_id,
+        start_date = request.start_date,
+        end_date = request.end_date,
+        start_time = request.start_time,
+        end_time = request.end_time,
+        service_type = "cleaning",
+        worker_id_1 = request.worker_id_1,
+        worker_id_2 = request.worker_id_2,
+        package_id = request.package_id,
+        basic_price = request.basic_price,
+        total_price = request.total_price,
+        status = getattr(request, 'status', 'ongoing')
+    )
+    db.add(booking)
+    db.commit()
+    db.refresh(booking)
+    address = CustomerAddress(
+        booking_id = booking.id,
+        customer_id = request.customer_id,
+        address_line1 = request.address_line1,
+        address_line2 = request.address_line2,
+        city = request.city,
+        state = request.state,
+        country = request.country,
+        pincode = request.pincode,
+        landmark = request.landmark,
+        address_type = request.address_type,
+        is_default = request.is_default
+    )
+    try:
+        db.add(address)
+        db.commit()
+        db.refresh(address)
+        return {
+            "status": "success",
+            "message": "Address added and cleaning service booked successfully",
+            "data": {
+                "booking_id": booking.id,
+                "booking_date": booking.booking_date,
+                "status": booking.status
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        return {
+            "status": "error",
+            "message": "Failed to add address and book Cleaning Service.",
+            "details": str(e)
+        }
+    
 
 
-@router.get('/')
+@router.get('/{customer_id}')
 async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
     bookings = db.query(Booking).filter(Booking.customer_id == customer_id).all()
-    
     return {
         "status": "success",
         "data": [
@@ -151,11 +204,11 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
                 "package_id": booking.package_id,
-                "latitude" : booking.latitude,
-                "longitude" : booking.longitude,
-                "city" : booking.city,
-                "address_line_1" : booking.address_line_1,
-                "address_line_2" : booking.address_line_2,
+                # "latitude" : booking.latitude,
+                # "longitude" : booking.longitude,
+                # "city" : booking.city,
+                # "address_line_1" : booking.address_line_1,
+                # "address_line_2" : booking.address_line_2,
                 "cooking_details": [
                     {
                         "dietary_preference": c.dietary_preference,
@@ -175,12 +228,25 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                         "services": cl.services,
                     }
                     for cl in booking.cleanings
+                ],
+                "address_details" : [
+                    {
+                        "address_line_1" : add.address_line1,
+                        "address_line_2" : add.address_line2,
+                        "city" : add.city,
+                        "state" : add.state,
+                        "country" : add.country,
+                        "pincode" : add.pincode,
+                        "landmark" : add.landmark,
+                        "address_type" : add.address_type,
+                    }
+                    for add in booking.addresses
                 ]
             }
             for booking in bookings
         ]
     }
-
+ 
 @router.get('/all/')
 async def get_all_bookings( db : Session = Depends(get_db)):
     bookings = db.query(Booking).all()
