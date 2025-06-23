@@ -61,7 +61,7 @@ async def create_user(
             name=UserData.name,
             phone=UserData.phone,
             email=email,
-            avatar = "avatar",
+            avatar = "",
             password=hashed_password,
             otp_verified=False,
             wallet=0.0,
@@ -142,7 +142,6 @@ def update_user_(
     city: Optional[str] = Form(None),
     latitude: Optional[str] = Form(None),
     longitude: Optional[str] = Form(None),
-    avatar: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
     user = db.query(User).filter(User.uid == uid).first()
@@ -171,13 +170,13 @@ def update_user_(
         hashed_password = hashing.Hash.bcrypt(password)
         user.password = hashed_password
 
-    if avatar:
-        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{avatar.filename.replace(' ', '_')}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(avatar.file, buffer)
-        filename = quote(filename)
-        user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
+    # if avatar is not None:
+    #     filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{avatar.filename.replace(' ', '_')}"
+    #     filepath = os.path.join(UPLOAD_DIR, filename)
+    #     with open(filepath, "wb") as buffer:
+    #         shutil.copyfileobj(avatar.file, buffer)
+    #     filename = quote(filename)
+    #     user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
 
     ist = pytz.timezone("Asia/Kolkata")
     user.updated_at = datetime.now(ist)
@@ -187,6 +186,28 @@ def update_user_(
 
     return {"status": "success", "user_details": user}
 
+@router.put('/{uid}/update-avatar')
+async def update_avatar(uid : str, 
+                        avatar: Optional[UploadFile] = File(None),
+                        db : Session = Depends(get_db)):
+    
+    user = db.query(User).filter(User.uid == uid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if avatar is not None:
+        filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{avatar.filename.replace(' ', '_')}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(avatar.file, buffer)
+        filename = quote(filename)
+        user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
+        
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+        
+    return {"status": "success", "messgae" : "Avatar updated", "user_details": user}
 
 
 @router.get('/{uid}')

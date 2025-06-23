@@ -497,16 +497,16 @@ class CleaningBooking(BaseModel):
 
 class CreateBookingWithAddress(BaseModel):
     customer_id: str
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    worker_id_1: Optional[int] = None
-    worker_id_2: Optional[int] = None
-    package_id: Optional[str] = None
-    basic_price: Optional[Decimal] = None
-    total_price: Optional[Decimal] = None
-    status: Optional[str] = "ongoing"
+    # start_date: Optional[str] = None
+    # end_date: Optional[str] = None
+    # start_time: Optional[str] = None
+    # end_time: Optional[str] = None
+    # worker_id_1: Optional[int] = None
+    # worker_id_2: Optional[int] = None
+    # package_id: Optional[str] = None
+    # basic_price: Optional[Decimal] = None
+    # total_price: Optional[Decimal] = None
+    # status: Optional[str] = "ongoing"
 
     # Address fields
     latitude: Optional[str] = None

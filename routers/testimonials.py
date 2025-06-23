@@ -13,6 +13,7 @@ import base64
 
 dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
+# BASE_URL = "http://127.0.0.1:8000"
 
 
 router = APIRouter(
@@ -45,7 +46,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     # photo_filename = quote(photo_filename)
     # public_url = f"/uploads-testimonials/photos/{photo_filename}"
     # full_url = BASE_URL + public_url
-    # # full_url = "http://127.0.0.1:8000" + public_url
+    # full_url = "http://127.0.0.1:8000" + public_url
     
     image_data = await image_or_video.read()
 
@@ -74,6 +75,8 @@ async def get_testimonials(db: Session = Depends(get_db)):
     results = [{"id": t.id, "title" : t.title ,"datatype" : t.datatype,"categories" : t.categories ,"url": t.image_or_video} for t in testimonies]
     return {"testimonials": results}
 
+
+
 @router.put("/{id}", response_model=TestSchema)
 def update_testimonial(
     id: int, updated: TestSchema, db: Session = Depends(get_db)
@@ -86,10 +89,14 @@ def update_testimonial(
 
     for field, value in update_data.items():
         setattr(testimonial, field, value)
+        
+    
 
     db.commit()
     db.refresh(testimonial)
     return testimonial
+
+
 
 @router.delete('/{id}')
 async def delete_testimonial(id : int, db : Session = Depends(get_db)):
