@@ -64,3 +64,10 @@ uvicorn main:app --reload
 ## ⚡ Quick Note
 Clicking the "Register Worker" button on the frontend sends data here — and we faithfully toss it into the database like it's the holy grail. You can also search workers by name if you're tryna locate someone specific.
 
+sudo systemctl daemon-reload
+sudo systemctl restart merididi.service
+vim /etc/systemd/system/merididi.service
+
+username meridi
+password meridi@
+

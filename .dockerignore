@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache/
+uploads-admin/
+uploads-banners/
+uploads-categories/
+uploads-testimonials/
+uploads-users/
+uploads-workers/
+.env
