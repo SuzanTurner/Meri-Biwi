@@ -12,9 +12,21 @@ router = APIRouter(
 
 @router.post('/cooking')
 async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(get_db)):
+    # Validate address_id
+    address = db.query(CustomerAddress).filter(
+        CustomerAddress.id == request.address_id,
+        CustomerAddress.customer_id == request.customer_id
+    ).first()
+    if not address:
+        return {
+            "status": "error",
+            "message": "Invalid address_id: address does not exist for this customer."
+        }
+
     # Create Booking object
     booking = Booking(
         customer_id = request.customer_id,
+        address_id = request.address_id,
         start_date = request.start_date,
         end_date = request.end_date,
         start_time = request.start_time,
@@ -72,9 +84,21 @@ async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(ge
 
 @router.post('/cleaning')
 async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(get_db)):
+    # Validate address_id
+    address = db.query(CustomerAddress).filter(
+        CustomerAddress.id == request.address_id,
+        CustomerAddress.customer_id == request.customer_id
+    ).first()
+    if not address:
+        return {
+            "status": "error",
+            "message": "Invalid address_id: address does not exist for this customer."
+        }
+
     # Create Booking object
     booking = Booking(
         customer_id = request.customer_id,
+        address_id = request.address_id,
         start_date = request.start_date,
         end_date = request.end_date,
         start_time = request.start_time,
@@ -128,62 +152,40 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
             "message": "Failed to book Cleaning Service.",
             "details": str(e)
         }
-        
+
 @router.post('/address')
-async def address(request : schemas.CustomerAddress, db : Session = Depends(get_db)):
-    booking = Booking(
-        customer_id = request.customer_id,
-        start_date = request.start_date,
-        end_date = request.end_date,
-        start_time = request.start_time,
-        end_time = request.end_time,
-        service_type = "cleaning",
-        worker_id_1 = request.worker_id_1,
-        worker_id_2 = request.worker_id_2,
-        package_id = request.package_id,
-        basic_price = request.basic_price,
-        total_price = request.total_price,
-        status = getattr(request, 'status', 'ongoing')
-    )
-    db.add(booking)
-    db.commit()
-    db.refresh(booking)
-    address = CustomerAddress(
-        booking_id = booking.id,
-        customer_id = request.customer_id,
-        address_line1 = request.address_line1,
-        address_line2 = request.address_line2,
-        city = request.city,
-        state = request.state,
-        country = request.country,
-        pincode = request.pincode,
-        landmark = request.landmark,
-        address_type = request.address_type,
-        is_default = request.is_default
-    )
+async def address(request: schemas.CreateBookingWithAddress, db: Session = Depends(get_db)):
     try:
+        address = CustomerAddress(
+            customer_id=request.customer_id,
+            address_line1=request.address_line1,
+            address_line2=request.address_line2,
+            city=request.city,
+            state=request.state,
+            country=request.country,
+            pincode=request.pincode,
+            landmark=request.landmark,
+            address_type=request.address_type,
+            is_default=request.is_default
+        )
         db.add(address)
         db.commit()
         db.refresh(address)
+
         return {
             "status": "success",
-            "message": "Address added and cleaning service booked successfully",
-            "data": {
-                "booking_id": booking.id,
-                "booking_date": booking.booking_date,
-                "status": booking.status
-            }
+            "message": "Address added successfully",
+            "address_id": address.id
         }
+
     except Exception as e:
         db.rollback()
         return {
             "status": "error",
-            "message": "Failed to add address and book Cleaning Service.",
+            "message": "Failed to add address.",
             "details": str(e)
         }
-    
-
-
+        
 @router.get('/{customer_id}')
 async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
     bookings = db.query(Booking).filter(Booking.customer_id == customer_id).all()
@@ -204,11 +206,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
                 "package_id": booking.package_id,
-                # "latitude" : booking.latitude,
-                # "longitude" : booking.longitude,
-                # "city" : booking.city,
-                # "address_line_1" : booking.address_line_1,
-                # "address_line_2" : booking.address_line_2,
+
                 "cooking_details": [
                     {
                         "dietary_preference": c.dietary_preference,
@@ -219,6 +217,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                     }
                     for c in booking.cookings
                 ],
+
                 "cleaning_details": [
                     {
                         "no_of_floors": cl.no_of_floors,
@@ -229,24 +228,52 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                     }
                     for cl in booking.cleanings
                 ],
-                "address_details" : [
-                    {
-                        "address_line_1" : add.address_line1,
-                        "address_line_2" : add.address_line2,
-                        "city" : add.city,
-                        "state" : add.state,
-                        "country" : add.country,
-                        "pincode" : add.pincode,
-                        "landmark" : add.landmark,
-                        "address_type" : add.address_type,
-                    }
-                    for add in booking.addresses
-                ]
+                "address_details": {
+                    "latitude": booking.address.latitude if booking.address else None,
+                    "longitude": booking.address.longitude if booking.address else None,
+                    "address_line_1": booking.address.address_line1 if booking.address else None,
+                    "address_line_2": booking.address.address_line2 if booking.address else None,
+                    "city": booking.address.city if booking.address else None,
+                    "state": booking.address.state if booking.address else None,
+                    "country": booking.address.country if booking.address else None,
+                    "pincode": booking.address.pincode if booking.address else None,
+                    "landmark": booking.address.landmark if booking.address else None,
+                    "address_type": booking.address.address_type if booking.address else None,
+                    "is_default": booking.address.is_default if booking.address else None,
+                } if booking.address else None,
             }
             for booking in bookings
-        ]
+        ],
     }
- 
+
+
+@router.get('/{customer_id}/address')
+async def my_addresses(customer_id: str, db: Session = Depends(get_db)):
+    try:
+        addresses = db.query(CustomerAddress).filter(CustomerAddress.customer_id == customer_id).all()
+        return {"status" : "success",
+            "address_data": [
+                {   
+                    "address_id" : address.id,
+                    "latitude": address.latitude,
+                    "longitude": address.longitude,
+                    "address_line_1": address.address_line1,
+                    "address_line_2": address.address_line2,
+                    "city": address.city,
+                    "state": address.state,
+                    "country": address.country,
+                    "pincode": address.pincode,
+                    "landmark": address.landmark,
+                    "address_type": address.address_type,
+                    "is_default": address.is_default
+                }
+                for address in addresses
+            ]
+        }
+    except Exception as e:
+        return {"status" : "error", "message" : "Address not fetched"}
+    
+
 @router.get('/all/')
 async def get_all_bookings( db : Session = Depends(get_db)):
     bookings = db.query(Booking).all()

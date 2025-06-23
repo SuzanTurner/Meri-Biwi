@@ -434,6 +434,7 @@ class Banner(BaseModel):
 
 class CookingBooking(BaseModel):
     customer_id : str
+    address_id : int
     
     service_purpose: Optional[str] = "cooking"
     meals_per_day: Optional[int] = None
@@ -463,6 +464,7 @@ class CookingBooking(BaseModel):
 
 class CleaningBooking(BaseModel):
     customer_id: str
+    address_id : int
 
     service_purpose: Optional[str] = "cleaning"
     
@@ -493,9 +495,22 @@ class CleaningBooking(BaseModel):
     status: Optional[str] = "ongoing"
 
 
-class CustomerAddress(BaseModel):
+class CreateBookingWithAddress(BaseModel):
     customer_id: str
-    
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    worker_id_1: Optional[int] = None
+    worker_id_2: Optional[int] = None
+    package_id: Optional[str] = None
+    basic_price: Optional[Decimal] = None
+    total_price: Optional[Decimal] = None
+    status: Optional[str] = "ongoing"
+
+    # Address fields
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
     address_line1: Optional[str] = None
     address_line2: Optional[str] = None
     city: Optional[str] = None
@@ -504,5 +519,4 @@ class CustomerAddress(BaseModel):
     pincode: Optional[str] = None
     landmark: Optional[str] = None
     address_type: Optional[str] = None
-    
     is_default: Optional[bool] = False
