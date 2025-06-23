@@ -520,3 +520,11 @@ class CreateBookingWithAddress(BaseModel):
     landmark: Optional[str] = None
     address_type: Optional[str] = None
     is_default: Optional[bool] = False
+
+class Areas(BaseModel):
+    area_name : str
+    latitude : str
+    longitude : str
+    pincode : Optional[int] = None
+    
+    
