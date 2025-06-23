@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: meridi-api
+    restart: unless-stopped
+    env_file:
+      - .env # Optional: For environment variables
+    ports:
+      - "8081:8000" # Expose app internally on port 8000 for Nginx to connect
+    # depends_on:
+      # - nginx # Ensure Nginx starts after the web service
+
+  # nginx:
+  #   image: nginx:stable-alpine # Use a lightweight Nginx image
+  #   container_name: nginx-proxy
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"   # Expose port 80 for HTTP traffic
+  #     - "443:443" # Expose port 443 for HTTPS traffic (if you configure it)
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro # Custom Nginx config
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro        # Custom server blocks
+  #     # If you plan to use Certbot for SSL, you'll need volumes for certificates:
+  #     # - ./certbot/www:/var/www/certbot:ro # For Certbot webroot authentication
+  #     # - ./certbot/conf:/etc/nginx/conf.d:ro # For Certbot managed Nginx config (optional)
+  #     # - ./certbot/data:/etc/letsencrypt # For Let's Encrypt certificates (optional)
+  #   depends_on:
+  #     - web # Nginx depends on the web service being available
+
+volumes:
+  # Optional: For persistent data if your app ever needs it
+  # fastapi_data:
+  #   driver: local
