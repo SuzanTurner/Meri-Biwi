@@ -23,7 +23,7 @@ async def get_banners(db : Session = Depends(get_db)):
     banners =  db.query(Banner).all()
     return banners
 
-UPLOAD_DIR = "uploads-banners"
+UPLOAD_DIR = "/app/data/uploads-banners"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)

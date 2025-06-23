@@ -23,7 +23,7 @@ router = APIRouter(
     prefix = '/admin'
 )
 
-UPLOAD_DIR = "uploads-admin"
+UPLOAD_DIR = "/app/data/uploads-admin"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)

@@ -12,7 +12,7 @@ import re
 
 logger = logging.getLogger(__name__)
 
-UPLOAD_DIR = "uploads-categories"
+UPLOAD_DIR = "/app/data/uploads-categories"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
