@@ -23,7 +23,7 @@ router = APIRouter(
     prefix = '/workers'
 )
 
-UPLOAD_DIR = "uploads-workers"
+UPLOAD_DIR = "/app/data/uploads-workers"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 DOCS_DIR = os.path.join(UPLOAD_DIR, "documents")
 LIVE_CAPTURE_DIR = os.path.join(PHOTOS_DIR, "live-capture")
@@ -187,7 +187,7 @@ async def register_worker(
             with open(photo_path, "wb") as buffer:
                 shutil.copyfileobj(profile_photo.file, buffer)
                 
-            public_url_photo = f"/uploads-workers/photos/{photo_filename}"
+            public_url_photo = f"/app/data/uploads-workers/photos/{photo_filename}"
             
             full_url_photo = BASE_URL + public_url_photo
         
@@ -200,7 +200,7 @@ async def register_worker(
             with open(bill_path, "wb") as buffer:
                 shutil.copyfileobj(electricity_bill.file, buffer)
             
-            public_url_bill = f"/uploads-workers/documents/{bill_filename}"
+            public_url_bill = f"/app/data/uploads-workers/documents/{bill_filename}"
             full_url_bill = BASE_URL + public_url_bill
         
         if live_capture:
@@ -212,7 +212,9 @@ async def register_worker(
             with open(live_capture_path, "wb") as buffer:
                 shutil.copyfileobj(live_capture.file, buffer)
             
-            public_url_live_capture = f"/uploads-workers/photos/live-capture/{live_capture_filename}"
+            public_url_live_capture = (
+                f"/app/data/uploads-workers/photos/live-capture/{live_capture_filename}"
+            )
             full_url_live_capture = BASE_URL + public_url_live_capture
         
         if photoshoot:
@@ -224,7 +226,9 @@ async def register_worker(
             with open(photoshoot_path, "wb") as buffer:
                 shutil.copyfileobj(photoshoot.file, buffer)
             
-            public_url_photoshoot = f"/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+            public_url_photoshoot = (
+                f"/app/data/uploads-workers/photos/photoshoot/{photoshoot_filename}"
+            )
             full_url_photoshoot = BASE_URL + public_url_photoshoot
         
         try:

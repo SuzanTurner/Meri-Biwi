@@ -21,7 +21,7 @@ router = APIRouter(
 dotenv.load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
 
-UPLOAD_DIR = "uploads-users"
+UPLOAD_DIR = "/app/data/uploads-users"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.get("/")
