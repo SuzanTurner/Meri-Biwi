@@ -18,7 +18,8 @@ services:
       - .env # Optional: For environment variables
     ports:
       - "8081:8000" # Expose app internally on port 8000 for Nginx to connect
-    # depends_on:
+    depends_on:
+      -  db
       # - nginx # Ensure Nginx starts after the web service
 
   # nginx:
@@ -37,7 +38,17 @@ services:
   #     # - ./certbot/data:/etc/letsencrypt # For Let's Encrypt certificates (optional)
   #   depends_on:
   #     - web # Nginx depends on the web service being available
-
+   db:
+    image: postgres:14-alpine # Use a stable and lightweight PostgreSQL image
+    container_name: postgres-db
+    restart: unless-stopped
+    env_file:
+      - .env_db # NEW: Separate .env file for database credentials (recommended)
+    volumes:
+      - pgdata:/var/lib/postgresql/data # Persistent volume for PostgreSQL data
+    ports:
+      - "5432:5432" # Optional: Expose PostgreSQL port to host for local access/debugging
+                  # Remove this line in production if you only want internal container access
 volumes:
   # Optional: For persistent data if your app ever needs it
   fastapi_data:
