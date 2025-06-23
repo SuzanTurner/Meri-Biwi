@@ -7,9 +7,9 @@ routers/__pycache__/
 veg_dump.sql
 veg_mysql.sql
 # uploads-admin/
-# uploads-categories/
+# uploads-categories/photos/*
 # uploads-testimonials/
-
+uploads-admin\photos
 alembic/
 alembic.ini
 .pytest_cache/
