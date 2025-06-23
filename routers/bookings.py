@@ -186,6 +186,45 @@ async def address(request: schemas.CreateBookingWithAddress, db: Session = Depen
             "details": str(e)
         }
         
+from fastapi import HTTPException
+
+@router.put("/address")
+async def update_address(request: schemas.CreateBookingWithAddress, address_id: int, db: Session = Depends(get_db)):
+    address = db.query(CustomerAddress).filter(
+        CustomerAddress.id == address_id,
+        CustomerAddress.customer_id == request.customer_id
+    ).first()
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found for this customer.")
+
+    # Update fields if provided
+    address.address_line1 = request.address_line1 or address.address_line1
+    address.address_line2 = request.address_line2 or address.address_line2
+    address.city = request.city or address.city
+    address.state = request.state or address.state
+    address.country = request.country or address.country
+    address.pincode = request.pincode or address.pincode
+    address.landmark = request.landmark or address.landmark
+    address.address_type = request.address_type or address.address_type
+    address.is_default = request.is_default if request.is_default is not None else address.is_default
+
+    try:
+        db.commit()
+        db.refresh(address)
+        return {
+            "status": "success",
+            "message": "Address updated successfully",
+            "address_id": address.id
+        }
+    except Exception as e:
+        db.rollback()
+        return {
+            "status": "error",
+            "message": "Failed to update address.",
+            "details": str(e)
+        }
+    
+        
 @router.get('/{customer_id}')
 async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
     bookings = db.query(Booking).filter(Booking.customer_id == customer_id).all()
