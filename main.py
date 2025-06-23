@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from routers import banners, db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning, preference, bookings, areas, attendance, notifications, phonepay
 import uvicorn
+import os
 import logging
 
 
@@ -14,13 +15,37 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(debug = True)
-
-app.mount("/uploads-workers", StaticFiles(directory="uploads-workers"), name="uploads-workers")
-app.mount("/uploads-admin", StaticFiles(directory="uploads-admin"), name="uploads-admin")
-app.mount("/uploads-categories", StaticFiles(directory="uploads-categories"), name="uploads-categories")
-app.mount("/uploads-testimonials", StaticFiles(directory="uploads-testimonials"), name="uploads-testimonials")
-app.mount("/uploads-banners", StaticFiles(directory="uploads-banners"), name="uploads-banners")
-app.mount("/uploads-users", StaticFiles(directory="uploads-users"), name = "uploads-users")
+BASE_UPLOAD_DIR = "/app/data"
+app.mount(
+    "/uploads-workers",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-workers")),
+    name="uploads-workers",
+)
+app.mount(
+    "/uploads-admin",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-admin")),
+    name="uploads-admin",
+)
+app.mount(
+    "/uploads-categories",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-categories")),
+    name="uploads-categories",
+)
+app.mount(
+    "/uploads-testimonials",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-testimonials")),
+    name="uploads-testimonials",
+)
+app.mount(
+    "/uploads-banners",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-banners")),
+    name="uploads-banners",
+)
+app.mount(
+    "/uploads-users",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-users")),
+    name="uploads-users",
+)
 
 app.add_middleware(
     CORSMiddleware,

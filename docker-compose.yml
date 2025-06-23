@@ -11,7 +11,7 @@ services:
       # This is the new volume mounting for your web service
       # It mounts the 'fastapi_data' named volume to /app/data inside the container.
       # You can change '/app/data' to any path where your app needs to write persistent data.
-      - fastapi_data:/app/data
+      - fastapi_data:/app/data/
       # If you have logs you want to persist outside the container:
       # - fastapi_logs:/app/logs
     env_file:
