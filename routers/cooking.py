@@ -433,7 +433,7 @@ def calculate_total_cooking(
                 "package_type": level,
                 "icon": "Some icon bro",
                 "package_id": f"{level[:3].upper()}6969",
-                "description" : "Essential Cleaninf for your home",
+                "description" : "Essential Cookings for your home",
                 "duration" : "2",
                 "base_price": float(base_price),
                 "total_price": float(total),

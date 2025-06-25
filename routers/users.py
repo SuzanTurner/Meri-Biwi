@@ -207,7 +207,7 @@ async def update_avatar(uid : str,
     db.commit()
     db.refresh(user)
         
-    return {"status": "success", "messgae" : "Avatar updated", "user_details": user}
+    return {"status": "success", "message" : "Avatar updated", "user_details": user}
 
 
 @router.get('/{uid}')

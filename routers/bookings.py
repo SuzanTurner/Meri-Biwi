@@ -158,6 +158,8 @@ async def address(request: schemas.CreateBookingWithAddress, db: Session = Depen
     try:
         address = CustomerAddress(
             customer_id=request.customer_id,
+            latitude = request.latitude,
+            longitude = request.longitude,
             address_line1=request.address_line1,
             address_line2=request.address_line2,
             city=request.city,
@@ -200,6 +202,8 @@ async def update_address(request: schemas.CreateBookingWithAddress, address_id: 
     # Update fields if provided
     address.address_line1 = request.address_line1 or address.address_line1
     address.address_line2 = request.address_line2 or address.address_line2
+    address.latitude = request.latitude or address.latitude
+    address.longitude = request.longitude or address.longitude
     address.city = request.city or address.city
     address.state = request.state or address.state
     address.country = request.country or address.country

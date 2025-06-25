@@ -232,20 +232,17 @@ def calculate_cleaning_total(
                 "package_type": level,
                 "icon": "Some icon",
                 "package_id": f"{level[:3].upper()}1234",
-                "price": float(total)
-            }
-
-            features = {
+                "description" : "Essential Cleaning for your home",
+                "duration" : "2",
                 "base_price": float(base_price),
                 "total_price": float(total),
-                "floor": floor_str,
-                "plan": level,
-                "bhk": bhk,
-                "bathrooms": bathrooms,
-                "services": services
+                "bhk" : bhk,
+                "floor" : floor,
+                "bathrooms" : bathrooms,
+                "services" : services,
+                "features" : ["features", "very cool features", "more cool features"]
             }
-
-            package_results.append({"package": package, "features": features})
+            package_results.append({"package": package})
 
         return {
             "status": "success",
