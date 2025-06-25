@@ -523,9 +523,10 @@ class CreateBookingWithAddress(BaseModel):
 
 class Areas(BaseModel):
     area_name : str
-    latitude : str
-    longitude : str
+    latitude : float
+    longitude : float
     pincode : Optional[int] = None
     landmark : Optional[str] = None
     
+
     
