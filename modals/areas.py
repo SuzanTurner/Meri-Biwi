@@ -11,6 +11,7 @@ class Areas(Base):
     latitude = Column(String)
     longitude = Column(String)
     pincode = Column(Integer, nullable = True)
+    landmark = Column(String, nullable = True)
     
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
+    # created_at = Column(TIMESTAMP, server_default=func.now())
+    # updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())

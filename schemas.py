@@ -526,5 +526,6 @@ class Areas(BaseModel):
     latitude : str
     longitude : str
     pincode : Optional[int] = None
+    landmark : Optional[str] = None
     
     

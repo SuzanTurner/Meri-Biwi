@@ -18,6 +18,7 @@ async def add_area(request : schemas.Areas, db : Session = Depends(get_db)):
             latitude = request.latitude,
             longitude = request.longitude,
             pincode = request.pincode,
+            landmark = request.landmark
         )
         db.add(area)
         db.commit()
