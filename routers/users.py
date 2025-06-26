@@ -210,6 +210,26 @@ async def update_avatar(uid : str,
     return {"status": "success", "message" : "Avatar updated", "user_details": user}
 
 
+@router.put('/phone/{phone}/')
+async def change_password(phone : str, 
+                          password: Optional[str] = Form(None),
+                          db : Session = Depends(get_db)):
+    user = db.query(User).filter(User.phone == phone).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this phone number not found")
+    if password and password.strip():
+        hashed_password = hashing.Hash.bcrypt(password)
+        user.password = hashed_password
+        db.commit()
+        db.refresh(user) 
+        return {"status": "success", "message": "Password updated"}
+    
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Password is required"
+    )
+
+
 @router.get('/{uid}')
 async def get_user_by_id(uid : str, db : Session = Depends(get_db)):
     user = db.query(User).filter(User.uid == uid).first()
@@ -219,7 +239,8 @@ async def get_user_by_id(uid : str, db : Session = Depends(get_db)):
     
     
 @router.delete('/{id}')
-async def delete_user(id : int, db : Session = Depends(get_db)):
+async def delete_user(id : int,
+                      db : Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=404, detail=f"User with id {id} does not exist")

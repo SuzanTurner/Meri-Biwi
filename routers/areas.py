@@ -76,10 +76,10 @@ async def check_areas(pincode : str,
 
         if nearby_areas:
             return {
-                "status": "partial",
+                "status": "Success",
                 "message": "Found nearby areas within 5 km.",
-                "areas found" : len(nearby_areas),
-                "areas": sorted(nearby_areas, key=lambda x: x["distance_km"])
+                # "areas found" : len(nearby_areas),
+                # "areas": sorted(nearby_areas, key=lambda x: x["distance_km"])
             }
         else:
             return {
