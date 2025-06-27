@@ -34,6 +34,8 @@ class Booking(Base):
     cleanings = relationship("Cleaning", back_populates="booking", cascade="all, delete-orphan")
     address = relationship("CustomerAddress", back_populates="bookings")
 
+    attendances = relationship("Attendance", back_populates="booking")
+
 
 class Cooking(Base):
     __tablename__ = "cooking_bookings"

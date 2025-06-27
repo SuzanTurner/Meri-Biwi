@@ -62,6 +62,8 @@ class Worker(Base):
     bank_details = relationship("BankDetails", back_populates="worker", uselist=False, cascade="all, delete-orphan")
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
+    attendances = relationship("Attendance", back_populates="worker")
+
 
 class Address(Base):
     __tablename__ = "addresses"
