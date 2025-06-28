@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routers import banners, db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning, preference, bookings, areas, attendance, notifications
+from routers import banners, db_check, login, service, testimonials, users, admin, otp, categories, workers, cooking, cleaning, preference, bookings, areas, attendance, notifications, phonepay
 import uvicorn
 import logging
 
@@ -49,6 +49,7 @@ app.include_router(bookings.router)
 app.include_router(areas.router)
 app.include_router(attendance.router)
 app.include_router(notifications.router)
+app.include_router(phonepay.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8081)
