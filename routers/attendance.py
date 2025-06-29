@@ -31,9 +31,10 @@ async def post_attendance(request : attendance.Attendance, db : Session = Depend
             "message": "Attendance recorded successfully",
             "attendance_id": attendance.id
             }
-    except Exception:
+    except Exception as e:
         return {"status" : False,
-                "message" : "Missing required fields"}
+                "message" : "Missing required fields",
+                "error" : e}
     
 @router.put('/')
 async def update_attendance(attendance_id : int, request : attendance.Attendance, db : Session = Depends(get_db)):
@@ -58,5 +59,5 @@ async def update_attendance(attendance_id : int, request : attendance.Attendance
 
 @router.get('/')
 async def get_attendance(booking_id : int, db : Session = Depends(get_db)):
-    attendance = db.query(Attendance).filter(Attendance.booking_id == booking_id).first()
+    attendance = db.query(Attendance).filter(Attendance.booking_id == booking_id).all()
     return {"status" : "Success", "attendance" : attendance}
