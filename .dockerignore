@@ -12,3 +12,4 @@ uploads-testimonials/
 uploads-users/
 uploads-workers/
 .env
+.env.db
