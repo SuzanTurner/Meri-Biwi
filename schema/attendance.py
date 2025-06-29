@@ -14,5 +14,5 @@ class Attendance(BaseModel):
     @validator("checkin_time", "checkout_time")
     def validate_time_format(cls, value):
         # Regex for HH:MM:SS (24-hour)
-        if re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$", value):
+        if re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$", value) or re.match(r"^(?:[01]\d|2[0-3]):[0-5]\d$", value):
             return value

@@ -56,10 +56,7 @@ async def update_attendance(attendance_id : int, request : attendance.Attendance
             "message": "Invalid attendance ID"
             }
 
-# @router.get('/')
-# async def get_subscription(booking_id: int, db: Session = Depends(get_db)):
-#     at = db.query(Attendance).filter(Attendance.booking_id == booking_id)
-#     return at
-
-
-
+@router.get('/')
+async def get_attendance(booking_id : int, db : Session = Depends(get_db)):
+    attendance = db.query(Attendance).filter(Attendance.booking_id == booking_id).first()
+    return {"status" : "Success", "attendance" : attendance}
