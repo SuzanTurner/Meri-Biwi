@@ -58,9 +58,8 @@ router = APIRouter(
 
 
 @router.post("/all")
-async def broadcast_notification(title: str, message: str, msg_type : str, db : Session = Depends(get_db)):
-    # Save to DB
-    notification = Notifications(title=title, msg=message, msg_type= msg_type)
+async def broadcast_notification(request : notifications.Notifications, db : Session = Depends(get_db)):
+    notification = Notifications(title=request.title, msg=request.msg, msg_type= request.msg_type)
     db.add(notification)
     db.commit()
     db.refresh(notification)
@@ -74,8 +73,8 @@ async def broadcast_notification(title: str, message: str, msg_type : str, db : 
     payload = {
         "app_id": ONESIGNAL_APP_ID,
         "included_segments": ["All"],
-        "headings": {"en": title},
-        "contents": {"en": message}
+        "headings": {"en": request.title},
+        "contents": {"en": request.msg}
     }
     response = requests.post(url, json=payload, headers=headers)
     if response.status_code != 200:

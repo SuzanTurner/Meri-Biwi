@@ -442,7 +442,12 @@ def calculate_total_cooking(
                 "plan_type": level,
                 "meal_type": meal_type,
                 "services": services,
-                "features" : ["features", "very cool features", "more cool features"]
+                "features" : [ f"Dietery Preference: {db_food_type}"
+                               f"Service for {num_people} people",
+                               f"Meals per day: {meal_type}",
+                                "Service purpose: Daily",
+                                "Includes kitchen platform cleaning"]
+                            
             }
 
             # features = {
