@@ -106,3 +106,13 @@ def notify_user(player_id: str, title: str, message: str):
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail=response.text)
     return {"status": "success", "response": response.json()}
+
+@router.delete('/')
+async def delete_notification(id : int, db : Session = Depends(get_db)):
+    notif = db.query(Notifications).filter(Notifications.id == id).first()
+    if notif:
+        db.delete(notif)
+        db.commit()
+        return {"status" : "Success", "message" : "Notficaion succesfully deleted"}
+    else:
+        return {"status" : "failed", "message" : "Notifcation does not exist"}

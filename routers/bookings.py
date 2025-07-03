@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.orm import Session
 from modals.bookings import Booking, Cooking, Cleaning, CustomerAddress
