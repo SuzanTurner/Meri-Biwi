@@ -41,7 +41,6 @@ class Testimonials(Base):
     title = Column(String, nullable=False)
     description = Column(String)
     categories = Column(String)
-    base_64 = Column(Text, nullable = False)
     created_at = Column(DateTime, default=lambda: datetime.now(ist))
 
 

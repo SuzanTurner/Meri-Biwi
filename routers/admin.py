@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Form, File, UploadFile
 from sqlalchemy.orm import Session
 from hashing import Hash
 from modals.admin import Admin
-from routers.categories import BASE_URL
 from schemas import UpdateAdmin
 from datetime import datetime
 from database import get_db
@@ -16,7 +15,7 @@ import dotenv
 
 
 dotenv.load_dotenv()
-BASE_URL = os.getenv('BASE_URL')
+URL = os.getenv('URL')
 
 router = APIRouter(
     tags = ["Admin"],
@@ -60,7 +59,7 @@ async def create_admin(
         
     photo_filename = quote(photo_filename)
     public_url = f"/uploads-admin/photos/{photo_filename}"
-    full_url = BASE_URL + public_url
+    full_url = URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
 
     

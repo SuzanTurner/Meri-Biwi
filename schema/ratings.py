@@ -1,8 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 class Ratings(BaseModel):
-    id : int
-    user_id : int
+    worker_id : int
+    booking_id : int
+    user_uid : str
+
     rating : int
-    review : Optional[str] = None
+    comments : Optional[str] = None
+
+    model_config = ConfigDict(from_attributes = True)
+    

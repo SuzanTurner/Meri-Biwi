@@ -1,23 +1,16 @@
 from database import Base
 from sqlalchemy import (
     Column,
-    LargeBinary,
     Integer,
     Float,
     String,
     DateTime,
-    Enum,
-    Text,
     Boolean,
-    ForeignKey,
-    Numeric,
-    Table,
 )
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 import pytz
-import enum
+
 
 ist = pytz.timezone("Asia/Kolkata")
 
@@ -46,7 +39,7 @@ class User(Base):
     otp = Column(String, nullable=True) 
     otp_created_at = Column(DateTime, default=lambda : datetime.utcnow())
 
-    users = relationship('Ratings', back_populates="user")
+    
     
 class UserLogin(Base):
     __tablename__ = "user_logins"
