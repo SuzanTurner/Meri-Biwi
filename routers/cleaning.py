@@ -240,7 +240,7 @@ def calculate_cleaning_total(
                 "floor" : floor,
                 "bathrooms" : bathrooms,
                 "services" : services,
-                "features" : ["features", "very cool features", "more cool features"]
+                "features" : []
             }
             package_results.append({"package": package})
 

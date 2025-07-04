@@ -45,6 +45,8 @@ class User(Base):
     
     otp = Column(String, nullable=True) 
     otp_created_at = Column(DateTime, default=lambda : datetime.utcnow())
+
+    users = relationship('Ratings', back_populates="user")
     
 class UserLogin(Base):
     __tablename__ = "user_logins"

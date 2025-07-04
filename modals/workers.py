@@ -63,6 +63,7 @@ class Worker(Base):
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
     attendances = relationship("Attendance", back_populates="worker")
+    ratings = relationship("Rating", back_populates= "worker")
 
 
 class Address(Base):
@@ -137,4 +138,19 @@ class Education(Base):
     year_of_passing = Column(String, nullable=False)
 
     worker = relationship("Worker", back_populates="education")
+
+
+class Ratings(Base):
+    __tablename__ = "ratings"
+
+    rating_id = Column(Integer, primary_key= True, autoincrement= True)
+
+    worker_id = Column(Integer, ForeignKey('workers.id'), nullable= False)
+    user_id = Column(String, ForeignKey('users.uid'), nullable = False)
+                     
+    rating = Column(Integer, nullable = False)
+    review = Column(String, nullable = True)
+
+    worker = relationship("Worker", back_populates='ratings')
+    user = relationship("User", back_populates = 'users')
 

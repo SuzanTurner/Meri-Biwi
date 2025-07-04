@@ -46,8 +46,8 @@ async def create_category(
             
         photo_filename = quote(photo_filename)
         public_url = f"/uploads-categories/photos/{photo_filename}"
-        # full_url = BASE_URL + public_url
-        full_url = "http://127.0.0.1:8000" + public_url
+        # full_url = "http://127.0.0.1:8000" + public_url
+        full_url = BASE_URL + public_url
         logger.info(f"Image saved successfully. Public URL: {public_url}")
             
         category = Categories(service_id=service_id, image=full_url, categories = categories, title=title)
