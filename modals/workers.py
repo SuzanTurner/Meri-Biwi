@@ -62,7 +62,7 @@ class Worker(Base):
     bank_details = relationship("BankDetails", back_populates="worker", uselist=False, cascade="all, delete-orphan")
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
-    attendances = relationship("Attendance", back_populates="worker")
+    attendances = relationship("Attendance", back_populates="worker", cascade = "all, delete-orphan")
 
     # ratings = relationship('Ratings', back_populates='worker')
     

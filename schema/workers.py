@@ -72,7 +72,7 @@ class WorkerRegisterRequest(BaseModel):
     addresses: List[Address]
     emergency_contacts: List[EmergencyContact] = Field(..., alias="emergencyContacts")
     references: List[Reference] = Field(..., alias="localReferences")
-    employers: List[Employer] = Field(..., alias="previousEmployers")
+    employers: List[Employer] = Field(..., alias="previousEmployer")
     education: List[Education]
     bank_details: BankDetails = Field(..., alias="bankDetails")
     police_verification: PoliceVerification = Field(..., alias="policeVerification")
