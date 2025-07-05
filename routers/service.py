@@ -18,9 +18,9 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
-UPLOAD_DIR = "uploads-service"
+UPLOAD_DIR = "/app/data/uploads-service"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
-BASE_URL = os.getenv("BASE_URL")
+URL = os.getenv("URL")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
 
@@ -65,7 +65,7 @@ def create_service(
         food_type=food_type,
         is_popular=is_popular,
         description=description,
-        image= os.path.join(BASE_URL,service_image_path),
+        image= os.path.join(URL,service_image_path),
     )
     db.add(new_service)
     db.commit()

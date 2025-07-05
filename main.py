@@ -22,6 +22,11 @@ app.mount(
     name="uploads-workers",
 )
 app.mount(
+    "/uploads-service",
+    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-service")),
+    name="uploads-workers",
+)
+app.mount(
     "/uploads-admin",
     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-admin")),
     name="uploads-admin",

@@ -115,7 +115,7 @@ async def create_user(
 #         filepath = os.path.join(UPLOAD_DIR, filename)
 #         with open(filepath, "wb") as buffer:
 #             shutil.copyfileobj(user.avatar.file, buffer)
-#         user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
+#         user.avatar = f"{URL}/{UPLOAD_DIR}/{filename}"
         
 #     # Update timestamp
 #     ist = pytz.timezone("Asia/Kolkata")
@@ -176,7 +176,7 @@ def update_user_(
     #     with open(filepath, "wb") as buffer:
     #         shutil.copyfileobj(avatar.file, buffer)
     #     filename = quote(filename)
-    #     user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
+    #     user.avatar = f"{URL}/{UPLOAD_DIR}/{filename}"
 
     ist = pytz.timezone("Asia/Kolkata")
     user.updated_at = datetime.now(ist)

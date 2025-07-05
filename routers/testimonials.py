@@ -13,7 +13,6 @@ import base64
 
 dotenv.load_dotenv()
 URL = os.getenv('URL')
-# BASE_URL = "http://127.0.0.1:8000"
 
 
 router = APIRouter(
@@ -45,7 +44,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
         
     # photo_filename = quote(photo_filename)
     # public_url = f"/uploads-testimonials/photos/{photo_filename}"
-    # full_url = BASE_URL + public_url
+    # full_url = URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
     
     image_data = await image_or_video.read()
