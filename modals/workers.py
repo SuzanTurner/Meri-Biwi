@@ -63,8 +63,7 @@ class Worker(Base):
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
     attendances = relationship("Attendance", back_populates="worker", cascade = "all, delete-orphan")
-
-    # ratings = relationship('Ratings', back_populates='worker')
+    ratings = relationship('Ratings', back_populates='worker', cascade = "all ,delete-orphan")
     
 
 
@@ -142,20 +141,23 @@ class Education(Base):
     worker = relationship("Worker", back_populates="education")
 
 
-# class Ratings(Base):
-#     __tablename__ = "ratings"
+class Ratings(Base):
+    __tablename__ = "ratings"
 
-#     id = Column(Integer, primary_key= True, autoincrement= True)
+    id = Column(Integer, primary_key= True, autoincrement= True)
 
-#     worker_id = Column(Integer, ForeignKey('workers.id'), nullable = False)
-#     user_uid = Column(String, ForeignKey('users.uid'), nullable = False)
-#     booking_id = Column(Integer, ForeignKey('bookings.id') ,nullable = False)
+    worker_id = Column(Integer, ForeignKey('workers.id'), nullable = False)
+    user_uid = Column(String, ForeignKey('users.uid'), nullable = False)
+    booking_id = Column(Integer, ForeignKey('bookings.id') ,nullable = False)
 
-#     rating = Column(Integer, nullable = False)
-#     comments = Column(String, nullable = True)
-#     created_at = Column(DateTime, default = datetime.utcnow)
+    rating = Column(Integer, nullable = False)
+    comments = Column(String, nullable = True)
+    created_at = Column(DateTime, default = datetime.utcnow)
 
-#     worker = relationship("Worker", back_populates= 'ratings')
+    worker = relationship("Worker", back_populates= 'ratings')
+    user = relationship("User", back_populates="ratings")
+    booking = relationship("Booking", back_populates="ratings")
+
 
 
 

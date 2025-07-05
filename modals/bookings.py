@@ -32,9 +32,10 @@ class Booking(Base):
     # Relationships
     cookings = relationship("Cooking", back_populates="booking", cascade="all, delete-orphan")
     cleanings = relationship("Cleaning", back_populates="booking", cascade="all, delete-orphan")
-    address = relationship("CustomerAddress", back_populates="bookings")
+    address = relationship("CustomerAddress", back_populates="booking")
+    attendances = relationship("Attendance", back_populates="booking", cascade="all, delete-orphan")
+    ratings = relationship("Ratings", back_populates="booking", cascade="all, delete-orphan")
 
-    attendances = relationship("Attendance", back_populates="booking")
 
 
 class Cooking(Base):
@@ -92,5 +93,5 @@ class CustomerAddress(Base):
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
     # Relationship
-    bookings = relationship("Booking", back_populates="address")
+    booking = relationship("Booking", back_populates="address")
 
