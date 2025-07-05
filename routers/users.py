@@ -19,7 +19,7 @@ router = APIRouter(
 )
 
 dotenv.load_dotenv()
-BASE_URL = os.getenv('BASE_URL')
+URL = os.getenv('URL')
 
 UPLOAD_DIR = "/app/data/uploads-users"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -201,7 +201,7 @@ async def update_avatar(uid : str,
         with open(filepath, "wb") as buffer:
             shutil.copyfileobj(avatar.file, buffer)
         filename = quote(filename)
-        user.avatar = f"{BASE_URL}/{UPLOAD_DIR}/{filename}"
+        user.avatar = f"{URL}/{UPLOAD_DIR}/{filename}"
         
     db.add(user)
     db.commit()

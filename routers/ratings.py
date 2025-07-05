@@ -1,28 +1,39 @@
 from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.orm import Session
-from modals.workers import Ratings, Worker
+from modals.workers import Ratings
 from schema import ratings
+from typing import List
 
 router = APIRouter(
-    prefix = '/ratings',
-    tags = "ratings"
+    tags = ["Ratings"],
+    prefix = "/ratings",
 )
 
 @router.post('/')
-async def post_rating(request : ratings.Ratings, db : Depends = Session (get_db)):
-    worker = db.query(Worker).filter(Worker.id == request.id).first()
-    if worker:
-        rate = Ratings(
-            id = request.id,
-            user_id = request.user_id,
-            rating = request.rating,
-            review = request.review
-        )
+async def post_rating(request : ratings.Ratings, db : Session = Depends(get_db)):
+    rating = Ratings(
+        worker_id = request.worker_id,
+        user_uid = request.user_uid,
+        booking_id = request.booking_id,
+        rating = request.rating,
+        comments = request.comments
+    )
 
-        db.add(rate)
-        db.commit()
-        db.refresh(rate)
+    db.add(rating)
+    db.commit()
+    db.refresh(rating)
 
-        return {"status" : "success", "messgae" : "Worker rating added!"}
-    return {"status" : "failed" , "message" : "Worker id does not exist"}
+    return {"status" : "success", "message": "Rating added successfully", "data": rating}
+
+
+@router.get('/{worker_id}')
+async def get_rating(worker_id: int, db: Session = Depends(get_db)):
+    rating = db.query(Ratings).filter(
+        Ratings.worker_id == worker_id,
+    ).first()
+
+    if not rating:
+        return {"status": "error", "message": "Rating not found"}
+
+    return {"status": "success", "data": rating}

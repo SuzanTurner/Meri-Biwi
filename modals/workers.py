@@ -34,14 +34,14 @@ class Worker(Base):
     city = Column(String, nullable=False)
     blood_group = Column(String)
 
-    primary_service_category = Column(ARRAY(String))
-    experience_years = Column(Integer)
-    experience_months = Column(Integer)
-    languages_spoken = Column(ARRAY(String))
-    availability = Column(ARRAY(String))
+    primary_service_category = Column(ARRAY(String), nullable = False)
+    experience_years = Column(Integer, nullable = False)
+    experience_months = Column(Integer, nullable = False)
+    languages_spoken = Column(ARRAY(String), nullable = False)
+    availability = Column(ARRAY(String), nullable = False)
 
-    aadhar_number = Column(String)
-    pan_number = Column(String)
+    aadhar_number = Column(String, nullable = False)
+    pan_number = Column(String, nullable = False)
     electricity_bill_url = Column(String, nullable = True)
     profile_photo_url = Column(String, nullable = True)
     live_capture_url = Column(String, nullable = True)
@@ -62,8 +62,9 @@ class Worker(Base):
     bank_details = relationship("BankDetails", back_populates="worker", uselist=False, cascade="all, delete-orphan")
     police_verification = relationship("PoliceVerification", back_populates="worker", uselist=False, cascade="all, delete-orphan")
 
-    attendances = relationship("Attendance", back_populates="worker")
-    ratings = relationship("Rating", back_populates= "worker")
+    attendances = relationship("Attendance", back_populates="worker", cascade = "all, delete-orphan")
+    ratings = relationship('Ratings', back_populates='worker', cascade = "all ,delete-orphan")
+    
 
 
 class Address(Base):
@@ -143,14 +144,20 @@ class Education(Base):
 class Ratings(Base):
     __tablename__ = "ratings"
 
-    rating_id = Column(Integer, primary_key= True, autoincrement= True)
+    id = Column(Integer, primary_key= True, autoincrement= True)
 
-    worker_id = Column(Integer, ForeignKey('workers.id'), nullable= False)
-    user_id = Column(String, ForeignKey('users.uid'), nullable = False)
-                     
+    worker_id = Column(Integer, ForeignKey('workers.id'), nullable = False)
+    user_uid = Column(String, ForeignKey('users.uid'), nullable = False)
+    booking_id = Column(Integer, ForeignKey('bookings.id') ,nullable = False)
+
     rating = Column(Integer, nullable = False)
-    review = Column(String, nullable = True)
+    comments = Column(String, nullable = True)
+    created_at = Column(DateTime, default = datetime.utcnow)
 
-    worker = relationship("Worker", back_populates='ratings')
-    user = relationship("User", back_populates = 'users')
+    worker = relationship("Worker", back_populates= 'ratings')
+    user = relationship("User", back_populates="ratings")
+    booking = relationship("Booking", back_populates="ratings")
+
+
+
 

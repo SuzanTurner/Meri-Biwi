@@ -12,7 +12,7 @@ import re
 import base64
 
 dotenv.load_dotenv()
-BASE_URL = os.getenv('BASE_URL')
+URL = os.getenv('URL')
 # BASE_URL = "http://127.0.0.1:8000"
 
 
@@ -57,7 +57,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     # ✅ Build the URL safely
     photo_filename_enc = quote(photo_filename, safe="")
     public_url = f"/uploads-testimonials/photos/{photo_filename_enc}"
-    full_url = BASE_URL + public_url
+    full_url = URL + public_url
     
     datatype = image_or_video.content_type
     image_base64 = base64.b64encode(image_data).decode("utf-8")
