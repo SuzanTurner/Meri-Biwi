@@ -7,6 +7,7 @@ __pycache__
 .pytest_cache/
 uploads-admin/
 uploads-banners/
+uploads-service/
 uploads-categories/
 uploads-testimonials/
 uploads-users/

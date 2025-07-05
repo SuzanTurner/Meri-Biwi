@@ -4,11 +4,9 @@ from sqlalchemy import and_
 from typing import List, Optional
 
 
-import base64
 import os
 from modals.services import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
-    ServiceCreate,
     ServicePriceOut,
     ServiceOut,
     CategoryEnum,
@@ -20,7 +18,7 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
-UPLOAD_DIR = "uploads-admin"
+UPLOAD_DIR = "uploads-service"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 BASE_URL = os.getenv("BASE_URL")
 
@@ -43,9 +41,11 @@ def create_service(
     db: Session = Depends(get_db),
 ):
     # Store the image or get its path
-    service_image_path = os.path.join(BASE_URL,PHOTOS_DIR, image.filename)
+    service_image_path = os.path.join(PHOTOS_DIR, image.filename)
         
-    # image_data=image.file.read()
+    image_data=image.file.read()
+    with open(service_image_path, "wb") as f:
+        f.write(image_data)
     # image_base64 = base64.b64encode(image_data).decode("utf-8")
 
     cleaned_details = []
@@ -65,7 +65,7 @@ def create_service(
         food_type=food_type,
         is_popular=is_popular,
         description=description,
-        image=service_image_path,
+        image= os.path.join(BASE_URL,service_image_path),
     )
     db.add(new_service)
     db.commit()

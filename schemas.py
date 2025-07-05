@@ -1,8 +1,8 @@
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
-from datetime import date, time
+
 from decimal import Decimal
 
 
