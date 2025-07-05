@@ -3,7 +3,6 @@ from database import get_db
 from sqlalchemy.orm import Session
 from modals.workers import Ratings
 from schema import ratings
-from typing import List
 
 router = APIRouter(
     tags = ["Ratings"],
@@ -31,7 +30,7 @@ async def post_rating(request : ratings.Ratings, db : Session = Depends(get_db))
 async def get_rating(worker_id: int, db: Session = Depends(get_db)):
     rating = db.query(Ratings).filter(
         Ratings.worker_id == worker_id,
-    ).first()
+    ).all()
 
     if not rating:
         return {"status": "error", "message": "Rating not found"}

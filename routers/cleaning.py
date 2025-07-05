@@ -244,6 +244,7 @@ def calculate_cleaning_total(
                               f"Number of bathrooms : {bathrooms}",
                               f"BHK : {bhk}",
                               f"Plan : {plan}",
+                              # f"Package ID : {level[:3].upper()}1234",
                               f"Additional Services : {', '.join(services) if services else 'None'}"]
             }
             package_results.append({"package": package})

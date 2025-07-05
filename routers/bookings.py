@@ -236,6 +236,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
         "status": "success",
         "data": [
             {
+                "id" : booking.id,
                 "service_type": booking.service_type,
                 "customer_id": booking.customer_id,
                 "basic_price": float(booking.basic_price) if booking.basic_price else 0.0,
@@ -258,6 +259,11 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                         "meals_per_day": c.meals_per_day,
                         "service_purpose": c.service_purpose,
                         "kitchen_platform_cleaning": c.kitchen_platform_cleaning,
+                        "cooking_features" : [ f"Dietery Preference: {c.dietary_preference}",
+                                                f"Service for {c.no_of_people} people",
+                                                f"Meals per day: {c.meals_per_day}",
+                                                "Service purpose: Daily",
+                                                "Includes kitchen platform cleaning"],
                     }
                     for c in booking.cookings
                 ],
@@ -270,9 +276,11 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                         "bhk": cl.bhk,
                         "plan": cl.plan,
                         "services": cl.services,
+                        "cleaning_features" : ["Very amazing Features"],
                     }
                     for cl in booking.cleanings
                 ],
+ 
                 "address_details": {
                     "latitude": booking.address.latitude if booking.address else None,
                     "longitude": booking.address.longitude if booking.address else None,

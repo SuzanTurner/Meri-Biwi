@@ -15,42 +15,66 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(debug = True)
-BASE_UPLOAD_DIR = "/app/data"
-app.mount(
-    "/uploads-workers",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-workers")),
-    name="uploads-workers",
-)
-app.mount(
-    "/uploads-service",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-service")),
-    name="uploads-workers",
-)
-app.mount(
-    "/uploads-admin",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-admin")),
-    name="uploads-admin",
-)
-app.mount(
-    "/uploads-categories",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-categories")),
-    name="uploads-categories",
-)
-app.mount(
-    "/uploads-testimonials",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-testimonials")),
-    name="uploads-testimonials",
-)
-app.mount(
-    "/uploads-banners",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-banners")),
-    name="uploads-banners",
-)
-app.mount(
-    "/uploads-users",
-    StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-users")),
-    name="uploads-users",
-)
+
+
+# BASE_UPLOAD_DIR = "/app/data"
+# app.mount(
+#     "/uploads-workers",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-workers")),
+#     name="uploads-workers",
+# )
+# app.mount(
+#     "/uploads-service",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-service")),
+#     name="uploads-workers",
+# )
+# app.mount(
+#     "/uploads-admin",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-admin")),
+#     name="uploads-admin",
+# )
+# app.mount(
+#     "/uploads-categories",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-categories")),
+#     name="uploads-categories",
+# )
+# app.mount(
+#     "/uploads-testimonials",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-testimonials")),
+#     name="uploads-testimonials",
+# )
+# app.mount(
+#     "/uploads-banners",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-banners")),
+#     name="uploads-banners",
+# )
+# app.mount(
+#     "/uploads-users",
+#     StaticFiles(directory=os.path.join(BASE_UPLOAD_DIR, "uploads-users")),
+#     name="uploads-users",
+# )
+
+if os.path.exists("/.dockerenv"):
+    BASE_UPLOAD_DIR = "/app/data"
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BASE_UPLOAD_DIR = os.path.join(BASE_DIR, "local_data")  # create 'local_data' dir
+
+# 👇 Auto-create directories locally
+folders = [
+    "uploads-workers",
+    "uploads-service",
+    "uploads-admin",
+    "uploads-categories",
+    "uploads-testimonials",
+    "uploads-banners",
+    "uploads-users"
+]
+
+for folder in folders:
+    full_path = os.path.join(BASE_UPLOAD_DIR, folder)
+    os.makedirs(full_path, exist_ok=True)
+    app.mount(f"/{folder}", StaticFiles(directory=full_path), name=folder)
 
 app.add_middleware(
     CORSMiddleware,
