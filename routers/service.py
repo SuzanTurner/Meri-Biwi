@@ -47,7 +47,8 @@ def create_service(
     with open(service_image_path, "wb") as f:
         f.write(image_data)
     # image_base64 = base64.b64encode(image_data).decode("utf-8")
-
+    public_url = f"/uploads-testimonials/photos/{image.filename}"
+    full_url = URL + public_url
     cleaned_details = []
     print(service_image_path)
     for item in basic_details:
@@ -65,7 +66,7 @@ def create_service(
         food_type=food_type,
         is_popular=is_popular,
         description=description,
-        image= os.path.join(URL,service_image_path),
+        image=full_url,
     )
     db.add(new_service)
     db.commit()
