@@ -5,6 +5,13 @@ from modals.otp import Otp
 from modals.users import User
 from database import get_db
 import random
+import requests
+import dotenv
+import os
+
+dotenv.load_dotenv()
+API_KEY = os.getenv("OTP_API_KEY")
+
 
 def generate_otp():
     return random.randint(1000, 9999)
@@ -14,9 +21,19 @@ router = APIRouter(
     prefix = '/otp'
 )
 
+
 @router.post("/send-otp/")
 async def send_otp(phone: str, db: Session = Depends(get_db)):
     otp_value = generate_otp()
+    
+    MOBILE = phone
+    OTP = otp_value
+
+    url = f"https://apihome.in/panel/api/bulksms/?key={API_KEY}&mobile={MOBILE}&otp={OTP}"
+
+    response = requests.get(url)
+
+    print(response.text)
     
     db.query(Otp).filter(Otp.phone == phone).delete()
     
@@ -26,7 +43,8 @@ async def send_otp(phone: str, db: Session = Depends(get_db)):
     return {
         "status": "success",
         "message": "OTP sent successfully!",
-        "otp": otp_value  
+        "otp": otp_value,
+        "data" : response.text,
     }
 
 

@@ -60,9 +60,8 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     full_url = URL + public_url
     
     datatype = image_or_video.content_type
-    image_base64 = base64.b64encode(image_data).decode("utf-8")
     
-    testimony = Testimonials(image_or_video=full_url, datatype = datatype, base_64 = image_base64, categories = categories, title=title, description = description)
+    testimony = Testimonials(image_or_video=full_url, datatype = datatype,  categories = categories, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)

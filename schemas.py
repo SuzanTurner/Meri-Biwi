@@ -360,7 +360,6 @@ class Testimonials(BaseModel):
     title: str
     desciption : str
     categories : str
-    base_64 : str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
