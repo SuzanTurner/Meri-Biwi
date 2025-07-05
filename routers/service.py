@@ -79,12 +79,18 @@ def get_all_services(
     category: Optional[CategoryEnum] = None,
 ):
     query = db.query(Service)
+    # if category:
+    #     query = query.filter(Service.category == category)
+    # services = query.all()
+    # return services
+
     if category:
         query = query.filter(Service.category == category)
+        services = query.all()
+        return services
+    return {"status" : " error" , "mesage" : "Category not found"}
 
 
-    services = query.all()
-    return services
 @router.get("/filter_services", response_model=ServicePriceOut)
 def filter_services(
     plan_type: Optional[PlanTypeEnum] = Query(None),
@@ -214,6 +220,12 @@ def get_all_additional_feature(
     query=db.query(AdditionalFeature)
     return query.all()
 
+@router.get('/all')
+async def get_all_services(
+    db: Session = Depends(get_db)
+):
+    query = db.query(Service).all()
+    return query
 
 
 

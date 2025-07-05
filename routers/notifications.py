@@ -107,6 +107,13 @@ def notify_user(player_id: str, title: str, message: str):
         raise HTTPException(status_code=500, detail=response.text)
     return {"status": "success", "response": response.json()}
 
+@router.get('/')
+async def get_notifications(db: Session = Depends(get_db)):
+    notifications_list = db.query(Notifications).all()
+    results = [{"id": n.id, "title": n.title, "msg": n.msg, "msg_type": n.msg_type} for n in notifications_list]
+    return {"notifications": results}
+
+
 @router.delete('/')
 async def delete_notification(id : int, db : Session = Depends(get_db)):
     notif = db.query(Notifications).filter(Notifications.id == id).first()

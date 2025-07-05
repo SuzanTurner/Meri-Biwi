@@ -25,11 +25,13 @@ class CategoryEnum(str, enum.Enum):
     cooking = "cooking"
     baby_care = "baby_care"
     elder_care = "elder_care"
+
 class AdditionalCategoryEnum(str, enum.Enum):
     cleaning = "cleaning"
     cooking = "cooking"
     baby_care = "baby_care"
     elder_care = "elder_care"
+    
 class FoodTypeEnum(str, enum.Enum):
     veg = "Veg"
     non_veg = "Non-veg"

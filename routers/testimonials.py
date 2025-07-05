@@ -9,7 +9,6 @@ import shutil
 import os
 import dotenv
 import re
-import base64
 
 dotenv.load_dotenv()
 URL = os.getenv('URL')
@@ -60,7 +59,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
     
     datatype = image_or_video.content_type
     
-    testimony = Testimonials(image_or_video=full_url, datatype = datatype,  categories = categories, title=title, description = description)
+    testimony = Testimonials(image_or_video=full_url, datatype = datatype, categories = categories, title=title, description = description)
     db.add(testimony)
     db.commit()
     db.refresh(testimony)
