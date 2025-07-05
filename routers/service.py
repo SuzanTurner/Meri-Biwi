@@ -5,6 +5,7 @@ from typing import List, Optional
 
 
 import base64
+import os
 from modals.services import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServiceCreate,
@@ -19,9 +20,11 @@ from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
-# UPLOAD_DIR = Path("uploads-categories")
-# SERVICE_PHOTOS_DIR = UPLOAD_DIR / "photos"
-# SERVICE_PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
+UPLOAD_DIR = "uploads-admin"
+PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
+BASE_URL = os.getenv("BASE_URL")
+
+os.makedirs(PHOTOS_DIR, exist_ok=True)
 
 @router.post("/", response_model=ServiceOut)
 def create_service(
@@ -40,12 +43,13 @@ def create_service(
     db: Session = Depends(get_db),
 ):
     # Store the image or get its path
-    # service_image_path = os.path.join(SERVICE_PHOTOS_DIR, image.filename)
+    service_image_path = os.path.join(BASE_URL,PHOTOS_DIR, image.filename)
         
-    image_data=image.file.read()
-    image_base64 = base64.b64encode(image_data).decode("utf-8")
+    # image_data=image.file.read()
+    # image_base64 = base64.b64encode(image_data).decode("utf-8")
 
     cleaned_details = []
+    print(service_image_path)
     for item in basic_details:
         parts = item.split(",")  # Split "1 Meal,Dinner"
         cleaned_details.extend([p.strip().lower() for p in parts])
@@ -61,7 +65,7 @@ def create_service(
         food_type=food_type,
         is_popular=is_popular,
         description=description,
-        image=image_base64,  # Save path to DB
+        image=service_image_path,
     )
     db.add(new_service)
     db.commit()
