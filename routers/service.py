@@ -47,7 +47,7 @@ def create_service(
     with open(service_image_path, "wb") as f:
         f.write(image_data)
     # image_base64 = base64.b64encode(image_data).decode("utf-8")
-    public_url = f"/uploads-testimonials/photos/{image.filename}"
+    public_url = f"/uploads-service/photos/{image.filename}"
     full_url = URL + public_url
     cleaned_details = []
     print(service_image_path)
