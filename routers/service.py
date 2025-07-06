@@ -5,15 +5,16 @@ from typing import List, Optional
 
 
 import os
+import uuid
+
 from modals.services import Service, AdditionalFeature,PlanTypeEnum,FoodTypeEnum
 from schemas import (
     ServicePriceOut,
     ServiceOut,
     CategoryEnum,
     AdditionalFeatureCreate,
-    AdditionalFeatureOut,
-    ServiceUpdate,
-)
+    AdditionalFeatureOut
+    )
 from database import get_db
 
 router = APIRouter(prefix="/services", tags=["Services"])
@@ -40,17 +41,16 @@ def create_service(
     image: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    # Store the image or get its path
-    service_image_path = os.path.join(PHOTOS_DIR, image.filename)
-        
-    image_data=image.file.read()
+    
+    
+    filename = f"{uuid.uuid4().hex}_{image.filename}"
+    service_image_path = os.path.join(PHOTOS_DIR, filename)
     with open(service_image_path, "wb") as f:
-        f.write(image_data)
-    # image_base64 = base64.b64encode(image_data).decode("utf-8")
-    public_url = f"/uploads-service/photos/{image.filename}"
+        f.write(image.file.read())
+    public_url = f"/uploads-service/photos/{filename}"
     full_url = URL + public_url
+    
     cleaned_details = []
-    print(service_image_path)
     for item in basic_details:
         parts = item.split(",")  # Split "1 Meal,Dinner"
         cleaned_details.extend([p.strip().lower() for p in parts])
@@ -80,16 +80,11 @@ def get_all_services(
     category: Optional[CategoryEnum] = None,
 ):
     query = db.query(Service)
-    # if category:
-    #     query = query.filter(Service.category == category)
-    # services = query.all()
-    # return services
-
     if category:
         query = query.filter(Service.category == category)
-        services = query.all()
-        return services
-    return {"status" : " error" , "mesage" : "Category not found"}
+    services = query.all()
+    return services
+
 
 
 @router.get("/filter_services", response_model=ServicePriceOut)
@@ -166,16 +161,63 @@ def get_service_by_id(service_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{service_id}", response_model=ServiceOut)
 def update_service(
-    service_id: int, updated: ServiceUpdate, db: Session = Depends(get_db)
+    service_id: int,
+    name: Optional[str] = Form(None),
+    category: Optional[CategoryEnum] = Form(None),
+    plan_type: Optional[PlanTypeEnum] = Form(None),
+    frequency: Optional[int] = Form(None),
+    number_of: Optional[int] = Form(None),
+    basic_price: Optional[float] = Form(None),
+    basic_details: Optional[list[str]] = Form(None),
+    duration: Optional[float] = Form(None),
+    food_type: Optional[FoodTypeEnum] = Form(None),
+    is_popular: Optional[bool] = Form(None),
+    description: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db),
 ):
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    update_data = updated.dict(exclude_unset=True)
+    # Update each field if provided
+    if name is not None:
+        service.name = name
+    if category is not None:
+        service.category = category
+    if plan_type is not None:
+        service.plan_type = plan_type
+    if frequency is not None:
+        service.frequency = frequency
+    if number_of is not None:
+        service.number_of = number_of
+    if basic_price is not None:
+        service.basic_price = basic_price
+    if duration is not None:
+        service.duration = duration
+    if food_type is not None:
+        service.food_type = food_type
+    if is_popular is not None:
+        service.is_popular = is_popular
+    if description is not None:
+        service.description = description
+    if basic_details is not None:
+        cleaned_details = []
+        for item in basic_details:
+            parts = item.split(",")  # Split "1 Meal,Dinner"
+            cleaned_details.extend([p.strip().lower() for p in parts])
+        service.basic_details = cleaned_details
 
-    for field, value in update_data.items():
-        setattr(service, field, value)
+    # Handle image update
+    if image:
+
+        filename = f"{uuid.uuid4().hex}_{image.filename}"
+        service_image_path = os.path.join(PHOTOS_DIR, filename)
+        with open(service_image_path, "wb") as f:
+            f.write(image.file.read())
+        public_url = f"/uploads-service/photos/{filename}"
+        full_url = URL + public_url
+        service.image = full_url
 
     db.commit()
     db.refresh(service)
