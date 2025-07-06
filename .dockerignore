@@ -12,5 +12,6 @@ uploads-categories/
 uploads-testimonials/
 uploads-users/
 uploads-workers/
+local_data
 .env
 .env.db
