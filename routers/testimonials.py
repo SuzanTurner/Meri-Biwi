@@ -9,9 +9,11 @@ import shutil
 import os
 import dotenv
 import re
+import base64
 
 dotenv.load_dotenv()
 URL = os.getenv('URL')
+# BASE_URL = "http://127.0.0.1:8000"
 
 
 router = APIRouter(
@@ -20,7 +22,7 @@ router = APIRouter(
 )
 
 
-UPLOAD_DIR = "/app/data/uploads-testimonials"
+UPLOAD_DIR = "uploads-testimonials"
 PHOTOS_DIR = os.path.join(UPLOAD_DIR, "photos")
 
 os.makedirs(PHOTOS_DIR, exist_ok=True)
@@ -43,7 +45,7 @@ async def create_testimonial(image_or_video : UploadFile = File(...),
         
     # photo_filename = quote(photo_filename)
     # public_url = f"/uploads-testimonials/photos/{photo_filename}"
-    # full_url = URL + public_url
+    # full_url = BASE_URL + public_url
     # full_url = "http://127.0.0.1:8000" + public_url
     
     image_data = await image_or_video.read()

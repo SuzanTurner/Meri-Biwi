@@ -59,8 +59,6 @@ if os.path.exists("/.dockerenv"):
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     BASE_UPLOAD_DIR = os.path.join(BASE_DIR, "local_data")  # create 'local_data' dir
-
-# 👇 Auto-create directories locally
 folders = [
     "uploads-workers",
     "uploads-service",

@@ -1,17 +1,14 @@
 from fastapi import APIRouter, HTTPException, Form, Query, UploadFile, File, Depends, Query, Path, Body
-from typing import List, Optional
 from datetime import datetime
 from database import get_db
 from modals.workers import Worker, Address, EmergencyContact, BankDetails, PoliceVerification, LocalReference, PreviousEmployer, Education
 from sqlalchemy.orm import Session
-from schema import workers
 from sqlalchemy import or_
 from urllib.parse import quote
 import shutil
 import os
 import dotenv
 import re
-import json
 import sqlalchemy
 from schema.workers import WorkerRegisterRequest
 
@@ -36,15 +33,24 @@ os.makedirs(DOCS_DIR, exist_ok=True)
 os.makedirs(LIVE_CAPTURE_DIR, exist_ok=True)
 os.makedirs(PHOTOSHOOT_DIR, exist_ok=True)
 
-@router.get("/{name}")
-async def search_workers(name: str):
+@router.get("/{int}")
+async def get_worker(worker_id: int, db : Session = Depends(get_db)):
+    worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    if worker:
+        return worker
+    else:
+        raise HTTPException(status_code=404, detail="Worker not found")
+
+
+@router.get("/name/{name}")
+async def search_workers(name: str, db: Session = Depends(get_db)):
     try:
-        db = next(get_db())
+        # db = next(get_db())
         
         if name:
             workers = db.query(Worker).filter(
-                or_(
-                    Worker.full_name.ilike(f"%{name}%"),
+                (
+                    Worker.full_name.ilike(f"%{name}%")
                     # Worker.email.ilike(f"%{name}%"),
                     # Worker.city.ilike(f"%{name}%")
                 )
@@ -54,11 +60,11 @@ async def search_workers(name: str):
         
         worker_list = []
         for worker in workers:
-            created_at_val = worker.created_at
-            if created_at_val is not None and not isinstance(created_at_val, sqlalchemy.Column):
-                created_at_str = created_at_val.isoformat()
-            else:
-                created_at_str = None
+            # created_at_val = worker.created_at
+            # if created_at_val is not None and not isinstance(created_at_val, sqlalchemy.Column):
+            #     created_at_str = created_at_val.isoformat()
+            # else:
+            #     created_at_str = None
             worker_dict = {
                 "id": worker.id,
                 "full_name": worker.full_name,
@@ -79,7 +85,6 @@ async def search_workers(name: str):
                 "profile_photo_url": worker.profile_photo_url,
                 "live_capture_url": worker.live_capture_url,
                 "photoshoot_url": worker.photoshoot_url,
-                "created_at": created_at_str,
                 "status": worker.status,
                 "religion": worker.religion
             }
@@ -709,8 +714,6 @@ async def update_worker(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
-
 
 @router.delete("/delete-worker/{worker_id}")
 def delete_worker(worker_id: int = Path(...), db: Session = Depends(get_db)):
