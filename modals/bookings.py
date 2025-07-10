@@ -36,6 +36,8 @@ class Booking(Base):
     attendances = relationship("Attendance", back_populates="booking", cascade="all, delete-orphan")
     ratings = relationship("Ratings", back_populates="booking", cascade="all, delete-orphan")
 
+    refunds = relationship("Refund", back_populates="booking", cascade="all, delete-orphan")
+
 
 
 class Cooking(Base):

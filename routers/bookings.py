@@ -2,13 +2,21 @@ from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.orm import Session
 from modals.bookings import Booking, Cooking, Cleaning, CustomerAddress
+from schema.bookings import GetBookings
 import schemas
+
 
 
 router = APIRouter(
     tags = ['Bookings'],
     prefix = '/bookings'
 )
+
+
+@router.get('/all', response_model=list[GetBookings])
+async def get_all_bookings(db: Session = Depends(get_db)):
+    bookings = db.query(Booking).all()
+    return bookings
 
 @router.post('/cooking')
 async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(get_db)):
