@@ -26,6 +26,8 @@ class Booking(Base):
     basic_price = Column(Numeric(10, 2), nullable=True)
     total_price = Column(Numeric(10, 2), nullable=True)
     status = Column(String(20), default="ongoing")
+
+    cancelled_at = Column(String, nullable = True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 

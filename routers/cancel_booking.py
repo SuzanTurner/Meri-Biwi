@@ -17,6 +17,7 @@ async def cancel_booking(id : int, db : Session = Depends(get_db)):
     if booking:
 
         booking.status = "cancelled"
+        booking.cancelled_at = datetime.datetime.now()
         db.add(booking)
 
         # 2. Add refund row
@@ -47,7 +48,7 @@ async def cancel_booking(id : int, db : Session = Depends(get_db)):
 
 @router.post('refunds/{cid}')
 async def refunds(cid : str, db : Session = Depends(get_db)):
-    refund = db.query(Refund).filter(Refund.customer_id == cid).first()
+    refund = db.query(Refund).filter(Refund.customer_id == cid).all()
     if refund:
         return {"status" : "success" , "data" : refund}
     return {"status" : "error", "message" : "No data found"}

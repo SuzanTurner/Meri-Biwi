@@ -339,3 +339,4 @@ async def my_addresses(customer_id: str, db: Session = Depends(get_db)):
 async def get_all_bookings( db : Session = Depends(get_db)):
     bookings = db.query(Booking).all()
     return bookings
+
