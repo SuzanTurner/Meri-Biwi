@@ -45,6 +45,7 @@ async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(ge
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        freq = request.freq, 
         # latitude = request.latitude,
         # longitude = request.longitude,
         # city = request.city,
@@ -117,6 +118,7 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        freq = request.freq, 
         # latitude = request.latitude,
         # longitude = request.longitude,
         # city = request.city,
@@ -258,7 +260,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
                 "package_id": booking.package_id,
-
+                "freq" : booking.freq,
                 "cooking_details": [
                     {
                         "booking_id" : c.id,

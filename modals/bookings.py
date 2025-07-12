@@ -19,6 +19,8 @@ class Booking(Base):
     end_time = Column(String, nullable=True)
     service_type = Column(String, nullable=False)
 
+    freq = Column(Integer, nullable = True)
+
     booking_date = Column(TIMESTAMP, server_default=func.now())
     worker_id_1 = Column(BigInteger, nullable=True)
     worker_id_2 = Column(BigInteger, nullable=True)

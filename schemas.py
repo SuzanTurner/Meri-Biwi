@@ -447,6 +447,8 @@ class CookingBooking(BaseModel):
     
     worker_id_1: Optional[int] = None
     worker_id_2: Optional[int] = None
+
+    freq: Optional[int] = None 
     
     end_time: Optional[str] = None
     start_time: Optional[str] = None
@@ -477,6 +479,8 @@ class CleaningBooking(BaseModel):
     end_date: Optional[str]
     start_time: Optional[str]
     end_time: Optional[str]
+
+    freq: Optional[int] = None 
 
     worker_id_1: Optional[int]
     worker_id_2: Optional[int]
