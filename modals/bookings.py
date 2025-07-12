@@ -19,6 +19,8 @@ class Booking(Base):
     end_time = Column(String, nullable=True)
     service_type = Column(String, nullable=False)
 
+    freq = Column(Integer, nullable = True)
+
     booking_date = Column(TIMESTAMP, server_default=func.now())
     worker_id_1 = Column(BigInteger, nullable=True)
     worker_id_2 = Column(BigInteger, nullable=True)
@@ -26,6 +28,8 @@ class Booking(Base):
     basic_price = Column(Numeric(10, 2), nullable=True)
     total_price = Column(Numeric(10, 2), nullable=True)
     status = Column(String(20), default="ongoing")
+
+    cancelled_at = Column(String, nullable = True)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
@@ -36,6 +40,8 @@ class Booking(Base):
     attendances = relationship("Attendance", back_populates="booking", cascade="all, delete-orphan")
     ratings = relationship("Ratings", back_populates="booking", cascade="all, delete-orphan")
 
+    refunds = relationship("Refund", back_populates="booking", cascade="all, delete-orphan")
+
 
 
 class Cooking(Base):
@@ -44,6 +50,8 @@ class Cooking(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
+
+    # freq = Column(Integer, nullable = True)
 
     dietary_preference = Column(String(10), nullable=True)
     no_of_people = Column(Integer, nullable=True)
@@ -61,6 +69,8 @@ class Cleaning(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
+
+    # freq = Column(Integer, nullable = True)
 
     no_of_floors = Column(Integer, nullable=True)
     no_of_bathrooms = Column(Integer, nullable=True)

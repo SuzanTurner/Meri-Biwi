@@ -2,13 +2,21 @@ from fastapi import APIRouter, Depends
 from database import get_db
 from sqlalchemy.orm import Session
 from modals.bookings import Booking, Cooking, Cleaning, CustomerAddress
+from schema.bookings import GetBookings
 import schemas
+
 
 
 router = APIRouter(
     tags = ['Bookings'],
     prefix = '/bookings'
 )
+
+
+@router.get('/all', response_model=list[GetBookings])
+async def get_all_bookings(db: Session = Depends(get_db)):
+    bookings = db.query(Booking).all()
+    return bookings
 
 @router.post('/cooking')
 async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(get_db)):
@@ -37,6 +45,7 @@ async def book_cooking(request: schemas.CookingBooking, db: Session = Depends(ge
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        freq = request.freq, 
         # latitude = request.latitude,
         # longitude = request.longitude,
         # city = request.city,
@@ -109,6 +118,7 @@ async def book_cleaning(request: schemas.CleaningBooking, db: Session = Depends(
         package_id = request.package_id,
         basic_price = request.basic_price,
         total_price = request.total_price,
+        freq = request.freq, 
         # latitude = request.latitude,
         # longitude = request.longitude,
         # city = request.city,
@@ -250,7 +260,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
                 "package_id": booking.package_id,
-
+                "freq" : booking.freq,
                 "cooking_details": [
                     {
                         "booking_id" : c.id,
@@ -331,3 +341,4 @@ async def my_addresses(customer_id: str, db: Session = Depends(get_db)):
 async def get_all_bookings( db : Session = Depends(get_db)):
     bookings = db.query(Booking).all()
     return bookings
+
