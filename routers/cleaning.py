@@ -188,6 +188,8 @@ def calculate_cleaning_total(
             base_price = base_result[0]
             total = Decimal(str(base_price))
 
+            service_details = [] 
+
             if services:
                 unique_services = set(services)
                 invalid_codes = [c for c in unique_services if c not in ['A', 'B', 'C']]
@@ -217,35 +219,58 @@ def calculate_cleaning_total(
                 logger.info(f"Executing additional services query for {level} plan")
                 results = db.execute(add_query, params).fetchall()
 
+                # processed_services = set()
+                # for code, name, price in results:
+                #     if code in processed_services:
+                #         continue
+                #     processed_services.add(code)
+                #     if code == 'C':
+                #         service_amount = (total * Decimal(str(price)) / Decimal('100'))
+                #         total += service_amount
+                #     else:
+                #         total += Decimal(str(price))
+
                 processed_services = set()
                 for code, name, price in results:
                     if code in processed_services:
                         continue
                     processed_services.add(code)
+
+                    # Save values for later
+                    service_details.append({
+                        "code": code,
+                        "name": name,
+                        "price": str(price)  # or Decimal(price) if you want to preserve type
+                    })
+
                     if code == 'C':
                         service_amount = (total * Decimal(str(price)) / Decimal('100'))
                         total += service_amount
                     else:
                         total += Decimal(str(price))
 
+                print(services)
+
             package = {
                 "package_type": level,
                 "icon": "Some icon",
                 "package_id": f"{level[:3].upper()}1234",
                 "description" : "Essential Cleaning for your home",
-                "duration" : "2",
+                "duration" : "1.5",
                 "base_price": float(base_price),
                 "total_price": float(total),
                 "bhk" : bhk,
                 "floor" : floor,
                 "bathrooms" : bathrooms,
-                "services" : services,
+                "additional services" : service_details,
+                "frequency": 8 if level == "Basic" else 30,
                 "features" : [f"Number of floors : {floor}",
                               f"Number of bathrooms : {bathrooms}",
                               f"BHK : {bhk}",
                               f"Plan : {plan}",
                               # f"Package ID : {level[:3].upper()}1234",
-                              f"Additional Services : {', '.join(services) if services else 'None'}"]
+                              f"Additional Services : {', '.join(services) if services else 'None'}",
+                              f"{8 if level == "Basic" else 30} times per month "]
             }
             package_results.append({"package": package})
 

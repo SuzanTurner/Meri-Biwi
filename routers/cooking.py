@@ -391,8 +391,115 @@ def calculate_total_cooking(
             total = Decimal(str(base_price))
 
             # Handle additional services
+            # if services:
+            #     unique_services = set(services)
+            #     placeholders = ', '.join([f':service{i}' for i in range(len(unique_services))])
+            #     add_query = text(f"""
+            #         SELECT DISTINCT ON (code) code, name, is_percentage, price_{num_people} as price 
+            #         FROM additional_services 
+            #         WHERE (
+            #             LOWER(TRIM(food_type)) = LOWER(TRIM(:food_type))
+            #             OR LOWER(TRIM(REPLACE(food_type, ' - ', '-'))) = LOWER(TRIM(:food_type))
+            #             OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
+            #             OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
+            #         )
+            #         AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
+            #         AND code IN ({placeholders})
+            #         ORDER BY code
+            #     """)
+
+            #     params = {
+            #         "food_type": db_food_type,
+            #         "normalized_food_type": db_food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-"),
+            #         "plan_type": level
+            #     }
+            #     params.update({f"service{i}": s for i, s in enumerate(unique_services)})
+
+            #     logger.info(f"Executing additional services query for {level} plan")
+            #     results = db.execute(add_query, params).fetchall()
+
+            #     service_details = [] 
+
+            #     processed_services = set()
+            #     for code, name, is_percent, price in results:
+            #         if code in processed_services:
+            #             continue
+            #         processed_services.add(code)
+            #         if is_percent:
+            #             service_amount = (base_price * Decimal(str(price)) / Decimal('100'))
+            #             total += service_amount
+            #         else:
+            #             total += Decimal(str(price))
+
+            # if services:
+            #     unique_services = set(services)
+            #     num_people = int(num_people)
+            #     placeholders = ', '.join([f':service{i}' for i in range(len(unique_services))])
+            #     add_query = text(f"""
+            #         SELECT DISTINCT ON (code) code, name, is_percentage, price_{num_people} as price 
+            #         FROM additional_services 
+            #         WHERE (
+            #             LOWER(TRIM(food_type)) = LOWER(TRIM(:food_type))
+            #             OR LOWER(TRIM(REPLACE(food_type, ' - ', '-'))) = LOWER(TRIM(:food_type))
+            #             OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
+            #             OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
+            #         )
+            #         AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
+            #         AND code IN ({placeholders})
+            #         ORDER BY code
+            #     """)
+
+            #     params = {
+            #         "food_type": db_food_type,
+            #         "normalized_food_type": db_food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-"),
+            #         "plan_type": level
+            #     }
+            #     params.update({f"service{i}": s for i, s in enumerate(unique_services)})
+
+            #     logger.info(f"Executing additional services query for {level} plan")
+            #     results = db.execute(add_query, params).fetchall()
+
+            #     service_details = []  # Capture service info
+
+            #     processed_services = set()
+            #     for code, name, is_percent, price in results:
+            #         if code in processed_services:
+            #             continue
+            #         processed_services.add(code)
+
+            #         # Store info for later
+            #         service_details.append({
+            #             "code": code,
+            #             "name": name,
+            #             "is_percentage": bool(is_percent),
+            #             "price": str(price)  # Or Decimal(price) if needed later
+            #         })
+
+            #         # Apply service cost
+            #         if is_percent:
+            #             service_amount = (base_price * Decimal(str(price)) / Decimal('100'))
+            #             total += service_amount
+            #         else:
+            #             total += Decimal(str(price))
+
             if services:
+                logger.info("=== Starting additional services processing ===")
+                
+                # Deduplicate services
                 unique_services = set(services)
+                logger.info(f"Received services: {services}")
+                logger.info(f"Unique service codes: {unique_services}")
+
+                # Sanitize number of people
+                try:
+                    num_people = int(str(num_people).strip().split(".")[0])
+                except Exception as e:
+                    logger.error(f"Invalid num_people value: {num_people}")
+                    raise HTTPException(status_code=400, detail="Invalid number of people")
+
+                logger.info(f"Using price column: price_{num_people}")
+
+                # Build query
                 placeholders = ', '.join([f':service{i}' for i in range(len(unique_services))])
                 add_query = text(f"""
                     SELECT DISTINCT ON (code) code, name, is_percentage, price_{num_people} as price 
@@ -403,50 +510,80 @@ def calculate_total_cooking(
                         OR LOWER(TRIM(REPLACE(:food_type, ' - ', '-'))) = LOWER(TRIM(food_type))
                         OR LOWER(TRIM(food_type)) = LOWER(TRIM(:normalized_food_type))
                     )
+                    AND LOWER(TRIM(meal_combo)) = LOWER(TRIM(:meal_combo))
                     AND LOWER(TRIM(plan_type)) = LOWER(TRIM(:plan_type))
                     AND code IN ({placeholders})
                     ORDER BY code
                 """)
 
+                # Build params
                 params = {
                     "food_type": db_food_type,
                     "normalized_food_type": db_food_type.replace(" - ", "-").replace(" -", "-").replace("- ", "-"),
-                    "plan_type": level
+                    "plan_type": level,
+                    "meal_combo": meal_type
                 }
                 params.update({f"service{i}": s for i, s in enumerate(unique_services)})
 
-                logger.info(f"Executing additional services query for {level} plan")
+                logger.info(f"Query params: {params}")
+                logger.info(f"Executing additional services query for plan: {level}")
+                
+                # Run query
                 results = db.execute(add_query, params).fetchall()
+                logger.info(f"Services fetched: {len(results)} rows")
 
+                service_details = []
                 processed_services = set()
+
                 for code, name, is_percent, price in results:
+                    logger.info(f"Processing service: code={code}, name={name}, is_percentage={is_percent}, price={price}")
+                    
                     if code in processed_services:
+                        logger.debug(f"Skipping duplicate service code: {code}")
                         continue
                     processed_services.add(code)
+
+                    service_details.append({
+                        "code": code,
+                        "name": name,
+                        "is_percentage": bool(is_percent),
+                        "price": str(price)
+                    })
+
                     if is_percent:
                         service_amount = (base_price * Decimal(str(price)) / Decimal('100'))
+                        logger.info(f"Applied percentage service: +{price}% of {base_price} = +{service_amount}")
                         total += service_amount
                     else:
+                        logger.info(f"Applied fixed-price service: +₹{price}")
                         total += Decimal(str(price))
+
+                logger.info(f"Total after applying services: ₹{total}")
+                logger.info(f"Final service details: {json.dumps(service_details, indent=2, default=str)}")
+                logger.info("=== Finished processing additional services ===")
+
+
 
             package = {
                 "package_type": level,
                 "icon": "Some icon bro",
                 "package_id": f"{level[:3].upper()}6969",
                 "description" : "Essential Cookings for your home",
-                "duration" : "2",
+                "duration" : "Bro will cook",
                 "base_price": float(base_price),
                 "total_price": float(total),
                 "num_people": num_people,
                 "food_type": db_food_type,
                 "plan_type": level,
                 "meal_type": meal_type,
-                "services": services,
+                "services": service_details,
+                "frequency": 8 if level == "Basic" else 30,
                 "features" : [ f"Dietery Preference: {db_food_type}"
                                f"Service for {num_people} people",
                                f"Meals per day: {meal_type}",
                                 "Service purpose: Daily",
-                                "Includes kitchen platform cleaning"]
+                                "Duration: 1.5 hours"
+                               f"{8 if level == "Basic" else 30} times/month "]
                             
             }
 

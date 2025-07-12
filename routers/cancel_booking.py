@@ -16,7 +16,7 @@ async def cancel_booking(id : int, db : Session = Depends(get_db)):
     booking = db.query(Booking).filter(Booking.id == id).first()
     if booking:
 
-        booking.status = "cancelled"
+        booking.status = "Cancelled"
         booking.cancelled_at = datetime.datetime.now()
         db.add(booking)
 

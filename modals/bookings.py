@@ -49,6 +49,8 @@ class Cooking(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
 
+    # freq = Column(Integer, nullable = True)
+
     dietary_preference = Column(String(10), nullable=True)
     no_of_people = Column(Integer, nullable=True)
     meals_per_day = Column(Text, nullable=True)
@@ -65,6 +67,8 @@ class Cleaning(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
+
+    # freq = Column(Integer, nullable = True)
 
     no_of_floors = Column(Integer, nullable=True)
     no_of_bathrooms = Column(Integer, nullable=True)
