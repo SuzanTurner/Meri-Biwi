@@ -11,6 +11,8 @@ class Refund(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"),  nullable=False)
     customer_id = Column(String, nullable=False) 
 
+    plan = Column(String, nullable = True, default = "standard")
+
     amount = Column(DECIMAL(10, 2), nullable=False)
     refund_status = Column(String(20), default='pending')  # pending, processed, failed
     payment_method = Column(String(50))
