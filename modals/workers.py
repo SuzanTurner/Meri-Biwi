@@ -34,6 +34,8 @@ class Worker(Base):
     city = Column(String, nullable=False)
     blood_group = Column(String)
 
+    rating = Column(Float, nullable = True)
+
     primary_service_category = Column(ARRAY(String), nullable = False)
     experience_years = Column(Integer, nullable = False)
     experience_months = Column(Integer, nullable = False)

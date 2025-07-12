@@ -25,8 +25,8 @@ async def cancel_booking(id : int, db : Session = Depends(get_db)):
             booking_id=booking.id,
             customer_id=booking.customer_id,
             amount=booking.total_price or Decimal("0.00"),
-            refund_status="pending",  # default
-            payment_method="UPI",     # or pull this from Booking/Customer if available
+            refund_status="pending",  
+            payment_method="UPI",    
             refund_date=datetime.datetime.now(),
         )
         db.add(refund)
