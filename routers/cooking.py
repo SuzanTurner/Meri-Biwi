@@ -583,7 +583,7 @@ def calculate_total_cooking(
                                f"Service for {num_people} people",
                                f"Meals per day: {meal_type}",
                                 "Service purpose: Daily",
-                                f"Duration: 1.5 hours {8 if level == "Basic" else 30} times/month "]
+                                f"Duration: 1.5 hours {8 if level == 'Basic' else 30} times/month "]
                                
                             
             }
