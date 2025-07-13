@@ -250,6 +250,9 @@ def calculate_cleaning_total(
                         total += Decimal(str(price))
 
                 print(services)
+                
+            else:
+                service_details = []
 
             package = {
                 "package_type": level,
@@ -259,6 +262,7 @@ def calculate_cleaning_total(
                 "duration" : "1.5",
                 "base_price": float(base_price),
                 "total_price": float(total),
+                "community_pref_price" : 1000,
                 "bhk" : bhk,
                 "floor" : floor,
                 "bathrooms" : bathrooms,

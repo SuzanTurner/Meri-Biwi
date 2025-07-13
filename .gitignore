@@ -21,5 +21,6 @@ alembic.ini
 .pytest_cache/
 tests/
 load_tests/
-
+git-history.txt
 routers/workers.py
+loc

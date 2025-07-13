@@ -17,6 +17,7 @@ class Booking(Base):
     end_date = Column(String, nullable=True)
     start_time = Column(String, nullable=True)
     end_time = Column(String, nullable=True)
+
     service_type = Column(String, nullable=False)
 
     freq = Column(Integer, nullable = True)
@@ -51,6 +52,7 @@ class Cooking(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
 
+    plan = Column(String, nullable = True)
     # freq = Column(Integer, nullable = True)
 
     dietary_preference = Column(String(10), nullable=True)
@@ -70,12 +72,13 @@ class Cleaning(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     customer_id = Column(String, nullable=True)
 
+    plan = Column(String, nullable = True)
+
     # freq = Column(Integer, nullable = True)
 
     no_of_floors = Column(Integer, nullable=True)
     no_of_bathrooms = Column(Integer, nullable=True)
     bhk = Column(Integer, nullable=True)
-    plan = Column(String(20), nullable=True)  # daily, weekly, occasionally
     services = Column(Boolean, nullable=True, default=False)  # additional services
 
     booking = relationship("Booking", back_populates="cleanings")

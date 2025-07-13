@@ -259,6 +259,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                 "worker_id_1": booking.worker_id_1,
                 "worker_id_2": booking.worker_id_2,
                 "status": booking.status,
+                # "plan" : booking.plan,
                 "package_id": booking.package_id,
                 "freq" : booking.freq,
                 "cooking_details": [
@@ -268,6 +269,7 @@ async def my_bookings(customer_id: str, db: Session = Depends(get_db)):
                         "no_of_people": c.no_of_people,
                         "meals_per_day": c.meals_per_day,
                         "service_purpose": c.service_purpose,
+                        "plan" : c.plan,
                         "kitchen_platform_cleaning": c.kitchen_platform_cleaning,
                         "cooking_features" : [ f"Dietery Preference: {c.dietary_preference}",
                                                 f"Service for {c.no_of_people} people",
