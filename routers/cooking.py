@@ -561,8 +561,8 @@ def calculate_total_cooking(
                 logger.info(f"Total after applying services: ₹{total}")
                 logger.info(f"Final service details: {json.dumps(service_details, indent=2, default=str)}")
                 logger.info("=== Finished processing additional services ===")
-
-
+            else:
+                service_details = []
 
             package = {
                 "package_type": level,
@@ -576,13 +576,14 @@ def calculate_total_cooking(
                 "food_type": db_food_type,
                 "plan_type": level,
                 "meal_type": meal_type,
+                "community_pref_price" : 1000,
                 "services": service_details,
                 "frequency": 8 if level == "Basic" else 30,
                 "features" : [ f"Dietery Preference: {db_food_type}"
                                f"Service for {num_people} people",
                                f"Meals per day: {meal_type}",
                                 "Service purpose: Daily",
-                                f"Duration: 1.5 hours {8 if level == "Basic" else 30} times/month "]
+                                f"Duration: 1.5 hours {8 if level == 'Basic' else 30} times/month "]
                                
                             
             }
