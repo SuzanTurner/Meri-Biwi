@@ -24,3 +24,4 @@ load_tests/
 git-history.txt
 routers/workers.py
 loc
+control

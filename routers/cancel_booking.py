@@ -24,14 +24,14 @@ async def cancel_booking(id : int, db : Session = Depends(get_db)):
 
         # amount will be calculated:  per day charge= booking amount / frequency
         # refund amount = (remaining frequency days * per day charge) - 500rs(cancellation charges)
+        per_day : float = booking.total_price / booking.freq 
         if booking.freq == 30:
-            per_day : float = booking.total_price / booking.freq 
             amount : float = (delta.days * per_day) - 500
 
-        else:
-            per_day : float = booking.total_price / booking.freq 
+        else: 
             day : int = (delta.days / 7) * 2
-            amount : float = (per_day * day) - 500
+            # amount : float = (per_day * day) - 500
+            amount = (float(per_day) * day) - 500
 
         refund = Refund(
                 booking_id=booking.id,
