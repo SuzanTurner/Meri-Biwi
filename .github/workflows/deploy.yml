@@ -1,4 +1,4 @@
-name: Deploy to VPSSs
+name: Deploy to VPSSss
 
 on:
   push:
