@@ -3,7 +3,7 @@ name: Deploy to VPSSss
 on:
   push:
     branches:
-      - deploy # Trigger on push to the 'main' branch
+      - test # Trigger on push to the 'main' branch
 
 jobs:
   deploy:
