@@ -49,8 +49,8 @@ jobs:
             # Create/Update .env files on the VPS using the secrets
             # The 'EOF' marker needs to be alone on a line to signify the end of the here-document
             echo "Creating/Updating .env files on VPS..."
-            echo "$APP_ENV_CONTENT" > .env
-            echo "$DB_ENV_CONTENT" > .env.db
+            echo "$APP_ENV_CONTENT" > .testenv
+            echo "$DB_ENV_CONTENT" > .testenv.db
 
             # Stop and remove old containers, but preserve volumes (including database data)
             echo "Stopping existing Docker Compose services..."
